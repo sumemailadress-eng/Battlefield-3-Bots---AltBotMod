@@ -90,14 +90,14 @@ The features are grouped by area. Each one lists what the bots do and any settin
 **Fun-Bots objective mesh (new in Release V1)**
 - Around every capture point, M-COM and base, bots walk a navigation mesh that knows the level's walls, floors, stairs, doorways and the places to jump or crouch.
 - The meshes ship for 97 map/mode combinations in `BotMod_traces\navzones`.
-- Priority near an objective: the mesh first, then Fun-Bots recorded routes, then the navigation grid.
+- Priority near an objective: the mesh first, then saved routes, then the navigation grid.
 - Every one of the 218 Rush M-COMs (Rush and Squad Rush, all maps) sits in a mesh M-COM zone. 217 can be walked to over the mesh; Death Valley M-COM 4 still uses the older routing.
 - A mesh connection that bots keep getting stuck on becomes more expensive. After 3 stuck bots it is closed for the rest of the level, as Fun-Bots does.
 - Setting: `FunBotsMesh` (1 on, 0 off).
 
-**Fun-Bots routes on every map and mode**
-- All 215 level/mode combinations (Team Deathmatch, Close Quarters, Squad DM, Gun Master, Domination, Conquest, Rush, Squad Rush, CTF, Air Superiority and more) have Fun-Bots routes of their own or borrowed from the same level.
-- Infantry and vehicles try a Fun-Bots route before the grid. A bot that cannot join a route waits for the next tick and tries again. A failed join is not retried from the same spot for 10 s, which also saves server time.
+**Saved routes on every map and mode**
+- All 215 level/mode combinations (Team Deathmatch, Close Quarters, Squad DM, Gun Master, Domination, Conquest, Rush, Squad Rush, CTF, Air Superiority and more) have saved routes of their own or borrowed from the same level.
+- Infantry and vehicles try a saved route before the grid. A bot that cannot join a route waits for the next tick and tries again. A failed join is not retried from the same spot for 10 s, which also saves server time.
 - Recorded vehicle routes hold up to 256 points, so long routes are not cut into stop-go legs.
 
 **Learning from stuck spots** (see [Learning files](#learning-files-and-data-folders))
@@ -108,7 +108,7 @@ The features are grouped by area. Each one lists what the bots do and any settin
 - Vehicles that stall at the same patch twice have that patch removed from the driving map at the next load.
 
 **Learning from you (and other human players)**
-- Ground you walk, drive or sail over that the Fun-Bots routes do not cover is recorded and becomes part of the bots' routes. It needs at least 25% new ground; walks start at 40 m, drives at 150 m.
+- Ground you walk, drive or sail over that the saved routes do not cover is recorded and becomes part of the bots' saved routes. It needs at least 25% new ground; walks start at 40 m, drives at 150 m.
 - Stairs stay in one route. Ladders, ledge jumps and vaults end a route because bots cannot copy them.
 - A route that leads bots to a spot they never get through is split there, so the network corrects itself.
 - A helicopter you land away from where you boarded becomes a landing spot for bot transports.
@@ -194,7 +194,7 @@ The features are grouped by area. Each one lists what the bots do and any settin
 - Damage taken and dealt by vehicles can be scaled (`VehicleDamageTaken`, `VehicleDamageDealt`, 0.25x to 4x).
 
 **Large maps**
-- Drivers try Fun-Bots routes before the grid and do not slow down at the end of a partial route.
+- Drivers try saved routes before the grid and do not slow down at the end of a partial route.
 
 **Countermeasures**
 - A bot tank or IFV pops smoke when a hit takes 8% or more of its health, at most once every 25 s (`VehicleCountermeasures`). Smoke is also used when a tank is fully locked.
@@ -310,7 +310,7 @@ Settings are in `enhanced.ini`, section `[AltBotMod]`. They are also editable in
 |---|---|
 | `BotMod_learned\` (next to the server) | One learning file per map and mode, for example `MP_001_ConquestLarge0.learn`. Stuck spots, passable spots, killing grounds, learned routes and landing spots. Read at map load. |
 | `BotMod_breakable.txt` | Materials that break when knifed or shot, and those that never do. |
-| `BotMod_traces\navzones\` | Fun-Bots objective meshes (`<Level>_<Mode>.zon`). |
+| `BotMod_traces\navzones\` | Objective meshes (`<Level>_<Mode>.zon`). |
 | `BotMod_loadouts.txt` | Optional gadget loadouts (used when `GadgetVariety` is 0). |
 | `BotMod_backup_<date>\` | Files the installer replaced. |
 
@@ -353,7 +353,6 @@ These checks are offline. They do not replace a live round.
 
 ## Known limitations
 
-- Only the objective meshes listed above are shipped. Fun-Bots' other development-branch navigation is not used.
 - Door breaches are slower for doors directly north of a bot, because the game turns it the long way round to face them.
 - Death Valley M-COM 4 uses the older routing.
 - Small real dips in vehicle speed can still happen when the server syncs, as they do with human drivers.
