@@ -1,6 +1,6 @@
 # AltBotMod - Release V1
 
-**AltBotMod** adds Fun-Bots-style AI bots to a Battlefield 3 dedicated server. It is a native mod: no Venice Unleashed, and players need nothing extra. It runs on the ALP, bf4play and BF-Portable builds of `bf3_server_Final.exe`; the installer checks for that file before it changes anything.
+**AltBotMod** adds AI bots to a Battlefield 3 dedicated server. It is a native mod: no Venice Unleashed, and players need nothing extra. It runs on the ALP, bf4play and BF-Portable builds of `bf3_server_Final.exe`; the installer checks for that file before it changes anything.
 
 > **Version note:** this is public **Release V1**. It is built from the internal development line **V34 "Squad Up"**. The internal version number appears in the server log (`enhanced: AltBotMod V34 - Squad Up`). The full development history is in [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md).
 
@@ -87,12 +87,12 @@ The features are grouped by area. Each one lists what the bots do and any settin
 
 ### 1. Navigation
 
-**Fun-Bots objective mesh (new in Release V1)**
+**Objective navigation mesh (new in Release V1)**
 - Around every capture point, M-COM and base, bots walk a navigation mesh that knows the level's walls, floors, stairs, doorways and the places to jump or crouch.
 - The meshes ship for 97 map/mode combinations in `BotMod_traces\navzones`.
 - Priority near an objective: the mesh first, then saved routes, then the navigation grid.
 - Every one of the 218 Rush M-COMs (Rush and Squad Rush, all maps) sits in a mesh M-COM zone. 217 can be walked to over the mesh; Death Valley M-COM 4 still uses the older routing.
-- A mesh connection that bots keep getting stuck on becomes more expensive. After 3 stuck bots it is closed for the rest of the level, as Fun-Bots does.
+- A mesh connection that bots keep getting stuck on becomes more expensive. After 3 stuck bots it is closed for the rest of the level. 
 - Setting: `FunBotsMesh` (1 on, 0 off).
 
 **Saved routes on every map and mode**
