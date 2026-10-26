@@ -1,0 +1,13 @@
+PASS: no grid yet - a bot walks a checked 40 m straight leg towards a 200 m objective and keeps the real goal (V7 stood at its HQ)
+PASS: a goal inside one leg is walked to directly (not a partial route)
+PASS: a wall on the direct line - the leg fans out to a clear heading (checked with body rays) instead of walking into it
+PASS: water across the way - no leg is planned into it (walk_clear rejects water samples)
+PASS: no driving map yet - the driver gets 20 m straight legs towards its flag, 160 m at a time (V7: "driving map not ready", crews parked at HQ)
+PASS: the straight line stops short of deep water, and drives on through a 0.5 m ford (bed height used)
+PASS: a boat's straight line ends on the shore, its landing (everyone out there)
+PASS: a vehicle rolls on between route legs (no dead stop at every partial-route end), but not with something within 15 m ahead
+PASS: blocked at head height with a clear crouch gap - the bot crouches through; a knee-high block or open ground does not trigger it
+PASS: tanks keep shooting soldiers out to 300 m before far helicopters (V7 crews spent the round start turning after choppers); armour still first
+PASS: a knifeable fence across a road is drivable for vehicles (V7: the tank stopped at it); without a fence record the gap stays a wall
+PASS: only a knifeable fence opens the way - a doorway / a real wall does not
+PASS: a vehicle route crosses the fence line (the vehicle drives through it) instead of failing / going round

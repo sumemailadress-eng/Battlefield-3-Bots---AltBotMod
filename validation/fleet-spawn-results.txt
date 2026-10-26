@@ -1,0 +1,2 @@
+PASS: actual unsquadded bots on BOTH teams get a valid vehicle objective; natural deaths choose a validated owned spawn near a distant tank, with contested/enemy-team spawn rejection and no-HQ defender support
+PASS: default 16 ground drivers and six pilots per team; optional 32-driver setting accepted; every bot remains eligible for fleet duty after the opening minute

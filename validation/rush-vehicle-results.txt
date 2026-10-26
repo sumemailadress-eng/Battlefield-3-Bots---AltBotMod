@@ -1,0 +1,2 @@
+PASS: actual Rush fleet dispatch claims tanks, jeeps, jets, attack and transport helicopters for BOTH teams using the shared objective provider
+PASS: Rush passenger takeover preserves ground/air controls on BOTH teams; a completed objective pair stops new walking claims while retaining occupied ground seats and valid aircraft fallback goals

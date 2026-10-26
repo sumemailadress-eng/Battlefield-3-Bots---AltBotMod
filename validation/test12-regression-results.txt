@@ -1,0 +1,5 @@
+REPRODUCED: Test11 discovers RU HQ but rejects its generic/neutral children, leaving scoreboard players without soldiers until a human supplies a spawn
+PASS: BOTH teams recover after exactly 15s of actual immobility; blocked forward exit selects a checked side exit, retains crew and enemy objective; fully obstructed exits request routing instead of blind throttle
+leg=1 n=1 partial=1 from=(10.5,40.5) to=(39.5,40.5) ok (clear prefix before obstacle) after 60 nodes
+leg=2 n=4 partial=0 from=(39.5,40.5) to=(70.5,40.5) ok after 202 nodes
+PASS: a coarse-grid route with a real physics obstruction advances along its clear prefix, then replans around the wall to the enemy goal in 2 checked legs

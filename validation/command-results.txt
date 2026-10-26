@@ -1,0 +1,79 @@
+ok: AltBotMod-Command.ps1 parses
+ok: AltBotMod-Command.ps1 is plain ASCII
+ok: Command-Admin.bat is plain ASCII
+ok: Command-Admin.ps1 parses
+ok: Command-Admin.ps1 is plain ASCII
+ok: Command-Allow-Phone.bat is plain ASCII
+ok: Command-Browser.bat is plain ASCII
+ok: Command-Desktop.bat is plain ASCII
+ok: Command-Firewall.ps1 parses
+ok: Command-Firewall.ps1 is plain ASCII
+ok: Command-Http.cs is plain ASCII
+ok: Command-Join.ps1 parses
+ok: Command-Join.ps1 is plain ASCII
+ok: Command-Learning.ps1 parses
+ok: Command-Learning.ps1 is plain ASCII
+ok: Command-Window.ps1 parses
+ok: Command-Window.ps1 is plain ASCII
+ok: Command.bat is plain ASCII
+ok: web file index.html present
+ok: web file command.js present
+ok: web file command.css present
+ok: web file qr.js present
+ok: web file favicon.svg present
+ok: web file command.ico present
+ok: web file command-art.png present
+ok: web file art/arctic.png present
+ok: web file art/urban.png present
+ok: web file art/air.png present
+ok: web file art/signal.png present
+ok: web file art/frontier.png present
+ok: host and page agree on the version (V33 / Command 1.5)
+ok: page shows V33
+ok: Command-Desktop.bat points at files that exist
+ok: Command-Browser.bat points at files that exist
+ok: Command.bat points at files that exist
+ok: Command-Admin.bat points at files that exist
+ok: Command-Allow-Phone.bat points at files that exist
+ok: every Bm/Bp/Lm/Command function the host calls is defined (missing: )
+ok: picture endpoint present
+ok: host starts and writes its session ()
+ok: a 256-bit pairing key
+ok: page served with a CSP
+ok: GET /command.js
+ok: GET /command.css
+ok: GET /qr.js
+ok: GET /command-art.png
+ok: GET /art/frontier.png
+ok: GET /maps/MP_001.jpg
+ok: GET /maps/XP5_004.jpg
+ok: GET /favicon.svg
+ok: GET /command.ico
+ok: GET /maps/NOPE.jpg refused
+ok: GET /../ServerControl-Core.ps1 refused
+ok: GET /Command-Http.cs refused
+ok: GET /art/other.png refused
+ok: API needs the pairing key
+ok: a wrong key is refused
+ok: an unknown Host is refused (DNS rebinding)
+ok: a foreign Origin is refused
+ok: meta: version, 29 maps, local only (200)
+ok: meta lists the V31+ bot settings
+ok: status: two instances (200)
+ok: status: the running instance answers over RCON
+ok: instance: players over RCON
+ok: settings for server 1 (95 rows)
+ok: settings save ({"Message":"Saved for the next server start."})
+ok: the saved value is in the server's settings file
+ok: a stale revision is refused (edited elsewhere)
+ok: an out-of-range value is refused
+ok: bot count saved ({"Message":"Bot count saved and queued."})
+ok: next map over RCON ({"Message":"Command accepted by the server."})
+ok: a stopped server reports RCON unavailable
+ok: an unknown instance is refused
+ok: actions need POST
+ok: launcher config (local)
+ok: learning page data
+ok: no API answer contains the server admin password
+ok: the console shows neither the password nor the pairing key
+PASS: AltBotMod Command

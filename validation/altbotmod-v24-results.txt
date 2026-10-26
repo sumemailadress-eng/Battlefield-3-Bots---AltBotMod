@@ -1,0 +1,10 @@
+PASS: V24 driving a real Fun-Bots road (XP3_Alborz_ConquestLarge0.map, 8759 m): pointless slow-downs (no real bend or the end to slow for) 95 -> 1, average 15.8 -> 22.7 m/s, never more than 5.3 m off the road
+PASS: V24 driving a real Fun-Bots road (XP3_Desert_ConquestLarge0.map, 9537 m): pointless slow-downs (no real bend or the end to slow for) 84 -> 5, average 19.6 -> 26.6 m/s, never more than 2.1 m off the road
+PASS: V24 driving a real Fun-Bots road (MP_012_ConquestLarge0.map, 6312 m): pointless slow-downs (no real bend or the end to slow for) 46 -> 0, average 13.9 -> 17.2 m/s, never more than 1.8 m off the road
+PASS: V24 driving a real Fun-Bots road (XP1_002_ConquestLarge0.map, 5226 m): pointless slow-downs (no real bend or the end to slow for) 49 -> 2, average 16.6 -> 21.8 m/s, never more than 1.4 m off the road
+PASS: V24 driving a real Fun-Bots road (XP3_Shield_ConquestLarge0.map, 7507 m): pointless slow-downs (no real bend or the end to slow for) 56 -> 2, average 17.4 -> 20.0 m/s, never more than 3.6 m off the road
+PASS: V24 driving a real Fun-Bots road (XP3_Valley_ConquestLarge0.map, 2195 m): pointless slow-downs (no real bend or the end to slow for) 21 -> 0, average 19.4 -> 27.1 m/s, never more than 1.7 m off the road
+PASS: V24 driving a real Fun-Bots road (MP_007_ConquestLarge0.map, 979 m): pointless slow-downs (no real bend or the end to slow for) 8 -> 0, average 19.6 -> 27.6 m/s, never more than 1.9 m off the road
+PASS: V24 driving a real Fun-Bots road (MP_017_ConquestLarge0.map, 967 m): pointless slow-downs (no real bend or the end to slow for) 7 -> 0, average 15.6 -> 17.9 m/s, never more than 1.6 m off the road
+PASS: convoys - a follower runs at the leader's pace 12-45 m behind it (V23 stopped dead inside 65% of the gap), stops only about to touch it; a leader on a bend is still followed; head-on unchanged
+PASS: V24 source - recorded roads trusted by the drive sensors (a vehicle or a wall dead ahead within 4 m still counts), the Fun-Bots route flag, pure pursuit and road-only bends; helicopter duels (enemy helicopters within 1.2 km first, no 8 s cap, break inside 80 m, 12 m window); version V24

@@ -1,0 +1,142 @@
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+The BF3 server is running (1 instance(s)). Stop it from your launcher first.
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 47 file(s) updated.
+Fun-Bots routes: 82 file(s) updated.
+Server Control: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/ServerControl/Server-Control.bat
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+61 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod_backup_2026-10-10_213025_159_1b71c5
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V9 - Gunfight"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 0 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+Server Control: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/ServerControl/Server-Control.bat
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+61 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod_backup_2026-10-10_213026_273_64c97d
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V9 - Gunfight"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 0 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+Server Control: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/ServerControl/Server-Control.bat
+Vehicle preset applied to port override: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced_25200.ini
+Vehicle preset applied to port override: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced_25201.ini
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+61 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod_backup_2026-10-10_213028_584_ba223e
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V9 - Gunfight"; in game, !botdiag shows it too.
+Full fleet enabled.
+
+AltBotMod V9 - Gunfight (install)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 1 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+0 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod_backup_2026-10-10_213031_520_cca712
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V9 - Gunfight"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V9 - Gunfight (settings)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V9 - Gunfight (uninstall)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+The BF3 server is running (1 instance(s)). Stop it from your launcher first.
+
+AltBotMod V9 - Gunfight (uninstall)
+Server:          /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod/enhanced.ini
+AltBotMod removed - the server runs stock again. Your settings, loadouts, navigation and routes were kept.
+Backup: /tmp/BotMod Installer Test 8f246291a126487580ce7c4432601606/BF-Portable/BotMod_backup_2026-10-10_213034_886_954812
+PASS: 140 installer integration checks. Real file operations; fixture EXE hash and Windows UI/process calls mocked.

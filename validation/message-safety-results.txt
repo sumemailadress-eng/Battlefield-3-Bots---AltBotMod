@@ -1,0 +1,1 @@
+PASS: actual malformed/null message chains fail safely; immutable per-type cache needs one guarded object copy per repeated message instead of re-reading code and strings (10,000 calls)

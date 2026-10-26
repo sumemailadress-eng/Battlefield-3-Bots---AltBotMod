@@ -1,0 +1,4 @@
+PASS: human-confirmed deployment recipe on BOTH teams replays the exact observed native request, awaits completion and confirms its pilot without duplicate bodies or suicides
+PASS: bot observations, cargo-seat results, wrong-team, expired-round, changed-vtable and exhausted-pilot recipes are refused
+PASS: unavailable menu requests back off after three failures; an unexpected ordinary body is retained, never killed or replaced
+PASS: actual flying friendly transport squad-spawn path adopts cargo seat and retains pilot plus human capacity

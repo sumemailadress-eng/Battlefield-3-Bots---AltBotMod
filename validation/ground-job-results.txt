@@ -1,0 +1,3 @@
+PASS: motorcycles/ATVs and solo jeep dismount at objective; crewed jeep and armor retain support duty
+PASS: actual native driver arrival retains driver/gunner/human-directed cargo; capture retarget, blocked-goal retry, long-trip continuation, health and boat exceptions
+PASS: actual squad allocator covers both ends with three squads/six flags for BOTH teams; stable journeys and captured-flag advance

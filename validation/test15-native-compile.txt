@@ -1,0 +1,74 @@
+files/BotMod/src/core.c: In function ‘order_reaction’:
+files/BotMod/src/core.c:4652:23: warning: unused variable ‘b’ [-Wunused-variable]
+ 4652 |             BotBrain *b = bot_brain(fallback);
+      |                       ^
+files/BotMod/src/core.c: In function ‘botmod_command’:
+files/BotMod/src/core.c:6726:15: warning: unused variable ‘pm’ [-Wunused-variable]
+ 6726 |         char *pm = player_manager();
+      |               ^~
+files/BotMod/src/core.c: In function ‘drive_tick’:
+files/BotMod/src/core.c:8982:15: warning: variable ‘lastBody’ set but not used [-Wunused-but-set-variable]
+ 8982 |         void *lastBody = NULL;
+      |               ^~~~~~~~
+files/BotMod/src/core.c: At top level:
+files/BotMod/src/core.c:9140:27: warning: ‘g_ticketsLookAt’ defined but not used [-Wunused-variable]
+ 9140 | static unsigned g_zeroAt, g_ticketsLookAt, g_ticketsFoundAt, g_roundEndedAt;
+      |                           ^~~~~~~~~~~~~~~
+In file included from files/BotMod/src/core.c:8647:
+files/BotMod/src/ground_tactics_native.inc:181:12: warning: ‘traffic_lease’ defined but not used [-Wunused-function]
+  181 | static int traffic_lease(int i,const float *vp,const float *waypoint)
+      |            ^~~~~~~~~~~~~
+files/BotMod/src/core.c:7922:13: warning: ‘hq_probe_tick’ defined but not used [-Wunused-function]
+ 7922 | static void hq_probe_tick(void) { for (int k = 0; k < MAX_HQ_PROBES; k++) hq_probe_one(&g_hqProbes[k]); }
+      |             ^~~~~~~~~~~~~
+files/BotMod/src/core.c:7128:12: warning: ‘g_readdTeam’ defined but not used [-Wunused-variable]
+ 7128 | static int g_readdTeam[MAX_BOTS], g_readdCount;
+      |            ^~~~~~~~~~~
+files/BotMod/src/core.c:7127:13: warning: ‘g_readdName’ defined but not used [-Wunused-variable]
+ 7127 | static char g_readdName[MAX_BOTS][32];
+      |             ^~~~~~~~~~~
+files/BotMod/src/core.c:4847:14: warning: ‘soldier_hit_body’ defined but not used [-Wunused-function]
+ 4847 | static char *soldier_hit_body(char *soldier)
+      |              ^~~~~~~~~~~~~~~~
+files/BotMod/src/core.c:2368:12: warning: ‘local_objective’ defined but not used [-Wunused-function]
+ 2368 | static int local_objective(int i, int team, int *defend)
+      |            ^~~~~~~~~~~~~~~
+files/BotMod/src/core.c:2327:12: warning: ‘overflow_objective’ defined but not used [-Wunused-function]
+ 2327 | static int overflow_objective(int i,int team,const float *pos)
+      |            ^~~~~~~~~~~~~~~~~~
+files/BotMod/src/core.c:2194:17: warning: ‘g_squadTargetAt’ defined but not used [-Wunused-variable]
+ 2194 | static unsigned g_squadTargetAt[3][33];
+      |                 ^~~~~~~~~~~~~~~
+files/BotMod/src/core.c:454:18: warning: ‘team_kit’ defined but not used [-Wunused-function]
+  454 | static KitStore *team_kit(int team, int create)
+      |                  ^~~~~~~~
+files/BotMod/src/core.c: In function ‘cmd_add’:
+files/BotMod/src/core.c:308:5: warning: ‘strncpy’ output may be truncated copying 31 bytes from a string of length 31 [-Wstringop-truncation]
+  308 |     strncpy(player + OFF_PLAYER_ONLINE_NAME, name, 31);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+files/BotMod/src/core.c: In function ‘load_loadouts’:
+files/BotMod/src/core.c:764:52: warning: ‘strncpy’ output may be truncated copying 159 bytes from a string of length 255 [-Wstringop-truncation]
+  764 |         if (nfx < MAX_FIXUPS) { fx[nfx].slot = s_; strncpy(fx[nfx].name, (nm), sizeof fx[nfx].name - 1); fx[nfx].loadout = lib->count; fx[nfx].vtable = (vt); nfx++; *s_ = (void *)-1; } \
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+files/BotMod/src/core.c:766:30: note: in expansion of macro ‘FIXUP_T’
+  766 |     #define FIXUP(slotp, nm) FIXUP_T(slotp, nm, 0)
+      |                              ^~~~~~~
+files/BotMod/src/core.c:799:17: note: in expansion of macro ‘FIXUP’
+  799 |                 FIXUP(&arr[k + 1], name);
+      |                 ^~~~~
+files/BotMod/src/core.c:764:52: warning: ‘strncpy’ output may be truncated copying 159 bytes from a string of length 255 [-Wstringop-truncation]
+  764 |         if (nfx < MAX_FIXUPS) { fx[nfx].slot = s_; strncpy(fx[nfx].name, (nm), sizeof fx[nfx].name - 1); fx[nfx].loadout = lib->count; fx[nfx].vtable = (vt); nfx++; *s_ = (void *)-1; } \
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+files/BotMod/src/core.c:786:17: note: in expansion of macro ‘FIXUP_T’
+  786 |                 FIXUP_T(msg + off, name, weaponAsset ? ADDR_WEAPON_UNLOCK_VTABLE : 0);
+      |                 ^~~~~~~
+files/BotMod/src/core.c:764:52: warning: ‘strncpy’ output may be truncated copying 159 bytes from a string of length 255 [-Wstringop-truncation]
+  764 |         if (nfx < MAX_FIXUPS) { fx[nfx].slot = s_; strncpy(fx[nfx].name, (nm), sizeof fx[nfx].name - 1); fx[nfx].loadout = lib->count; fx[nfx].vtable = (vt); nfx++; *s_ = (void *)-1; } \
+      |                                                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+files/BotMod/src/core.c:848:17: note: in expansion of macro ‘FIXUP_T’
+  848 |                 FIXUP_T(m + 0x3c, asset, ADDR_WEAPON_UNLOCK_VTABLE);
+      |                 ^~~~~~~
+files/BotMod/src/core.c: In function ‘level_tick’:
+files/BotMod/src/core.c:6121:9: warning: ‘strncpy’ output may be truncated copying 63 bytes from a string of length 63 [-Wstringop-truncation]
+ 6121 |         strncpy(retriedFor, g_level, sizeof retriedFor - 1);
+      |         ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

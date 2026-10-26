@@ -1,0 +1,139 @@
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+The BF3 server is running (1 instance(s)). Stop it from your launcher first.
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 47 file(s) updated.
+Fun-Bots routes: 53 file(s) updated.
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+59 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod_backup_2026-10-10_204100_872_ab7e03
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V8 - No Standing Around"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 0 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+59 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod_backup_2026-10-10_204101_792_8b50a0
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V8 - No Standing Around"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 0 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+Vehicle preset applied to port override: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced_25200.ini
+Vehicle preset applied to port override: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced_25201.ini
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+59 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod_backup_2026-10-10_204103_857_98865c
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V8 - No Standing Around"; in game, !botdiag shows it too.
+Full fleet enabled.
+
+AltBotMod V8 - No Standing Around (install)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+Core + navigation: 1 file(s) updated.
+Fun-Bots routes: 0 file(s) updated.
+
+Installed and verified.
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+0 missing option(s) added; existing values preserved.
+Open settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/Open-Settings.bat
+Add your player name to /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/admins.txt for admin chat commands.
+Backup: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod_backup_2026-10-10_204106_208_968919
+Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)
+should show "enhanced: AltBotMod V8 - No Standing Around"; in game, !botdiag shows it too.
+Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.
+
+AltBotMod V8 - No Standing Around (settings)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+
+AltBotMod V8 - No Standing Around (uninstall)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+The BF3 server is running (1 instance(s)). Stop it from your launcher first.
+
+AltBotMod V8 - No Standing Around (uninstall)
+Server:          /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/Battlefield_3_Server
+ACTIVE settings: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod/enhanced.ini
+AltBotMod removed - the server runs stock again. Your settings, loadouts, navigation and routes were kept.
+Backup: /tmp/BotMod Installer Test 035ee250e9a947d7b08c0da859ba236c/BF-Portable/BotMod_backup_2026-10-10_204109_388_868083
+PASS: 136 installer integration checks. Real file operations; fixture EXE hash and Windows UI/process calls mocked.

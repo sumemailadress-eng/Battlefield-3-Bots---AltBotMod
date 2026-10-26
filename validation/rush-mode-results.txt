@@ -1,0 +1,5 @@
+PASS: confirmed Rush transitions, attacker/defender permissions (V16.1: defenders only at an armed station), single operator lease, no timeout-based sector completion, duplicate/future/past event refusal
+PASS: actual routing on all 25 supplied Rush layouts spreads BOTH teams across M-COMs and checked distinct positions; real hold/release adapter interrupts on combat, vehicle entry or death (V16.1: not on damage); a full 8 s hold marks the station armed; V16.2: the hold survives fight orders and a 2 m push, a bot at the panel takes the job from a teammate who holds it from far away
+PASS: failed terrain and water checks create no guessed goals, rotating one-probe budget gives both bots a turn, queued goals remain stable until completion
+PASS: stalled M-COM approach yields its operator slot; defenders prioritize confirmed armed stations and skip destroyed stations
+PASS: actual Noshahr TDM preserves unfinished patrol goals and rotates its destination after arrival

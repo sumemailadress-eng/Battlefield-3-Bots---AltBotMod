@@ -1,0 +1,5 @@
+[31;1mException: [0m/home/claude/caspian/v3/validation/diagnostics_checks.ps1:4[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m   4 | [0m … ssert([bool]$ok,[string]$why){if(-not $ok){[36;1mthrow "FAIL: $why"[0m};$scrip …[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                                              ~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mFAIL: Production collector parses[0m

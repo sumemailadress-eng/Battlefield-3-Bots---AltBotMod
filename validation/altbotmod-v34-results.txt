@@ -1,0 +1,14 @@
+PASS: the 97 shipped mesh files are exactly what the converter makes from Fun-Bots 3.6.0-dev navzones
+zone mesh: 97 files, 218 M-COM zones, 268 capture zones, 6396 routes (19 without a way), load max 15 ms, route max 4.12 ms | zone mesh ok
+PASS: M-COMs 218, in a mesh M-COM zone 218, with a mesh point within 10 m 218, reachable from most of their zone 217 (all Rush and Squad Rush maps)
+PASS: near an objective the bots plan over the mesh first (then Fun-Bots routes, then the grid); stuck reports cost the mesh connection; Rush guard posts from the M-COM zone
+PASS: an M-COM behind a window - the operator walks up to the pane, turns to it, knifes it (2 slash(es)), the way is open
+PASS: a pane the knife does not break - the bot shoots it (18 shot(s))
+PASS: a wall is never taken for a pane; a clear way, or an M-COM 20 m off, leaves the bot to its route
+PASS: a pane is learned "unbreakable" only after a second failed try, never one known to break (V18-V33: after one)
+PASS: fewer bots turning round - mid-round vehicle walks at most 250 m (40 m with the objective within 120 m; spawning and the opening rush unchanged), no repeat supply run to a caller it could not reach for 45 s, relocations re-checked
+PASS: a stalled jet (12 m/s, nose 40 deg up, 900 m up) - nose down (pitch 1.00), wings level, full power, no guns: "recovers speed (nose down)"
+PASS: once fast again (95 m/s) the jet flies on; low (50 m up) it is never pushed into a dive
+PASS: flares 75% into an enemy lock (8 s apart), smoke for armour at a full lock - read from the game's own locking controllers; jets keep heat seekers for aircraft and go for attack helicopters; wider jet area (900 m margin, 1400 m minimum)
+PASS: squad orders - !attack B / !defend A / looking at it, the commo rose's Attack; the squad's bots take it ahead of the team plan for 4 min (Rush: M-COM A / B); bot squad leaders announce their objective in the squad chat
+PASS: FunBotsMesh / VehicleWalkMeters in Server Control; version V34

@@ -1,0 +1,14 @@
+PASS: back to V29 - the vehicle input feed is V29's (plus the read-only driver trace), no hooks on the vehicle, the kit loader V29's line for line (no vehicle unlocks), aircraft weapons and the lock matching as in V29
+PASS: the driver trace - the last 45 frames, oldest first (body / seat / physics position, input levels, dt), six a level at most
+PASS: LockOnSeconds 0.5 - a weapon with a 2 s lock time locks after 0.5 s on target, not before
+PASS: a bot in the sea heading the wrong way turns and swims for its objective - ashore after 123 s (180 m at 2 m/s), its route planned again there
+PASS: a rock in the way - the swimmer turns off for 2 s and gets round it, ashore after 113 s
+PASS: on dry land the swim code leaves the bot's own steering alone
+PASS: a bot cut off on a deck (no route to any objective 3 times in 20 s, water on the way) walks over the side - in the water after 8.7 s, swimming from there
+PASS: no escape when there is no water between the bot and the objective (the usual route recovery)
+PASS: nav_water_along on the real Wake Island grid - water within 300 m between the US carrier and every flag; none for no line or off the grid
+PASS: gunner pick - 48 soldiers, 400 random rounds: at most 6 rays a pick (V5-V31: up to 48), the same target as tracing all of them in every one of the 366 rounds where it ranks in the best 6
+PASS: V31.1 server load - gunner sight cached 6 frames, target scans every 0.4-0.5 s, bumper rays at 6 Hz under 12 m/s, route planning 6 ms a busy tick; the perf line splits driving / aircraft / gunners
+PASS: Rush routes - 40 Rush / Squad Rush route files, 222 M-COMs: every one has 2+ Fun-Bots routes to it and its arm / disarm point
+PASS: the exit guard - the game's exit only for a bot its vehicle still seats (when the seats can be read), once a frame
+PASS: V31 source - door guns keep their gun at the end of its arc; DoorGunMeters; jets turn back 3 s before the edge of a wider area; LockOnSeconds and DoorGunMeters in Server Control; version V31

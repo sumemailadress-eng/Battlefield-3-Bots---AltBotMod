@@ -1,0 +1,1 @@
+PASS: actual flank control follows a checked waypoint while facing the enemy; vaulting, fence cutting, stairs, ladder links and changed target teams retain control

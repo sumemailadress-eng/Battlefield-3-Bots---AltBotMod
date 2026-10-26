@@ -1,0 +1,4 @@
+PASS: V26 - the lock's target search is handed a copy of the weapon's transform pointing exactly at the bot's aim (16-byte aligned, orthonormal, the weapon's own position); the game's transform is not touched; the deviation (19 deg here) is measured for the log
+PASS: helicopter gunners - an enemy aircraft 800 m off before armour 300 m off, armour before soldiers, launchers before riflemen; tanks unchanged (a soldier at 40 m before a tank at 300 m, a tank at 200 m before a soldier at 150 m)
+PASS: Server Control lists every one of the core's 93 settings (plus Difficulty / RandomDifficulty) - V26 added the 22 that were missing
+PASS: V26 source - a blocked rear keeps the route (no re-plan loop), every re-plan carries its reason and a storm is logged, 20 s drive statistics, jets roll in from 34 deg off the nose and dive to 200 m, hard / veteran / elite engage from 130 / 230 / 300 m; version V26

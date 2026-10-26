@@ -1,0 +1,2 @@
+# Items bots must not carry on a map: <map code or *> <part of the item asset name>
+# e.g.  MP_Subway Ammobag

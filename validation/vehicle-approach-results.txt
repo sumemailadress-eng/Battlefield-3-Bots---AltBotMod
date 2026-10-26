@@ -1,0 +1,2 @@
+REPRODUCED: Test4 repeats the same blocked hull points; wider approaches are never reached
+PASS: actual resumable boarding planner, bounded queries, hull perimeter, native-close boarding, lifetime reset and genuine failure

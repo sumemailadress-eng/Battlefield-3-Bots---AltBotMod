@@ -1,0 +1,7 @@
+PASS: sniper pairs - a second sniper may share a perch, 4.5 m beside the first at the same height with the flag in view; never three; a free perch is still preferred; SniperPairs=0 keeps one per perch
+PASS: a medic drops a medkit for itself or a hurt teammate within 10 m in sight - one per 20 s, not for enemies, not behind walls, not under fire or in a fight, not with none left, not with ClassSupport=0
+PASS: support drops an ammo box for itself or a teammate within 10 m low on magazines (a bot under a third of its load, a player with none spare)
+PASS: a bot that called for a medkit / ammo stops and faces its supplier until it is served, the supplier gives up, 15 s pass or it is shot at
+PASS: a damaged bot-driven vehicle holds still for up to 25 s for a friendly engineer coming within 40 m to repair it (V10: 9 of 17 repairs ended 'vehicle drove off')
+PASS: wired in - a call is answered only by a free bot on foot within SupplyMeters (3x for a player; V10: anyone, from vehicles, revives and fights), bots asking each other get no "Negative" chatter, "Need backup" / "Follow me" leave crews in their vehicles, the watchdog leaves a revive / repair / drop / rocket aim / supply wait be, revives reach 45 m with threats checked within 45 m
+PASS: Server Control settings window - all 88 settings use the core's keys, on/off / whole-number / decimal kinds, ranges and built-in defaults

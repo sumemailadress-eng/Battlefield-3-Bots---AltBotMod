@@ -1,0 +1,17 @@
+/tmp/bf3-altbotmod-v14-3hbcnfuw/dodge.c: In function ‘run’:
+/tmp/bf3-altbotmod-v14-3hbcnfuw/dodge.c:11:4: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   11 |    if(dir)(*stepping)++; if(dir&&prev&&dir!=prev)(*flips)++; prev=dir?dir:prev; }
+      |    ^~
+/tmp/bf3-altbotmod-v14-3hbcnfuw/dodge.c:11:26: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   11 |    if(dir)(*stepping)++; if(dir&&prev&&dir!=prev)(*flips)++; prev=dir?dir:prev; }
+      |                          ^~
+PASS: side steps - V14 (SideSteps=1): 23 steps a minute, strafing 15% of the time, 14 of them back the other way; V9-V13 (SideSteps=2): 64 steps, strafing 100%, 63 back the other way; 0 = none
+PASS: side steps only while being shot at or with the enemy within 20 m (out to 45 m), 60% of the profile's strafe, and hops three times rarer and only under fire (SideSteps=1); the Server Control bot settings list SideSteps
+3 15 15
+PASS: Seine Crossing - the recorded vehicle routes (3) reach all 5 flags from each of the 3 spots the T90 sat at (15/15): the tank had routes, V13 had stopped using them
+PASS: a mode with no recorded layout: TDM / Squad DM play the level's own spawn points (play area round them, patrol spots); Rush, or no mode at all, says why once instead of 'not ready yet' every 2 s
+PASS: kits on a level that lacks some items (Markaz Monolith: all 8 kits dropped for 11 missing items, bots spawned with none - invisible): a BotMod_kitextra item / perk falls back to the kit's own, a missing attachment leaves its list, a missing knife / gadget / sidearm empties that slot - the kit stays; only a missing primary (or appearance) drops a kit; each missing item is logged by name
+PASS: kits on every level - read from the server's own level data (29 levels): after the per-level swap each of the 60 kit items is one the level has, in every mode set (8700 checks); the 4 Aftermath levels (no stock kits or looks at all - Markaz Monolith's invisible bots) use their _XP4 kits and looks (Gun Master / Scavenger sets too)
+PASS: when no kit at all is usable on a level, bots wait (logged once a minute) instead of spawning invisible
+PASS: tanks - Fun-Bots vehicle routes tried again for every new flag (V13: two per vehicle, for good), and after a failed driving-map search: the nearest route again, then up to three from other roads further out, then checked straight legs after 45 s without a route
+PASS: no game mode from RCON: the level's flags are looked for and, after 8 s, the bots play Conquest; "not ready yet" now says why (no mode / no layout / blueprint), every 20 s

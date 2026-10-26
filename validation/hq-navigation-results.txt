@@ -1,0 +1,9 @@
+PASS: native discovery chooses both team HQs without humans, rejects enemy/shared-owner children and captured/untyped points, accepts explicit-team child beside its known HQ
+PASS: refused HQ selects another validated native child for the NEXT attempt; no probe soldier or forced death
+PASS: unique native HQ owner overrides a generic child team byte for RU; shared-owner children retain explicit team discrimination
+PASS: neutral unlinked CQ HQ child near its own native anchor enables RU without any human, including when RU owns zero flags
+PASS: captured-flag and enemy-side neutral children remain excluded; failure retains HQ anchor without sacrificial probe spawns
+PASS: V22 - outside Conquest a team with an HQ but no matched deployment gets the level's team-less entities to try (Conquest keeps flags only)
+PASS: actual navigation_extend -> nav_tick keeps existing routes usable through every incremental survey tick and swaps only a completed grid
+PASS: shipped Noshahr team 1 HQ is covered; 284193 reachable nav nodes at its layer (cache inspection, not a live map test)
+PASS: shipped Noshahr team 2 HQ is covered; 279751 reachable nav nodes at its layer (cache inspection, not a live map test)

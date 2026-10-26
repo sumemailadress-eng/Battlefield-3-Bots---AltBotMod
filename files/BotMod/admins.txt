@@ -1,0 +1,5 @@
+# BotMod admins: players allowed to use the changing chat commands (!bots on / !bots off ...).
+# One player name per line, not case sensitive. Lines starting with # are ignored.
+# Delete this file to let everyone use them.
+BrianAnim
+Administrator

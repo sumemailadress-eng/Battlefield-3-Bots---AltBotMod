@@ -1,0 +1,421 @@
+{
+  "release": "AltBotMod V8 - No Standing Around",
+  "checks": {
+    "offline-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: 371 vehicle/config/recovery/steering/ballistic/compaction checks",
+        "PASS: 60367 aircraft profile/config/PID/intercept/flight safety/property checks",
+        "PASS: BOTH teams recover idle deployment infantry; combat, human orders and active captures are retained without suicides",
+        "PASS: BOTH teams leave distant firefights for a nearby abandoned tank; human orders, recent hits and close enemies retain priority",
+        "PASS: nearby idle infantry can take an unused ground vehicle from a distant teammate's walking claim; no seated crew or opposing-team claim is displaced",
+        "PASS: shared local vehicle-route failures preserve distant/opposing-team use; thirty-second pending timeout releases infantry",
+        "PASS: BOTH teams can claim immediately nearby vehicles while two distant walks are queued; moving drivers release a queue slot",
+        "PASS: pending pilots counted; enemy HQ spawn refused; stale original base refreshed without swapping teams",
+        "PASS: fleet base selection accepts a discovery-validated RU HQ despite a generic child team field",
+        "PASS: actual transport lands/unloads bot cargo/takes off; human and gunner seats preserved; water/obstruction reject landing",
+        "PASS: captured-flag owner refresh, new-cache retry, and newly appeared vehicle dispatch on both teams",
+        "PASS: actual vertical helicopter takeoff/jet runway guard, armed patrol coverage/dwell and occupied ground-driver adoption",
+        "PASS: Test7 abandoned map vehicles, six-pilot claim/takeover cap, independent team quotas, crew-team targeting, infantry fallback and bounded empty scans",
+        "PASS: actual native aircraft/fleet HQ-respawn/replacement reservation/return routing/jet capacity/passenger takeover/crew protection/compaction; six pilots reserve one jet and five helicopters on BOTH teams",
+        "PASS: Test7 jet long-range/occluded pursuit and helicopter stand-off/aligned firing/LOS gate",
+        "PASS: jet climb ceiling/finite recovery/ground dive/attack run/guidance fixture/threat scores/new settings regressions",
+        "PASS: actual tank selector close-infantry over distant helicopter/near armor/engineer/aim hysteresis/visibility/friendly/point-blank checks",
+        "PASS: V8 - a tank slows (not stops - see drive_tick) for 2 s at an enemy vehicle, then 6 s at full pace; soldiers are shot on the move",
+        "PASS: actual armor stand-off against visible ground targets, aircraft/occlusion/manual/team and point-blank exclusions",
+        "PASS: eight actual weapon families over 4,800 range/cycle/alignment cases; convoy and opposing-driver priority; stable landing/pickup/threat abort; missile timing never treats aim as native lock",
+        "PASS: original forward-stuck and cooldown bugs reproduced; actual patched native blocks recover correctly"
+      ],
+      "output": "offline-results.txt"
+    },
+    "combat-mobility-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: 3780 exact ballistic impact checks, longer ranges, burst/reaction configuration, speed/braking and useful objective vehicles",
+        "PASS: actual 0.2-second reaction, 160m rifle burst, 300m recon range, occlusion releases fire, team change ends fight",
+        "PASS: actual full 64-player range/FOV shortlist bounds LOS at eight rays, nearest visible enemy and friendly exclusion",
+        "PASS: native own-hull retrace clears only own hull; wall behind remains blocked; no owner and repeated self-hit fail closed",
+        "PASS: actual 16 weapon/attachment variants, class/team distribution, respawn rotation, gadget/message preservation, partial asset and disabled-option fallbacks"
+      ],
+      "output": "combat-mobility-results.txt"
+    },
+    "test4-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: 29 maps, 139 layout profiles including 25 Rush/29 TDM/29 SQDM, correct mode aliases, four-team human reserves, fair full-fleet dispatch",
+        "PASS: actual revive exposure/medic exposure/team/death/range and squad flag allocation regressions",
+        "PASS: actual round retirement, neutral inputs, no suicide retries, fresh identity deletion, mode/event/manual reset",
+        "PASS: all 196 indexed bot arrays compact once; startup spawn probes disabled"
+      ],
+      "output": "test4-results.txt"
+    },
+    "ground-job-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: motorcycles/ATVs and solo jeep dismount at objective; crewed jeep and armor retain support duty",
+        "PASS: actual native driver arrival retains driver/gunner/human-directed cargo; capture retarget, blocked-goal retry, long-trip continuation, health and boat exceptions",
+        "PASS: actual squad allocator covers both ends with three squads/six flags for BOTH teams; stable journeys and captured-flag advance"
+      ],
+      "output": "ground-job-results.txt"
+    },
+    "nav-queue-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: detour route finishes across 5106 bounded slices; no search restart or guessed route; largest clock slice 0.270 ms",
+        "PASS: expensive rejected shortcut checks resume instead of repeating the first candidate",
+        "PASS: 60 owners share one workspace and all receive the correct completed route",
+        "PASS: unfinished work differs from a completed unreachable search",
+        "PASS: waypoint capacity is marked as continuation rather than destination arrival",
+        "PASS: replacement goals and grid destruction clear pending owners and prevent stale pointers",
+        "PASS: both deployment routes; 22m checked parking connector; blocked connector returns no guessed route",
+        "PASS: height-aware vehicle endpoint selects correct bridge/road layer and rejects invalid height"
+      ],
+      "output": "nav-queue-results.txt"
+    },
+    "vehicle-approach-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual resumable boarding planner, bounded queries, hull perimeter, native-close boarding, lifetime reset and genuine failure"
+      ],
+      "output": "vehicle-approach-results.txt"
+    },
+    "lag-recovery-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: 200 unchanged objective decisions; capture/avoid changes; queued flag/body identity; alternate floors advance after real failures",
+        "PASS: actual path follower waits for continuation and only reports final arrival",
+        "PASS: actual retirement helper neutralizes, kicks and deletes a fresh identity without suicide"
+      ],
+      "output": "lag-recovery-results.txt"
+    },
+    "stability-navigation-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: real Desert cache excludes logged tank/deployment area; extension covers both and preserves all surveyed bytes without inventing terrain",
+        "PASS: incremental extension skips old ground and joins both deployment routes through real surveyed seam links",
+        "PASS: malformed boundary links, nonfinite positions and null grids fail safely; valid routes remain usable",
+        "PASS: truncated/overflow/nonfinite caches rejected before use; truncated large cache rejected before allocating its claimed payload",
+        "PASS: every grid/queued/synchronous workspace allocation failure releases partial allocations and reports failure; tracked heap returns to zero"
+      ],
+      "output": "stability-navigation-results.txt"
+    },
+    "navigation-search-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: disconnected large vehicle goal yields a real grid/collision-checked continuation after 4096 nodes (1497 bounded slices, largest 0.260 ms); no 160k-node queue monopoly",
+        "PASS: continuous polling never resets the eight-second active-search timeout; stalled large searches terminate without blocking a whole tick"
+      ],
+      "output": "navigation-search-results.txt"
+    },
+    "driver-departure-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: complete native drive_tick departs for BOTH teams after one three-second living-passenger window, emits throttle and continues checked nearby road legs at local mountain height",
+        "PASS: blocked staged exits keep crew seated without blind throttle; deferred routes preserve candidates; unavailable local terrain falls back to ordinary routing"
+      ],
+      "output": "driver-departure-results.txt"
+    },
+    "deployment-recipe-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: human-confirmed deployment recipe on BOTH teams replays the exact observed native request, awaits completion and confirms its pilot without duplicate bodies or suicides",
+        "PASS: bot observations, cargo-seat results, wrong-team, expired-round, changed-vtable and exhausted-pilot recipes are refused",
+        "PASS: unavailable menu requests back off after three failures; an unexpected ordinary body is retained, never killed or replaced",
+        "PASS: actual flying friendly transport squad-spawn path adopts cargo seat and retains pilot plus human capacity"
+      ],
+      "output": "deployment-recipe-results.txt"
+    },
+    "armor-traffic-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual armor on BOTH teams seeks checked cover, retreats on observed damage, requests a real repair-tool engineer, resumes with crew after repair/no-engineer timeout and restores objective after route failure",
+        "PASS: nearby infantry support uses brief actual defend tasks, respects existing orders, and tactical jobs share a two-probe-per-frame budget",
+        "PASS: narrow-road leases expire/release priority; actual traffic waits reset stuck clocks and replan after ten seconds while retaining seats"
+      ],
+      "output": "armor-traffic-results.txt"
+    },
+    "spawn-driver-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual cmd_spawn deploys BOTH human-free teams with discovered MpSoldier after failed squad moves; repeated recent RCON requests cannot extend the deadline",
+        "PASS: refused native deployments do not set successful-spawn timestamps",
+        "PASS: dead bot's named team is restored before native spawn; no living soldier is killed",
+        "PASS: a refused closer vehicle flag spawn falls back to the real same-team HQ with its exact arguments on BOTH teams",
+        "PASS: complete drive_tick -> bot_motion_tick emits positive native throttle on BOTH teams despite absent passengers and stale infantry navigation; reverse/brake releases on departure"
+      ],
+      "output": "spawn-driver-results.txt"
+    },
+    "hq-navigation-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: native discovery chooses both team HQs without humans, rejects enemy/shared-owner children and captured/untyped points, accepts explicit-team child beside its known HQ",
+        "PASS: refused HQ selects another validated native child for the NEXT attempt; no probe soldier or forced death",
+        "PASS: unique native HQ owner overrides a generic child team byte for RU; shared-owner children retain explicit team discrimination",
+        "PASS: neutral unlinked CQ HQ child near its own native anchor enables RU without any human, including when RU owns zero flags",
+        "PASS: captured-flag and enemy-side neutral children remain excluded; failure retains HQ anchor without sacrificial probe spawns",
+        "PASS: actual navigation_extend -> nav_tick keeps existing routes usable through every incremental survey tick and swaps only a completed grid",
+        "PASS: shipped Noshahr team 1 HQ is covered; 284193 reachable nav nodes at its layer (cache inspection, not a live map test)",
+        "PASS: shipped Noshahr team 2 HQ is covered; 279751 reachable nav nodes at its layer (cache inspection, not a live map test)"
+      ],
+      "output": "hq-navigation-results.txt"
+    },
+    "combat-flow-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual fight/movement sequence separates crowded stationary infantry on BOTH teams (US 8/8, RU 8/8); staggered checked left/right routes survive asynchronous polls",
+        "PASS: absent ground and water never produce unchecked flanks or guessed movement",
+        "PASS: immediate close threats interrupt relocation; target team changes cancel queued movement and fighting"
+      ],
+      "output": "combat-flow-results.txt"
+    },
+    "rush-mode-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: confirmed Rush transitions, attacker/defender permissions, single operator lease, no timeout-based sector completion, duplicate/future/past event refusal",
+        "PASS: actual routing on all 25 supplied Rush layouts spreads BOTH teams across M-COMs and checked distinct positions; real hold/release adapter interrupts on combat, damage or death without fabricating arm/destroy events",
+        "PASS: failed terrain and water checks create no guessed goals, rotating one-probe budget gives both bots a turn, queued goals remain stable until completion",
+        "PASS: stalled M-COM approach yields its operator slot; defenders prioritize confirmed armed stations and skip destroyed stations",
+        "PASS: actual Noshahr TDM preserves unfinished patrol goals and rotates its destination after arrival"
+      ],
+      "output": "rush-mode-results.txt"
+    },
+    "mode-spawn-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual mode_spawn naturally deploys BOTH human-free teams on all 25 Rush profiles after the bounded failed-squad deadline; team, base, loadout and vehicle requisition preserved",
+        "PASS: native refused spawns rotate to another validated current-team child, cool down ten seconds, and never mark a failed deployment successful",
+        "PASS: four-team SQDM shares the bounded squad wait and alternates the two observed soldier blueprints without changing native team assignment",
+        "PASS: bots cannot probe or advance future Rush sectors; a successful human menu deployment confirms the next sector and reuses its exact native spawn arguments; no forced body, suicide or timer progression"
+      ],
+      "output": "mode-spawn-results.txt"
+    },
+    "rush-vehicle-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual Rush fleet dispatch claims tanks, jeeps, jets, attack and transport helicopters for BOTH teams using the shared objective provider",
+        "PASS: Rush passenger takeover preserves ground/air controls on BOTH teams; a completed objective pair stops new walking claims while retaining occupied ground seats and valid aircraft fallback goals"
+      ],
+      "output": "rush-vehicle-results.txt"
+    },
+    "obstacle-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual vault jump/forward-hold timing and retry cooldown retained; knifeable fence selects knife, slashes three times and restores rifle; second try bounded and sheet metal requests detour"
+      ],
+      "output": "obstacle-results.txt"
+    },
+    "map-layout-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: all 166 supported Conquest/Rush/TDM/SQDM map-layout combinations retain their exact requested mode; unavailable combinations rejected; only default Conquest loads a legacy cache",
+        "PASS: 139 finite trace profiles, complete deployment/M-COM metadata on all 25 Rush maps, surveyed bounds fit native grid limits; two missing CQ traces explicitly recorded for native discovery",
+        "PASS: all 14 shipped navigation caches load through actual native nav_load and contain walkable surveyed nodes; cache inspection does not establish live reachability",
+        "PASS: Test10 vaulting, fence detection/knife sequence, post-obstacle rerouting and complete shared infantry steering source preserved unchanged"
+      ],
+      "output": "map-layout-results.txt"
+    },
+    "message-safety-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual malformed/null message chains fail safely; immutable per-type cache needs one guarded object copy per repeated message instead of re-reading code and strings (10,000 calls)"
+      ],
+      "output": "message-safety-results.txt"
+    },
+    "ground-recovery-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: both teams retain healthy ground drivers through all three exhausted stuck/re-route branches, retry checked routing, and keep obstruction learning local to the affected driver",
+        "PASS: actual drive_tick retains a right-angle waypoint at 4.5m and takes it within 1.75m; no 6m corner cutting"
+      ],
+      "output": "ground-recovery-results.txt"
+    },
+    "vehicle-avoid-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: queued drivers retain distinct avoidance areas across shared work slices; one routes around the obstruction, the other retains its direct street, and the shared mask is unchanged",
+        "PASS: sync/queued routes retain only the collision-checked clear prefix, mark continuation, and reject obstructed departures after checking alternative edges"
+      ],
+      "output": "vehicle-avoid-results.txt"
+    },
+    "fleet-spawn-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual unsquadded bots on BOTH teams get a valid vehicle objective; natural deaths choose a validated owned spawn near a distant tank, with contested/enemy-team spawn rejection and no-HQ defender support",
+        "PASS: default 16 ground drivers and six pilots per team; optional 32-driver setting accepted; every bot remains eligible for fleet duty after the opening minute"
+      ],
+      "output": "fleet-spawn-results.txt"
+    },
+    "transport-job-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: empty transports on BOTH teams fly moving patrol goals instead of hovering at home; stalled pickups are released after 20s, another eligible passenger can be selected, and loaded transports retain delivery duty"
+      ],
+      "output": "transport-job-results.txt"
+    },
+    "air-team-capacity-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: BOTH teams simultaneously reserve one jet and five helicopters at their own deployment, after opening priority expires; twelve pilots coexist, each team refuses a seventh even with malformed settings",
+        "PASS: BOTH teams simultaneously dispatch all sixteen available tanks, with independent driver limits and no later-round infantry quota blocking a vehicle"
+      ],
+      "output": "air-team-capacity-results.txt"
+    },
+    "test12-regression-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: BOTH teams recover after exactly 15s of actual immobility; blocked forward exit selects a checked side exit, retains crew and enemy objective; fully obstructed exits request routing instead of blind throttle",
+        "PASS: a coarse-grid route with a real physics obstruction advances along its clear prefix, then replans around the wall to the enemy goal in 2 checked legs"
+      ],
+      "output": "test12-regression-results.txt"
+    },
+    "combat-walk-fire-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual flank control follows a checked waypoint while facing the enemy; vaulting, fence cutting, stairs, ladder links and changed target teams retain control"
+      ],
+      "output": "combat-walk-fire-results.txt"
+    },
+    "test13-regression-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: full native driver cancels stale inputs, resumes completed paths, executes checked reverse before queued planning and rejects blocked rear corridors on both teams",
+        "PASS: recovery bypass releases virtual road waits but still yields to real vehicles on both teams",
+        "PASS: jet guidance follows FunBots rudder direction and converts finite world guidance into banked body-axis elevator",
+        "PASS: idle replans reach every bot slot under the actual alternating 15-Hz brain schedule"
+      ],
+      "output": "test13-regression-results.txt"
+    },
+    "test14-regression-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual pre-ground dispatcher assigns both teams one jet and five choppers, boards native seats and emits takeoff inputs; no seventh pilot; NaN SIMD padding does not reject usable aircraft",
+        "PASS: actual far pilot claim transfers to a nearby teammate and boards an abandoned helicopter",
+        "PASS: complete native driver for both teams leaves clear deployment despite queued A*, rejects blocked corridors, then resumes objectives and retargets captured flags without ejecting crew",
+        "PASS: actual native director preserves pending routes, resumes objectives after distant side engagements, retains immediate/path threats, excludes human commands and dead soldiers",
+        "PASS: actual last-enemy-flag job repositions after eight seconds; a committed patrol does not bounce between competing allocators; captured flag advances when the director changes duty"
+      ],
+      "output": "test14-regression-results.txt"
+    },
+    "test15-regression-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual activity adapter recovers zero-input infantry, stale fights/services, invalid flag waits and all-owned patrols on BOTH teams; respects captures, human orders, pauses, falls and round teardown",
+        "PASS: ground/boat/cargo waits have a 45 s terminal deadline independent of routing timers; small-area oscillation has a 90 s travel deadline; moving/human-driven crews remain seated",
+        "PASS: stationary flight resets after 15 s, failed flight falls back after 45 s, and absent/trapped player identities retire after 90 s without forced suicide",
+        "PASS: BOTH teams transfer ground walking assignments to a late available jet and attack helicopter, board native seats and emit flight throttle even when every bot already has a ground claim",
+        "PASS: actual live hull-width escape works without a driving cache on BOTH teams, rejects walls, water and absent terrain, and limits surveying to one candidate per frame",
+        "PASS: BOTH teams receive changing enemy duties after 45 s without objective progress, retain coverage across 2-16 flags, patrol when all owned, and return from temporary failed-route patrol to enemy attack"
+      ],
+      "output": "test15-regression-results.txt"
+    },
+    "test16-regression-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: recovery orders win over the director on BOTH teams, avoid the stalled flag, and end on expiry, capture, respawn or team change; the director then resumes without the stalled flag",
+        "PASS: a vehicle-queue timeout (now 20 s) releases the waiting bot without blocking the vehicle for teammates at the same base (both teams)",
+        "PASS: activity watchdog re-plans a stuck bot's objective once, then every 30 s; 3 s local exit probes continue (both teams)"
+      ],
+      "output": "test16-regression-results.txt"
+    },
+    "caspian-v2-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: all 53 Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
+        "PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump",
+        "PASS: a retired bot whose kick does not unspawn it is killed after 5 s and replaced (Test15 left it as a brain-less zombie); round cleanup never kills",
+        "PASS: Aggression 0/1/2 parses, keeps the aim window (V3), scales engage range (never past the weapon's maximum), bursts and pauses; the director sends more bots to a flag the team just lost, on both teams",
+        "PASS: an abandoned ground vehicle in the field gets the nearest free infantry bot on BOTH teams; busy bots, base vehicles and occupied vehicles are left alone",
+        "PASS: a target with its body up to the chest behind cover stays in sight and is aimed at above the cover (Test15 lost it and shot the cover); the open-ground aim point is the chest less the calibrated rise; a fully hidden one is dropped after 4.8 s when aggressive"
+      ],
+      "output": "caspian-v2-results.txt"
+    },
+    "caspian-v3-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: the watchdog no longer ends a fight against a visible enemy within 150 m (V2 cut 160 of 353 fights); far or unseen targets still count as a stall",
+        "PASS: Fun-Bots routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid",
+        "PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a Fun-Bots route before any grid search",
+        "PASS: closed-loop aim - each bot fits where its gun points relative to its look pitch (a height offset, an angle and recoil climb per frame of a burst) from its own impacts: untrained it is metres off, trained over fights at 10-90 m every shot is within 0.4 m of the chest at every range; sideways error cancelled; shotgun pellets count once; clamped",
+        "PASS: AltBotMod V6 - a respawning bot picks a parked jet / base vehicle at the spawn screen and is seated as its driver after spawning; crew seats do not override it; refusals back off",
+        "PASS: a respawning bot takes a free seat in a teammate bot's attack helicopter (first), transport helicopter or tank right after spawning (the native squad spawn never seated anyone); no double booking, jets/jeeps/enemy/passenger seats skipped, refusals back off; the live US 'Viper' and the 9K22 are known vehicles",
+        "PASS: a driver that means to move but has not for 6 s reverses on full lock then pulls away on the other lock (alternating), not while waiting for traffic/riders/a fight or parked; after 4 tries the spot ahead is struck off and re-planned (V3: sat at 0 m/s for 45 s, then got out)",
+        "PASS: a boat in the US carrier's well deck finds the way out astern (24 rays round the hull; V4 steered at the deck walls for 20 s); it lands - everyone out - at its landing, or on a beach about as near its flag, or after 25 s with no water route near the shore; never in its own slip, nor along a distant canal bank"
+      ],
+      "output": "caspian-v3-results.txt"
+    },
+    "survey-budget-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: actual paving survey respects a 64-ray/time cap, tree geometry respects a 16-node/time cap, and large-map final propagation/count resumes across server ticks while a usable driving mask remains published"
+      ],
+      "output": "survey-budget-results.txt"
+    },
+    "altbotmod-v6-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: Fun-Bots vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged",
+        "PASS: the director sends a free bot to a neutral flag before an equally distant enemy flag (neutral flags were left untaken)",
+        "PASS: a bot tank engages an enemy tank / vehicle out to 400 m before nearby infantry (V5 kept shooting soldiers while a player's tank drove up); V7: helicopters after armour and close infantry"
+      ],
+      "output": "altbotmod-v6-results.txt"
+    },
+    "altbotmod-v8-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: no grid yet - a bot walks a checked 40 m straight leg towards a 200 m objective and keeps the real goal (V7 stood at its HQ)",
+        "PASS: a goal inside one leg is walked to directly (not a partial route)",
+        "PASS: a wall on the direct line - the leg fans out to a clear heading (checked with body rays) instead of walking into it",
+        "PASS: water across the way - no leg is planned into it (walk_clear rejects water samples)",
+        "PASS: no driving map yet - the driver gets 20 m straight legs towards its flag, 160 m at a time (V7: \"driving map not ready\", crews parked at HQ)",
+        "PASS: the straight line stops short of deep water, and drives on through a 0.5 m ford (bed height used)",
+        "PASS: a boat's straight line ends on the shore, its landing (everyone out there)",
+        "PASS: a vehicle rolls on between route legs (no dead stop at every partial-route end), but not with something within 15 m ahead",
+        "PASS: blocked at head height with a clear crouch gap - the bot crouches through; a knee-high block or open ground does not trigger it",
+        "PASS: tanks keep shooting soldiers out to 300 m before far helicopters (V7 crews spent the round start turning after choppers); armour still first",
+        "PASS: a knifeable fence across a road is drivable for vehicles (V7: the tank stopped at it); without a fence record the gap stays a wall",
+        "PASS: only a knifeable fence opens the way - a doorway / a real wall does not",
+        "PASS: a vehicle route crosses the fence line (the vehicle drives through it) instead of failing / going round"
+      ],
+      "output": "altbotmod-v8-results.txt"
+    },
+    "air-native-sanitized-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: BOTH teams recover idle deployment infantry; combat, human orders and active captures are retained without suicides",
+        "PASS: BOTH teams leave distant firefights for a nearby abandoned tank; human orders, recent hits and close enemies retain priority",
+        "PASS: nearby idle infantry can take an unused ground vehicle from a distant teammate's walking claim; no seated crew or opposing-team claim is displaced",
+        "PASS: shared local vehicle-route failures preserve distant/opposing-team use; thirty-second pending timeout releases infantry",
+        "PASS: BOTH teams can claim immediately nearby vehicles while two distant walks are queued; moving drivers release a queue slot",
+        "PASS: pending pilots counted; enemy HQ spawn refused; stale original base refreshed without swapping teams",
+        "PASS: fleet base selection accepts a discovery-validated RU HQ despite a generic child team field",
+        "PASS: actual transport lands/unloads bot cargo/takes off; human and gunner seats preserved; water/obstruction reject landing",
+        "PASS: captured-flag owner refresh, new-cache retry, and newly appeared vehicle dispatch on both teams",
+        "PASS: actual vertical helicopter takeoff/jet runway guard, armed patrol coverage/dwell and occupied ground-driver adoption",
+        "PASS: Test7 abandoned map vehicles, six-pilot claim/takeover cap, independent team quotas, crew-team targeting, infantry fallback and bounded empty scans",
+        "PASS: actual native aircraft/fleet HQ-respawn/replacement reservation/return routing/jet capacity/passenger takeover/crew protection/compaction; six pilots reserve one jet and five helicopters on BOTH teams"
+      ],
+      "output": "air-native-sanitized-results.txt"
+    },
+    "tactics-policy-sanitized-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: eight actual weapon families over 4,800 range/cycle/alignment cases; convoy and opposing-driver priority; stable landing/pickup/threat abort; missile timing never treats aim as native lock"
+      ],
+      "output": "tactics-policy-sanitized-results.txt"
+    },
+    "director-policy-results": {
+      "exit_code": 0,
+      "checks": [
+        "PASS: both teams cover separated objectives at four map scales, retain long attack trips, cap guard groups at 3-6 and release every captured-flag driver/surplus soldier",
+        "PASS: with all flags owned, the majority patrols between different flags; newly lost flags immediately regain attack priority; human-commanded units are excluded on both teams",
+        "PASS: single-flag and 1-64-bot rosters retain a mobile duty instead of leaving every bot as a guard",
+        "PASS: jet and helicopter patrol orbits use aircraft arrival ranges and advance to another friendly flag after eight seconds"
+      ],
+      "output": "director-policy-results.txt"
+    }
+  },
+  "live_bf3_tested": false,
+  "sanitizers": "ASan/UBSan; leak checking disabled for the restricted process environment",
+  "powershell_gates_run": false,
+  "native_rush_scoring_bridge": "UNBOUND"
+}

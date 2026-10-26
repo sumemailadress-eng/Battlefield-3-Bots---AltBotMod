@@ -1,0 +1,34 @@
+PASS: mode table - 174 level/mode pairs match the server's level data: Squad Rush on 25 levels, Gun Master on 8, Scavenger 4, Tank Superiority 4, Air Superiority 4, Capture the Flag 4; all are recognised (V9-V14: unknown) and sorted as Fun-Bots sorts them
+PASS: native - Squad Rush has one objective a sector (slots 1 and 3; bots never aim at the empty slot), Rush keeps two; Gun Master uses the TDM play area; a fallback to team play lasts the round; Capture the Flag (V16): a third raid the enemy stand (sweep 12 s, home, sweep, again), a third guard their own stand, a third hunt; flag stands of all four CTF maps from the level data
+MP_001 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_003 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_007 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_011 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_012 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_013 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_017 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_018 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+MP_Subway ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+XP1_001 ConquestAssaultLarge0 ConquestAssaultSmall0 ConquestAssaultSmall1 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+XP1_002 ConquestLarge0 ConquestSmall0 ConquestAssaultSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+XP1_003 ConquestAssaultLarge0 ConquestAssaultSmall0 ConquestAssaultSmall1 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+XP1_004 ConquestAssaultLarge0 ConquestAssaultSmall0 ConquestAssaultSmall1 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0
+XP2_Palace TeamDeathMatchC0 SquadDeathMatch0 Domination0 GunMaster0
+XP2_Office TeamDeathMatchC0 SquadDeathMatch0 Domination0 GunMaster0
+XP2_Factory TeamDeathMatchC0 SquadDeathMatch0 Domination0 GunMaster0
+XP2_Skybar TeamDeathMatchC0 SquadDeathMatch0 Domination0 GunMaster0
+XP3_Alborz ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 TankSuperiority0
+XP3_Shield ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 TankSuperiority0
+XP3_Desert ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 TankSuperiority0
+XP3_Valley ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 TankSuperiority0
+XP4_Parl ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 GunMaster0 Scavenger0
+XP4_Quake ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 GunMaster0 Scavenger0
+XP4_FD ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 GunMaster0 Scavenger0
+XP4_Rubble ConquestAssaultLarge0 ConquestAssaultSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 GunMaster0 Scavenger0
+XP5_001 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 AirSuperiority0 CaptureTheFlag0
+XP5_002 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 AirSuperiority0 CaptureTheFlag0
+XP5_003 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 AirSuperiority0 CaptureTheFlag0
+XP5_004 ConquestLarge0 ConquestSmall0 RushLarge0 TeamDeathMatch0 TeamDeathMatchC0 SquadDeathMatch0 SquadRush0 AirSuperiority0 CaptureTheFlag0
+PASS: launcher - the map/mode menu offers exactly the 215 map/mode pairs the bot core accepts, the new modes included
+PASS: profiles - the rebuilt generator reproduces all 25 shipped Rush sectors/bases/M-COMs/patrol points; 13 Squad Rush profiles (one M-COM a sector) match it; Squad Rush without recorded M-COMs (12 levels: MP_012 MP_013 MP_018 XP1_001 XP1_002 XP1_003 XP1_004 XP3_Alborz XP4_FD XP4_Parl XP5_001 XP5_003) is played as team play
+PASS: wiring - discovery follows the mode as played; a Rush without recorded M-COMs and Capture the Flag (45 s) / Air Superiority (90 s) with no capture points fall back to team play for the round; a Rush fallen back still pays attacker tickets (the round still ends); Squad Rush is one squad of 4 a side; all 49 extra-mode layouts have a route file (21 their own, the rest the nearest kind of play on the level, e.g. Gun Master on Operation 925 -> its TDM file)

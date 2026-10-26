@@ -1,0 +1,2 @@
+PASS: both teams retain healthy ground drivers through all three exhausted stuck/re-route branches, retry checked routing, and keep obstruction learning local to the affected driver
+PASS: actual drive_tick heads for a right-angle waypoint 7 m off and passes it within 6 m (V24 pure pursuit; V6-V23 chased it to 1.75 m)

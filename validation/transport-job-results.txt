@@ -1,0 +1,1 @@
+PASS: empty transports on BOTH teams fly moving patrol goals instead of hovering at home; stalled pickups are released after 20s, another eligible passenger can be selected, and loaded transports retain delivery duty

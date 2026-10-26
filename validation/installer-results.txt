@@ -1,0 +1,5 @@
+[31;1mException: [0m/home/claude/caspian/v3/validation/installer_tests.ps1:12[0m
+[31;1m[0m[36;1mLine |[0m
+[31;1m[0m[36;1m[36;1m  12 | [0m     if (-not $ok) { [36;1mthrow "FAIL: $message"[0m }[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m     | [31;1m                     ~~~~~~~~~~~~~~~~~~~~~~[0m
+[31;1m[0m[36;1m[36;1m[0m[36;1m[0m[36;1m[31;1m[31;1m[36;1m     | [31;1mFAIL: Production installer parses without errors[0m

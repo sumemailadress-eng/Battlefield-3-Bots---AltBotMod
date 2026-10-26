@@ -1,0 +1,6 @@
+PASS: actual activity adapter recovers zero-input infantry, stale fights/services, invalid flag waits and all-owned patrols on BOTH teams; respects captures, human orders, pauses, falls and round teardown
+PASS: ground/boat/cargo waits have a 45 s terminal deadline independent of routing timers; small-area oscillation has a 90 s travel deadline; moving/human-driven crews remain seated
+PASS: stationary flight resets after 15 s, failed flight falls back after 45 s, and absent/trapped player identities retire after 90 s without forced suicide
+PASS: BOTH teams transfer ground walking assignments to a late available jet and attack helicopter, board native seats and emit flight throttle even when every bot already has a ground claim
+PASS: actual live hull-width escape works without a driving cache on BOTH teams, rejects walls, water and absent terrain, and limits surveying to one candidate per frame
+PASS: BOTH teams receive changing enemy duties after 45 s without objective progress, retain coverage across 2-16 flags, patrol when all owned, and return from temporary failed-route patrol to enemy attack

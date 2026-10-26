@@ -1,0 +1,17 @@
+model sanity: jet passes 11 m from its waypoint
+model sanity: helicopter gets within 2 m of its waypoint
+dogfights: 300, rams(<25 m) 0, ground crashes 0, closest pass 106 m, both scored gun time 300, gun frames 312940 (98% on target), missiles 784
+strike runs (static target): 40 jets x 150 s, dives 200 (min 5 per jet), crashes 0, lowest 148 m, gun frames 22070 (100% on target), rocket salvos 0
+strike runs (moving target): 40 jets x 150 s, dives 197 (min 4 per jet), crashes 0, lowest 140 m, gun frames 19097 (100% on target), rocket salvos 0
+friendly head-on traffic: 100 encounters, 0 closer than 40 m
+gunships vs ground: 20 x 60 s, firing 62% of the time, crashes 0
+jet vs helicopter: 60 x 60 s, rams 0, on-target gun frames 34449
+variant pitch x0.6 roll x0.6 sag 0: 80 dogfights rams 0, scored 80; 20 strike jets dives 103 (min 4); crashes 0, lowest 140 m
+variant pitch x1.5 roll x1.5 sag 0: 80 dogfights rams 0, scored 80; 20 strike jets dives 100 (min 5); crashes 0, lowest 152 m
+variant pitch x1.0 roll x1.0 sag 1: 80 dogfights rams 0, scored 80; 20 strike jets dives 120 (min 6); crashes 0, lowest 154 m
+variant pitch x0.7 roll x1.0 sag 1: 80 dogfights rams 0, scored 80; 20 strike jets dives 105 (min 5); crashes 0, lowest 153 m
+variant pitch x1.3 roll x0.6 sag 1: 80 dogfights rams 0, scored 80; 20 strike jets dives 120 (min 6); crashes 0, lowest 166 m
+after takeoff: 20 low climbing jets, extends in the first 8 s 0, jets that dove within 90 s 20
+PASS: V20 air combat simulation
+PASS: V20 closed-loop air combat: no rams, no crashes, dogfight gun time, strike dives, gunship fire, 5 model variants
+PASS: V20 sources: traffic table, target hold, angle penalty, secondary weapon sequence, combat logs, version

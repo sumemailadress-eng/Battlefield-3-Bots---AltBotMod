@@ -1,0 +1,3 @@
+PASS: 49 learning store checks (format, merge, judgement, danger, routes, outside edits, forward compatibility, bounds, landing spots, route splits, map line)
+PASS: 44 learning game-side checks (stuck/through/jump, kept open, pre-jump, grid links, driving maps, vehicle routes round stall spots, air height, player routes with stairs/ladder/respawn, drive, helicopter landing spots, save/outside edit/merge, per mode files, map line, Learning=0, foreign file)
+PASS: V21 sources: every learning hook wired (foot, jumps, deaths, ground/boat, aircraft, landing spots, routes, killing grounds), build.bat, settings, version

@@ -1,0 +1,48 @@
+src/core.c:2175:149: warning: misleading indentation; statement is not part of the previous 'for' [-Wmisleading-indentation]
+ 2175 |         if(bot_brain(j)->targetFlag==f||dist2((float *)(*(char **)(H->bots[j]+OFF_PLAYER_SOLDIER)+OFF_SOLDIER_POSITION),flag_pos(f))<35*35)count++;}return count;
+      |                                                                                                                                                     ^
+src/core.c:2174:17: note: previous statement is here
+ 2174 |     int count=0;for(int j=0;j<H->botCount;j++)if(j!=except&&player_team(H->bots[j])==team&&*(char **)(H->bots[j]+OFF_PLAYER_SOLDIER)){
+      |                 ^
+src/core.c:4694:23: warning: unused variable 'b' [-Wunused-variable]
+ 4694 |             BotBrain *b = bot_brain(fallback);
+      |                       ^
+src/core.c:6768:15: warning: unused variable 'pm' [-Wunused-variable]
+ 6768 |         char *pm = player_manager();
+      |               ^~
+src/core.c:9024:15: warning: variable 'lastBody' set but not used [-Wunused-but-set-variable]
+ 9024 |         void *lastBody = NULL;
+      |               ^
+In file included from src/core.c:9307:
+src/fleet_native.inc:273:9: warning: variable 'queued' set but not used [-Wunused-but-set-variable]
+  273 |     int queued=0;for(int j=0;j<H->botCount;j++)if(j!=i && player_team(H->bots[j])==team &&
+      |         ^
+src/core.c:454:18: warning: unused function 'team_kit' [-Wunused-function]
+  454 | static KitStore *team_kit(int team, int create)
+      |                  ^~~~~~~~
+src/core.c:2194:17: warning: unused variable 'g_squadTargetAt' [-Wunused-variable]
+ 2194 | static unsigned g_squadTargetAt[3][33];
+      |                 ^~~~~~~~~~~~~~~
+src/core.c:2333:12: warning: unused function 'overflow_objective' [-Wunused-function]
+ 2333 | static int overflow_objective(int i,int team,const float *pos)
+      |            ^~~~~~~~~~~~~~~~~~
+src/core.c:4889:14: warning: unused function 'soldier_hit_body' [-Wunused-function]
+ 4889 | static char *soldier_hit_body(char *soldier)
+      |              ^~~~~~~~~~~~~~~~
+src/core.c:7169:13: warning: unused variable 'g_readdName' [-Wunused-variable]
+ 7169 | static char g_readdName[MAX_BOTS][32];
+      |             ^~~~~~~~~~~
+src/core.c:7170:12: warning: unused variable 'g_readdTeam' [-Wunused-variable]
+ 7170 | static int g_readdTeam[MAX_BOTS], g_readdCount;
+      |            ^~~~~~~~~~~
+src/core.c:7964:13: warning: unused function 'hq_probe_tick' [-Wunused-function]
+ 7964 | static void hq_probe_tick(void) { for (int k = 0; k < MAX_HQ_PROBES; k++) hq_probe_one(&g_hqProbes[k]); }
+      |             ^~~~~~~~~~~~~
+In file included from src/core.c:8689:
+src/ground_tactics_native.inc:181:12: warning: unused function 'traffic_lease' [-Wunused-function]
+  181 | static int traffic_lease(int i,const float *vp,const float *waypoint)
+      |            ^~~~~~~~~~~~~
+src/core.c:9182:27: warning: unused variable 'g_ticketsLookAt' [-Wunused-variable]
+ 9182 | static unsigned g_zeroAt, g_ticketsLookAt, g_ticketsFoundAt, g_roundEndedAt;
+      |                           ^~~~~~~~~~~~~~~
+14 warnings generated.

@@ -1,0 +1,6 @@
+PASS: a shut door with a gas tank beside it - the bot holds, sweeps its fire across the door and low on both sides (18 shots), the tank blows and the way is open
+PASS: a door that does not give - two tries at the spot, then the usual recovery; again after 30 s
+PASS: infantry onto the Fun-Bots routes - a join out of planning budget waits for the next tick; a failed join is not retried from the same spot for 10 s
+PASS: squad spawns - not on a mate hit in the last 5 s or with a living enemy within 30 m
+PASS: our 40 Rush route files keep their objective tags (Fun-Bots 3.6.0-dev7 route files carry none - not taken over)
+PASS: version (current)

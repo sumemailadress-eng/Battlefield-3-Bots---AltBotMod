@@ -1,0 +1,1 @@
+PASS: actual paving survey respects a 64-ray/time cap, tree geometry respects a 16-node/time cap, and large-map final propagation/count resumes across server ticks while a usable driving mask remains published

@@ -1,0 +1,56 @@
+static int find_hq_spawns(float *bmin, float *bmax)
+{
+    char *cps[MAX_FLAGS*2],*spawns[256];
+    int ncp=scan_objects(ADDR_CAPTURE_POINT_VTABLE,cps,MAX_FLAGS*2);
+    int nsp=scan_objects(0x025bbbc0,spawns,256),found=0;
+    memset(g_hqOptionCount,0,sizeof g_hqOptionCount);
+    memset(g_hqOptionCursor,0,sizeof g_hqOptionCursor);
+    memset(g_hqFailedAt,0,sizeof g_hqFailedAt);
+    memset(g_hqCandTried,0,sizeof g_hqCandTried);g_hqCandCount=0;
+    g_hqCpKnown[1]=g_hqCpKnown[2]=0;
+    float bestFront[3]={INFINITY,INFINITY,INFINITY};
+    for(int c=0;c<ncp;c++){
+        char *cp=cps[c],*data=*(char **)(cp+OFF_CP_DATA);
+        float *pos=(float *)(cp+OFF_CP_POSITION);
+        if(!isfinite(pos[0]) || !isfinite(pos[1]) || !isfinite(pos[2]) || (pos[0]==0 && pos[2]==0))continue;
+        for(int a=0;a<3;a+=2){bmin[a]=fminf(bmin[a],pos[a]);bmax[a]=fmaxf(bmax[a],pos[a]);}
+        if(!data || IsBadReadPtr(data+OFF_CPDATA_TAKEABLE,1) || data[OFF_CPDATA_TAKEABLE])continue;
+        int team=*(int *)(cp+OFF_CP_OWNER_TEAM);
+        if(team!=1 && team!=2)continue;
+        float front=1e20f;
+        for(int k=0;k<ncp;k++){
+            char *d=*(char **)(cps[k]+OFF_CP_DATA);
+            if(d && !IsBadReadPtr(d+OFF_CPDATA_TAKEABLE,1) && d[OFF_CPDATA_TAKEABLE])
+                front=fminf(front,dist2(pos,(float *)(cps[k]+OFF_CP_POSITION)));
+        }
+        // Record the HQ even if its child CSE uses another owner. This anchor
+        // is also needed for team-side vehicle filtering and grid coverage.
+        if(!g_hqCpKnown[team] || front<bestFront[team]){
+            memcpy(g_hqPos[team],pos,12);memcpy(g_hqCpPos[team],pos,12);
+            g_hqCpKnown[team]=1;bestFront[team]=front;
+        }
+        void *owner=*(void **)(cp+OFF_CP_OWNER_OBJECT);
+        for(int k=0;k<nsp;k++){
+            char *spawn=spawns[k];if(!cse_valid(spawn))continue;
+            int st=spawn_team(spawn);if(st && st!=team)continue;
+            char *sd=*(char **)(spawn+0x18);float *sp=(float *)(sd+0x40);
+            if(!isfinite(sp[0]) || !isfinite(sp[1]) || !isfinite(sp[2]))continue;
+            void *so=*(void **)(spawn+OFF_CP_OWNER_OBJECT);
+            int linked=owner && so==owner;
+            if(!linked){
+                // Nearby unlinked fallback must explicitly identify this team,
+                // never a neutral or an enemy/captured-flag spawn.
+                if(st!=team || dist2(sp,pos)>160*160 || fabsf(sp[1]-pos[1])>60)continue;
+                int tied=0;for(int j=0;j<ncp;j++)if(so && so==*(void **)(cps[j]+OFF_CP_OWNER_OBJECT))tied=1;
+                if(tied)continue;
+            }
+            hq_add_option(team,spawn,sqrtf(front)+sqrtf(dist2(sp,pos))+(linked?0:10000)+(st==team?0:1000));
+        }
+    }
+    for(int team=1;team<=2;team++){
+        if(hq_select_option(team))found|=team;
+        else if(cse_valid(H->teamSpawn[team].entity))found|=team;
+        bot_log("spawn: team %d HQ anchor=%d native options=%d selected=%p",team,g_hqCpKnown[team],g_hqOptionCount[team],H->teamSpawn[team].entity);
+    }
+    return found;
+}

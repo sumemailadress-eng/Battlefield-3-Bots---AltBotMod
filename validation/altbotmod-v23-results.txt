@@ -1,0 +1,10 @@
+PASS: missile transform found - the offset whose basis is orthonormal and whose position moves nose-first between two reads (a still matrix and junk beside it are not taken)
+PASS: a missile heading for a bot's tank 200 m off: the driver pops smoke at once (once in 6 s); the launch is recognised beside its launcher
+PASS: flares for a bot pilot a missile is heading for; nothing for a human's vehicle, a missile pointing elsewhere, or the vehicle's own launch
+PASS: V23 gunner sight - a soldier 8 m in front of a tank, below the turret, is in sight (the ray goes on past the own hull); a wall still hides him
+PASS: V23 armour targets - a soldier within 60 m before an enemy vehicle 150 m+ off (a near enemy tank and a close engineer still first); beyond it armour first as before
+PASS: V23 gunship - a bot just spawned takes a gun seat (1 and up) of its team's AC-130; with a human on the team the last free seat stays his
+PASS: V23 gunship - not for a bot already on its way, not the other team's, a refused entry rests a minute
+PASS: V23 aircraft - AA launchers (to 850 m), gunners and stationary AA take the gunship as an aircraft; jets go for the ground and the gunship unless an enemy aircraft is within 900 m; the gunship's guns reach 1.6 km and its gunners stay aboard
+PASS: V23 armour fires at a man in front (coax at any range, the main gun from 6 m, past its own hull); lock-on launchers learn the way that launches; missiles are tracked from load to unload
+PASS: V23 driving - sensors look down the route, no armour slow-down for targets, speed back at 8 m/s per second, Fun-Bots roads joined from 90 m, routes on foot from 8 m, a round-start rush to every vehicle; short bursts at range; version V23

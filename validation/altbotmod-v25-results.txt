@@ -1,0 +1,5 @@
+PASS: the game's lock - a bot's launcher (aim transform at its shoulder, pointing its way) is activated as the controller's activate() does; a human's launcher 50 m off is not; locked (+0xc = 2) is read back
+PASS: nothing for a weapon pointing elsewhere, a request older than 0.1 s, or an object that is not a ServerLockingController; a controller not updated for 0.5 s reads as none
+PASS: V25 lock-on source - the hook on ServerLockingController::update (0x00dda490, resumes 0x00dda496); launchers, aircraft missiles and gunner seats ask for the game's lock and fire on it; the failure log reports the controller
+PASS: V25 driving source - no convoy system (no following gaps, yields or route-dropping), brakes only for what is in the way, the last throttle held through a re-plan, a turn on the spot instead of reverse-and-re-plan, plans are not tries, grid legs onto the road, speed caps only for hard steering
+PASS: V25 flags nearest-first (director ranks the front), elite engages from 240 m / sees 290 m (130 / 150), veteran 170 / 200 m; version V25

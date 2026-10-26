@@ -1,0 +1,5 @@
+PASS: actual armor on BOTH teams seeks checked cover, retreats on observed damage, requests a real repair-tool engineer, resumes with crew after repair/no-engineer timeout and restores objective after route failure
+PASS: nearby infantry support uses brief actual defend tasks, respects existing orders, and tactical jobs share a two-probe-per-frame budget
+PASS: narrow-road leases expire/release priority; actual traffic waits reset stuck clocks and replan after ten seconds while retaining seats
+PASS: V10 narrow stretches - an oncoming vehicle anywhere along the stretch ahead holds the entrance, a wide road does not, a convoy going the same way is followed, the holder is recorded (parked-in-the-way check) and one coming through is waited for 15 s before a detour
+PASS: V10 nose to nose in a narrow stretch - the later one backs straight out (rear checked) until the road is wide, once; the first holds until there is a gap, then creeps through

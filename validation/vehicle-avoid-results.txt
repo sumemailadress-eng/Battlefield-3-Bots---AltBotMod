@@ -1,0 +1,2 @@
+PASS: queued drivers retain distinct avoidance areas across shared work slices; one routes around the obstruction, the other retains its direct street, and the shared mask is unchanged
+PASS: sync/queued routes retain only the collision-checked clear prefix, mark continuation, and reject obstructed departures after checking alternative edges

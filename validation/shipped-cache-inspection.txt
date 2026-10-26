@@ -1,0 +1,14 @@
+MP_001 306x364 167138 walkable nodes
+MP_003 301x474 186364 walkable nodes
+MP_007 506x725 373233 walkable nodes
+MP_011 308x389 124993 walkable nodes
+MP_012 862x405 353767 walkable nodes
+MP_013 270x593 183544 walkable nodes
+MP_017 518x513 296620 walkable nodes
+MP_018 483x690 340218 walkable nodes
+MP_Subway 243x431 143705 walkable nodes
+XP1_001 362x475 185487 walkable nodes
+XP1_002 779x710 569943 walkable nodes
+XP1_003 434x297 135668 walkable nodes
+XP1_004 736x656 490730 walkable nodes
+XP3_Desert 624x612 384990 walkable nodes

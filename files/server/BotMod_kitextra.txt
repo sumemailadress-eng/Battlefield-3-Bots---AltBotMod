@@ -1,0 +1,4 @@
+# <class> <slot> <asset> - an item in a slot for every bot kit of that class (slot 1 = pistol)
+# <class|*> perk <asset>   - the kit's specialization (perk)
+Engineer 1 Weapons/Gadgets/M15/U_M15
+* perk Persistence/Unlocks/Soldiers/Specializations/AmmoBoostL1

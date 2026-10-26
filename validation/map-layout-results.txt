@@ -1,0 +1,4 @@
+PASS: all 166 supported Conquest/Rush/TDM/SQDM map-layout combinations retain their exact requested mode; unavailable combinations rejected; only default Conquest loads a legacy cache
+PASS: 139 finite trace profiles, complete deployment/M-COM metadata on all 25 Rush maps, surveyed bounds fit native grid limits; two missing CQ traces explicitly recorded for native discovery
+PASS: all 14 shipped navigation caches load through actual native nav_load and contain walkable surveyed nodes; cache inspection does not establish live reachability
+PASS: Test10 vaulting, fence detection/knife sequence, post-obstacle rerouting and complete shared infantry steering source preserved unchanged

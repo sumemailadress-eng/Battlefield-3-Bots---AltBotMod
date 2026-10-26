@@ -1,0 +1,2 @@
+PASS: complete native drive_tick departs for BOTH teams after one three-second living-passenger window, emits throttle and continues checked nearby road legs at local mountain height
+PASS: blocked staged exits keep crew seated without blind throttle; deferred routes preserve candidates; unavailable local terrain falls back to ordinary routing

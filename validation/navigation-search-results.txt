@@ -1,0 +1,2 @@
+PASS: disconnected large vehicle goal yields a real grid/collision-checked continuation after 4096 nodes (1497 bounded slices, largest 0.260 ms); no 160k-node queue monopoly
+PASS: continuous polling never resets the eight-second active-search timeout; stalled large searches terminate without blocking a whole tick

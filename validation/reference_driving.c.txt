@@ -1,0 +1,400 @@
+// Original beta driving functions, supplied by the user. Used only for regression comparison.
+static void drive_stop(int i, const char *why, int cooldownSec)
+{
+    DriveState *d = &g_drive[i];
+    if (!d->phase) return;
+    int wasIn = player_vehicle(H->bots[i]) != NULL;
+    if (wasIn && d->phase != 7) {   // the driver: "Get out!" - riders bail first, then the driver
+        bot_say(i, ORDER_GETOUT);
+        order_reaction(H->bots[i], ORDER_GETOUT, NULL);
+    }
+    if (player_vehicle(H->bots[i])) bot_exit_vehicle(i, 0);
+    g_driving[i] = 0;
+    bot_log("drive: %s %s", (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME, why);
+    d->phase = 0; d->veh = NULL;
+    g_driveCooldown[i] = H->frame + (unsigned)cooldownSec * 30;
+    H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+    bot_nav(i)->mode = 0;
+    bot_brain(i)->replanAt = 0;
+    if (wasIn) {
+        choose_local_objective(i, "out of the vehicle");   // the flag nearest where it got out, then back to the squad
+        g_vehChanceUntil[i] = H->frame + 20 * 30;           // a ground vehicle nearby for the next leg?
+        g_driveCooldown[i] = 0;
+    }
+}
+
+static void drive_tick(int i)
+{
+    DriveState *d = &g_drive[i];
+    char *pl = H->bots[i], *s = *(char **)(pl + OFF_PLAYER_SOLDIER);
+    if (!d->phase) return;
+    if (!s || (!d->manual && !bot_brain(i)->enabled)) { drive_stop(i, "stops driving (dead / switched off)", 10); return; }
+    if (!vehicle_ok(d->veh)) { drive_stop(i, "lost the vehicle (destroyed)", 20); return; }
+    float *vp = vehicle_pos(d->veh, NULL);
+    if (!vp) { drive_stop(i, "lost the vehicle", 20); return; }
+    if (d->phase == 7) {   // riding: until the vehicle is left
+        if (player_vehicle(pl) != d->veh) { d->phase = 0; d->veh = NULL; choose_local_objective(i, "got out of the squad's vehicle"); return; }
+        H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+        return;
+    }
+    if (d->phase == 5) {   // squad boarding: walk up; first one in takes the wheel
+        float *me = (float *)(s + OFF_SOLDIER_POSITION);
+        if (H->frame - d->at > 30 * 30) { drive_stop(i, "could not reach the squad's vehicle", 20); return; }
+        if (!driver_seat_free(d->veh) && !free_seat_count(d->veh)) { drive_stop(i, "finds the vehicle full", 20); return; }
+        float reach = vehicle_is_boat(d->veh) ? 9.0f : 4.5f;   // (a boat is boarded from the pier / beach)
+        if (dist2(me, vp) > reach * reach) return;
+        int seat = driver_seat_free(d->veh) ? 0 : free_seat(d->veh);
+        if (seat < 0) { drive_stop(i, "finds the vehicle full", 20); return; }
+        ((EnterVehicle_t)ADDR_PLAYER_ENTER_VEHICLE)(pl, d->veh, seat);
+        if (player_vehicle(pl) != d->veh) { drive_stop(i, "could not get in", 20); return; }
+        bot_nav(i)->mode = 0;
+        H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+        if (seat == 0) { g_driving[i] = 1; d->phase = 6; d->at = H->frame; bot_log("drive: %s takes the wheel of the %s", pl + OFF_PLAYER_ONLINE_NAME, vehicle_name(d->veh)); }
+        else { d->phase = 7; bot_log("drive: %s climbs into seat %d of the %s", pl + OFF_PLAYER_ONLINE_NAME, seat, vehicle_name(d->veh)); }
+        return;
+    }
+    if (d->phase == 6) {   // at the wheel: wait for the squadmates still walking up (15 s at most)
+        if (player_vehicle(pl) != d->veh) { drive_stop(i, "is out of the vehicle", 20); return; }
+        H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+        // the whole squad: those walking up, those still to spawn (they come in on the driver - into a seat), and any
+        // squadmate nearby not yet on its way (sent over). 25 s at most, or until the seats are full.
+        int waiting = 0, team = player_team(pl), squad = player_squad(pl), seats = free_seat_count(d->veh);
+        for (int j = 0; j < H->botCount && seats > 0; j++) {
+            char *jp = H->bots[j], *js = *(char **)(jp + OFF_PLAYER_SOLDIER);
+            if (j == i || player_team(jp) != team || squad <= 0 || player_squad(jp) != squad || player_vehicle(jp) == d->veh) continue;
+            if (!bot_brain(j)->enabled) continue;
+            if (!js) { waiting++; continue; }   // dead: respawning
+            if (g_drive[j].phase == 5 && g_drive[j].veh == d->veh) { waiting++; continue; }
+            if (g_drive[j].phase || player_vehicle(jp) || bot_brain(j)->task != TASK_NONE) continue;
+            if (dist2((float *)(js + OFF_SOLDIER_POSITION), vp) > (SQUAD_VEH_RADIUS + 20.0f) * (SQUAD_VEH_RADIUS + 20.0f)) continue;
+            if (!plan_to_vehicle(j, js, vp)) continue;
+            DriveState *dj = &g_drive[j];   // a squadmate that spawned after the others boarded: over here
+            memset(dj, 0, sizeof *dj);
+            dj->phase = 5; dj->veh = d->veh; dj->at = H->frame; dj->flag = d->flag;
+            memcpy(dj->start, vp, 12);
+            memcpy(dj->goal, d->goal, 12);
+            bot_nav(j)->mode = 3;
+            waiting++;
+            bot_log("squad: %s waits for squadmate %s to board", pl + OFF_PLAYER_ONLINE_NAME, jp + OFF_PLAYER_ONLINE_NAME);
+        }
+        if (waiting && seats > 0 && H->frame - d->at < 25 * 30) return;
+        d->phase = 2; d->boardAt = 0;   // "Get in" + 3 s for stragglers / players, then off
+        return;
+    }
+    if (d->phase == 1) {   // walking up to it
+        float *me = (float *)(s + OFF_SOLDIER_POSITION);
+        if (H->frame - d->at > 35 * 30) { drive_stop(i, "gave up walking to the vehicle", 30); return; }
+        if (!driver_seat_free(d->veh) || dist2(vp, d->start) > 10.0f * 10.0f) { drive_stop(i, "found the vehicle taken", 20); return; }
+        float reach = vehicle_is_boat(d->veh) ? 9.0f : 4.5f;   // (a boat is boarded from the pier / beach)
+        if (dist2(me, vp) > reach * reach) return;
+        ((EnterVehicle_t)ADDR_PLAYER_ENTER_VEHICLE)(pl, d->veh, 0);
+        if (player_vehicle(pl) != d->veh) { drive_stop(i, "could not get in", 30); return; }
+        g_driving[i] = 1;
+        bot_nav(i)->mode = 0;
+        d->phase = 2;
+        bot_log("drive: %s is at the wheel of the %s", pl + OFF_PLAYER_ONLINE_NAME, vehicle_name(d->veh));
+        return;
+    }
+    if (player_vehicle(pl) != d->veh) { drive_stop(i, "is out of the vehicle", 20); return; }
+    if (d->phase == 2 && !d->boardAt) {   // "Get in!" - teammates nearby take the free seats; 3 s to climb in
+        d->boardAt = H->frame ? H->frame : 1;
+        bot_say(i, ORDER_GETIN);
+        order_reaction(pl, ORDER_GETIN, NULL);
+        H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+        return;
+    }
+    if (d->phase == 2 && H->frame - d->boardAt < 90) return;
+    if (d->phase == 2 && vehicle_is_boat(d->veh) && !d->backedOut) { d->phase = 8; d->at = H->frame; d->backedOut = 1; }
+    if (d->phase == 8) {   // a boat leaving its mooring: straight away from the land around it (the mean of all of it -
+        // inside an L of pier and shore it heads out of the L, not at either arm), until 8 m clear; then the route
+        NavGrid *g = *nav_slot();
+        const unsigned char *mask = boat_mask();
+        float *xf = vehicle_xf(d->veh), mx = 0, mz = 0, nearest = 1e30f;
+        int nl = g && mask ? nav_land_around(g, mask, vp[0], vp[2], 30.0f, &mx, &mz, &nearest) : 0;
+        if (!xf || !nl || nearest >= 8.0f || H->frame - d->at > 20 * 30) {
+            bot_log("drive: %s's boat is %s (%.0f m from land) - plotting the route", pl + OFF_PLAYER_ONLINE_NAME,
+                    !nl || nearest >= 8.0f ? "clear of the shore" : "still close in after 20 s", nl ? nearest : 99.0f);
+            d->phase = 2;
+            H->botMove[i][0] = H->botMove[i][1] = H->botMove[i][2] = 0;
+            return;
+        }
+        if (H->frame - d->at == 0 || (H->frame - d->at) % 60 == 0)
+            bot_log("drive: %s eases the boat away from the land around it (centre (%.0f, %.0f), nearest %.0f m)", pl + OFF_PLAYER_ONLINE_NAME,
+                    mx, mz, nearest);
+        float heading = atan2f(xf[8], xf[10]), want = atan2f(vp[0] - mx, vp[2] - mz), err = want - heading;
+        while (err > 3.14159265f) err -= 6.2831853f;
+        while (err < -3.14159265f) err += 6.2831853f;
+        float throttle, steer;
+        if (fabsf(err) > 1.75f) {   // nose at the land: back away, swinging the nose round (reversing steers the other way)
+            float back = err > 0 ? err - 3.14159265f : err + 3.14159265f;   // the stern's error
+            throttle = -0.8f;
+            steer = fmaxf(-1.0f, fminf(1.0f, -back * 1.5f));
+        } else {
+            throttle = fabsf(err) > 0.5f ? 0.5f : 0.9f;
+            steer = fmaxf(-1.0f, fminf(1.0f, -err * 1.5f));
+        }
+        H->botMove[i][0] = throttle; H->botMove[i][1] = 0; H->botMove[i][2] = steer;
+        return;
+    }
+    if (d->phase == 2) {   // route on the drivable grid
+        NavGrid *g = *nav_slot();
+        int boat = vehicle_is_boat(d->veh);
+        const unsigned char *mask = boat ? boat_mask() : drive_mask();
+        if (!g || !mask) { drive_stop(i, "has no drivable map", 60); return; }
+        static unsigned char *clearMask;   // boats: the mask without the shallows (except at the start and the landing)
+        static size_t clearSize;
+        nav_set_path_mask(mask);
+        // the drivable spot nearest the goal, at the goal's height (a town flag's own spot is often too cramped); a boat:
+        // the water nearest it (the beach run - the last bit is swum / walked)
+        float tgt[3] = {d->goal[0], d->goal[1], d->goal[2]}, gy = isnan(d->goal[1]) ? vp[1] : d->goal[1];
+        int have = 0;
+        if (boat) {   // the landing: the beach of the flag's own landmass that best trades boat time for the walk
+            int goalLab = g_landLabels ? nav_label_at(g, g_landLabels, d->goal[0], isnan(d->goal[1]) ? vp[1] : d->goal[1], d->goal[2]) : 0;
+            if (goalLab) have = nav_landing_on(g, mask, g_landLabels, goalLab, vp[0], vp[2], d->goal[0], d->goal[2], 0.6f, 60.0f, tgt);
+            if (!have) have = nav_mask_nearest(g, mask, d->goal[0], d->goal[2], 300.0f, tgt);
+        }
+        if (boat && !have) { nav_set_path_mask(NULL); vehicle_mark_bad(d->veh, 120); drive_stop(i, "has no water near its flag", 60); return; }
+        if (boat) bot_log("drive: %s lands the boat at (%.0f, %.0f), %.0f m from its flag", pl + OFF_PLAYER_ONLINE_NAME, tgt[0], tgt[2],
+                          sqrtf(dist2(tgt, d->goal)));
+        if (boat) {
+            size_t n = (size_t)g->w * g->h * NAV_LAYERS;
+            if (clearSize != n) { if (clearMask) HeapFree(GetProcessHeap(), 0, clearMask); clearMask = HeapAlloc(GetProcessHeap(), 0, n); clearSize = clearMask ? n : 0; }
+            if (clearMask) {
+                float keep[4] = {vp[0], vp[2], tgt[0], tgt[2]};
+                memcpy(clearMask, mask, n);
+                nav_mask_strip(g, clearMask, 4, keep, 2, 40.0f);
+                nav_set_path_mask(clearMask);
+            }
+        }
+        for (float r = 0; r <= 40.0f && !have; r += 10.0f)
+            for (int a = 0; a < (r > 0 ? 8 : 1) && !have; a++) {
+                float x = d->goal[0] + sinf(a * 0.785398f) * r, z = d->goal[2] + cosf(a * 0.785398f) * r;
+                if (nav_snap(g, x, gy, z, tgt) && fabsf(tgt[1] - gy) < 4.0f) have = 1;
+            }
+        nav_set_long_legs(boat);
+        double planT0 = perf_now();
+        d->n = have ? nav_find_path(g, ray_cast, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS) : 0;
+        if (perf_now() - planT0 > 50.0) bot_log("perf: %s's vehicle route took %.0f ms (%d points)", pl + OFF_PLAYER_ONLINE_NAME, perf_now() - planT0, d->n);
+        if (have && !d->n && boat) {   // no way round with 6 m to spare: the shallows too
+            bot_log("drive: %s finds no route 6 m clear of land - allows the shallows", pl + OFF_PLAYER_ONLINE_NAME);
+            nav_set_path_mask(mask);
+            d->n = nav_find_path(g, ray_cast, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS);
+        }
+        float ow[3];
+        if (have && !d->n && boat && nav_open_water_near(g, mask, vp[0], vp[2], 80.0f, ow)) {   // docked in a pocket (pier posts):
+            d->n = nav_find_path(g, ray_cast, ow[0], ow[1], ow[2], tgt[0], tgt[1], tgt[2], d->pts + 3, DRIVE_MAX_PTS - 1);   // out to open water first
+            if (d->n) { memcpy(d->pts, ow, 12); d->n++; bot_log("drive: %s backs out to open water at (%.0f, %.0f) first", pl + OFF_PLAYER_ONLINE_NAME, ow[0], ow[2]); }
+        }
+        nav_set_path_mask(NULL);
+        nav_set_long_legs(0);
+        int keep = d->n;
+        for (int k = 0; k < d->n && !boat; k++) if (dist2(&d->pts[k * 3], d->goal) < DRIVE_STOP_SHORT * DRIVE_STOP_SHORT) { keep = k + 1; break; }
+        d->n = keep;
+        if (!d->n) {
+            bot_log("drive: no drivable route from (%.0f, %.0f) to (%.0f, %.0f): %s", vp[0], vp[2], d->goal[0], d->goal[2], nav_last_error());
+            vehicle_mark_bad(d->veh, 90);
+            drive_stop(i, "found no drivable route", 60);
+            return;
+        }
+        d->next = 0; d->phase = 3; d->at = d->checkAt = H->frame; d->stuckCount = 0;
+        memcpy(d->lastPos, vp, 12);
+        bot_log("drive: %s drives %d waypoint(s) towards flag %d", pl + OFF_PLAYER_ONLINE_NAME, d->n, d->flag);
+        return;
+    }
+    // driving
+    if (H->frame - d->at > 180 * 30) { drive_stop(i, "took too long - gets out", 30); return; }
+    {
+        VehTrack *t = vehicle_sample(d->veh);
+        float hp = *(float *)(d->veh + OFF_VEHICLE_HEALTH), mx = t && t->maxSeen > 0 ? t->maxSeen : 0;
+        if (mx > 0 && hp < 0.1f * mx) { drive_stop(i, "bails out - the vehicle is nearly wrecked", 20); return; }
+    }
+    {
+        float *hx = vehicle_xf(d->veh);
+        while (d->next < d->n) {
+            float *w = &d->pts[d->next * 3], dx = w[0] - vp[0], dz = w[2] - vp[2], dd = dx * dx + dz * dz;
+            int behind = hx && dd < 15.0f * 15.0f && dx * hx[8] + dz * hx[10] < 0;   // already driven past it
+            float wr = vehicle_is_boat(d->veh) ? 12.0f : DRIVE_WAYPOINT;   // boats: no fussing over a waypoint
+            if (dd < wr * wr || behind) d->next++;
+            else break;
+        }
+    }
+    if (d->next >= d->n || (!vehicle_is_boat(d->veh) && dist2(vp, d->goal) < DRIVE_STOP_SHORT * DRIVE_STOP_SHORT)) {
+        if (vehicle_is_boat(d->veh)) vehicle_mark_bad(d->veh, 180);   // (landed: the rest is on foot / by land vehicle)
+        drive_stop(i, "arrived - gets out", 20);
+        return;
+    }
+    float *xf = vehicle_xf(d->veh);
+    if (!xf) { drive_stop(i, "cannot read the vehicle's heading", 60); return; }
+    float *wp = &d->pts[d->next * 3];
+    float heading = atan2f(xf[8], xf[10]), want = atan2f(wp[0] - vp[0], wp[2] - vp[2]);
+    float err = want - heading;
+    while (err > 3.14159265f) err -= 6.2831853f;
+    while (err < -3.14159265f) err += 6.2831853f;
+    float steer = fmaxf(-1.0f, fminf(1.0f, -err * 1.5f));
+    // speed (m/s) from the position every 1/3 s
+    if (!d->spAt) { memcpy(d->spPos, vp, 12); d->spAt = H->frame; }
+    else if (H->frame - d->spAt >= 10) {
+        d->speed = sqrtf(dist2(vp, d->spPos)) / ((H->frame - d->spAt) / 30.0f);
+        memcpy(d->spPos, vp, 12); d->spAt = H->frame;
+    }
+    // how fast to go: no limit on a straight - flat out - only slowing in time for the next bend (and the end of the
+    // route): every waypoint ahead allows a speed for its turn, and the bot brakes so as to get there at that speed.
+    int isBoat = vehicle_is_boat(d->veh);
+    float ae = fabsf(err), vwant = 99.0f;
+    if (ae > 0.35f) vwant = isBoat ? 10.0f : 6.0f;   // still pointing the wrong way: turning now
+    if (ae > 1.05f) vwant = isBoat ? 5.0f : 2.5f;    // more than 60 degrees off: slow round
+    {
+        const float decel = isBoat ? 3.0f : 4.0f;    // m/s per second it can shed (rough)
+        float along = sqrtf(dist2(wp, vp)), prevA = atan2f(wp[0] - vp[0], wp[2] - vp[2]);
+        for (int k = d->next; k < d->n && along < 200.0f; k++) {
+            float *w = &d->pts[k * 3], vt;
+            if (k == d->n - 1) vt = isBoat ? 6.0f : 4.0f;   // the end: arrive slowly
+            else {
+                float *w2 = &d->pts[(k + 1) * 3], a2 = atan2f(w2[0] - w[0], w2[2] - w[2]), turn = a2 - prevA;
+                while (turn > 3.14159265f) turn -= 6.2831853f;
+                while (turn < -3.14159265f) turn += 6.2831853f;
+                float at = fabsf(turn);
+                vt = at > 1.05f ? (isBoat ? 8.0f : 4.0f) : at > 0.6f ? (isBoat ? 12.0f : 7.0f) : at > 0.3f ? (isBoat ? 18.0f : 11.0f) : 99.0f;
+                prevA = a2;
+            }
+            float lead = fmaxf(0.0f, along - (isBoat ? 12.0f : 6.0f));   // (it turns a little before the waypoint)
+            float v = sqrtf(vt * vt + 2.0f * decel * lead);
+            if (v < vwant) vwant = v;
+            if (k + 1 < d->n) along += sqrtf(dist2(&d->pts[(k + 1) * 3], w));
+        }
+    }
+    {   // bumper: anything ahead at 1 m up?
+        float hx = xf[8], hz = xf[10], hl = sqrtf(hx * hx + hz * hz) + 1e-6f, hit[3];
+        unsigned saved = g_rayFlags;
+        g_rayFlags = RAY_DONT_CHECK_CHARACTER | RAY_CHECK_DETAIL_MESH;   // (trees too)
+        float fx = hx / hl, fz = hz / hl, rx = fz, rz = -fx;   // forward, right (in the ground plane)
+        float sideNear[3] = {99, 99, 99};                       // nearest thing ahead on the left, in the middle, on the right
+        static const float kOff[7] = {-1.2f, -0.8f, -0.4f, 0.0f, 0.4f, 0.8f, 1.2f};   // 7 sensors across the front (palm trunks, poles)
+        void *ownBody = !IsBadReadPtr(d->veh + 0x30, 4) ? *(void **)(d->veh + 0x30) : NULL;
+        void *lastBody = NULL;
+        unsigned lastVt = 0, lastMat = 0;
+        float lastNy = 0, nrm[3];
+        for (int r = 0; r < 7; r++)
+            for (int k = 0; k < 2; k++) {
+                float off = kOff[r], up = isBoat ? (k ? 2.2f : 1.4f) : k ? 1.0f : 0.5f;
+                int s = r < 3 ? 0 : r == 3 ? 1 : 2;
+                float lead = isBoat ? 5.0f + d->speed * 0.15f : 2.5f;   // (from in front of the hull - a RHIB is ~7 m long; at speed its position lags)
+                float a[3] = {vp[0] + fx * lead + rx * off, vp[1] + up, vp[2] + fz * lead + rz * off};
+                float b[3] = {a[0] + fx * 10.0f, a[1], a[2] + fz * 10.0f};
+                if (ray_cast(a, b, hit, nrm)) {
+                    char *body = *(char **)g_lastHitRest;
+                    unsigned bvt = body && !IsBadReadPtr(body, 4) ? *(unsigned *)body : 0;
+                    if (body == ownBody || bvt == ADDR_WATER_PHYSICS_VTABLE) continue;   // its own hull / the water (waves)
+                    if (nrm[1] > 0.65f) continue;   // ground rising ahead (a slope, a ramp, a kerb top): drivable, not a wall
+                    float dh = sqrtf(dist2(hit, a));
+                    if (dh < sideNear[s]) { sideNear[s] = dh; lastBody = body; lastVt = bvt; lastMat = hit_material(); lastNy = nrm[1]; }
+                }
+            }
+        g_rayFlags = saved;
+        float nearest = fminf(sideNear[1], fminf(sideNear[0], sideNear[2]));
+        d->frontNear = nearest;
+        d->sideL = sideNear[0]; d->sideR = sideNear[2]; d->midNear = sideNear[1];
+        if (isBoat && nearest >= 5.0f) { nearest = 99; sideNear[0] = sideNear[1] = sideNear[2] = 99; }   // boats: only what is right ahead
+        if (nearest < (isBoat ? 5.0f : 6.0f) && H->frame - d->sensorLogAt > 60) {
+            d->sensorLogAt = H->frame;
+            bot_log("drive: %s's %s sees something ahead at (%.0f, %.0f): left %.1f mid %.1f right %.1f m (vt %08x mat %08x normal-y %.2f, %.0f m/s)",
+                    pl + OFF_PLAYER_ONLINE_NAME, vehicle_name(d->veh), vp[0], vp[2], sideNear[0], sideNear[1], sideNear[2], lastVt, lastMat, lastNy, d->speed);
+        }
+        if (isBoat && !d->backedOut) {   // (departure, phase 8, has done this)
+            d->backedOut = 1;
+            if (nearest < 8.0f) {
+                d->backOutUntil = H->frame + 90;
+                bot_log("drive: %s backs the boat out of its mooring", pl + OFF_PLAYER_ONLINE_NAME);
+            }
+        }
+        if (nearest < 10.0f) vwant = fminf(vwant, nearest < 4.0f ? 1.5f : 3.0f);
+        // a pole / corner off to one side: ease away from it (right corner blocked -> steer left, and the other way)
+        if (sideNear[1] > 6.0f && (sideNear[0] < 6.0f) != (sideNear[2] < 6.0f)) {
+            float away = sideNear[2] < 6.0f ? 0.6f : -0.6f;   // positive EIAYaw turns towards a lower heading (left of a +right vector)
+            steer = fmaxf(-1.0f, fminf(1.0f, steer + away));
+        }
+        // something dead ahead (a tree, a post): swerve to the clearer side; boxed in on all three: stop (the stuck check reverses)
+        if (sideNear[1] < 8.0f) {
+            if (sideNear[0] < 4.0f && sideNear[2] < 4.0f) vwant = 0.0f;
+            else steer = sideNear[0] > sideNear[2] ? 0.85f : -0.85f;   // left clearer -> left (positive), right clearer -> right
+        }
+    }
+    float throttle = d->speed < vwant - 1.0f ? (ae < 0.6f ? 1.0f : 0.6f) : d->speed > vwant + 1.5f ? -0.4f : 0.35f;
+    if (vwant <= 0.0f) throttle = d->speed > 0.5f ? -0.4f : 0.0f;   // boxed in: stop
+    // (dead ahead only: a building alongside the front corner while pulling away slowly is not "nosed into it")
+    if (H->frame >= d->reverseUntil && H->frame >= d->backOutUntil && d->speed < 1.0f && (vwant <= 0.0f || d->midNear < 2.0f)) {
+        if (!d->boxedSince) d->boxedSince = H->frame;
+        else if (H->frame - d->boxedSince >= 15) {   // nose against something: back off straight away (not after the 3 s check)
+            d->boxedSince = 0;
+            d->reverseUntil = H->frame + 60;
+            d->checkAt = H->frame; memcpy(d->lastPos, vp, 12);
+            // swing the nose ~60 deg away from the blocked side while reversing (pointing it back along the route just
+            // lined up the same corner again: a buggy nosed into one building corner 11 times in a minute)
+            int leftBlocked = d->sideL < d->sideR;
+            d->awayOn = 1;
+            d->awayHeading = heading + (leftBlocked ? 1.0f : -1.0f);   // (+ = towards the right side vector)
+            if (d->nudges && dist2(vp, d->nudgePos) < 5.0f * 5.0f) d->nudges++;
+            else { d->nudges = 1; memcpy(d->nudgePos, vp, 12); }
+            bot_log("drive: %s is nosed up against something at (%.0f, %.0f) - backs off, nose to the %s (%d here)", pl + OFF_PLAYER_ONLINE_NAME,
+                    vp[0], vp[2], leftBlocked ? "right" : "left", d->nudges);
+            unsigned char *sm = vehicle_is_boat(d->veh) ? g_boatMask : g_driveMask;
+            if (d->nudges >= 2 && sm) {   // again here: that front corner is no road - off the map, new route
+                d->nudges = 0;
+                if (++d->reroutes > 2) { vehicle_mark_bad(d->veh, 60); drive_stop(i, "keeps getting stuck - gets out and walks", 30); return; }
+                float hx = xf[8], hz = xf[10], hl = sqrtf(hx * hx + hz * hz) + 1e-6f, fx = hx / hl, fz = hz / hl, rx = fz, rz = -fx;
+                float side = leftBlocked ? -1.0f : 1.0f;
+                float ax = vp[0] + fx * 4.0f + rx * side * 1.5f, az = vp[2] + fz * 4.0f + rz * side * 1.5f;
+                int k = drive_strike(sm, ax, az, 3.0f);
+                bot_log("drive: (%.0f, %.0f) struck off the drivable map (%d node(s)); %s re-routes round it", ax, az, k, pl + OFF_PLAYER_ONLINE_NAME);
+                d->phase = 2;
+            }
+        }
+    } else d->boxedSince = 0;
+    if (drive_pickup(i, d, vp)) {   // stopped for pick-ups: brake, hold still (not "stuck"), the drive clock paused
+        throttle = d->speed > 0.5f ? -0.6f : 0.0f;
+        steer = 0;
+        d->checkAt = H->frame; memcpy(d->lastPos, vp, 12);
+        d->at++;
+    }
+    if (H->frame < d->backOutUntil) { throttle = -0.9f; steer = 0; d->checkAt = H->frame; memcpy(d->lastPos, vp, 12); }   // straight back
+    else if (H->frame < d->reverseUntil) {   // backing off: steer so the nose swings round to the route (the road) ahead
+        throttle = -0.8f;
+        float e = err;
+        if (d->awayOn) {   // (a quick back-off: away from what it hit instead)
+            e = d->awayHeading - heading;
+            while (e > 3.14159265f) e -= 6.2831853f;
+            while (e < -3.14159265f) e += 6.2831853f;
+        }
+        steer = fmaxf(-1.0f, fminf(1.0f, e * 1.5f));   // (reversing turns the nose the other way round)
+    }
+    if (H->frame >= d->reverseUntil) d->awayOn = 0;
+    else if (H->frame - d->checkAt >= 90) {   // every 3 s: getting anywhere?
+        float dx = vp[0] - d->lastPos[0], dz = vp[2] - d->lastPos[2];
+        if (dx * dx + dz * dz < 1.5f * 1.5f) {
+            if (dist2(vp, d->goal) < 60.0f * 60.0f) { drive_stop(i, "is close enough - gets out", 20); return; }   // (the last bit on foot)
+            if (++d->stuckCount > 4) { drive_stop(i, "is stuck - gets out and walks", 30); return; }
+            d->reverseUntil = H->frame + 75;
+            d->reverseSteer = -steer;
+            unsigned char *sm = vehicle_is_boat(d->veh) ? g_boatMask : g_driveMask;   // the map this vehicle drives on
+            if (d->stuckCount == 2 && sm) {   // stuck again: the spot is no road - strike it off for everyone, re-route
+                if (++d->reroutes > 2) { vehicle_mark_bad(d->veh, 60); drive_stop(i, "keeps getting stuck - gets out and walks", 30); return; }
+                float ax = vp[0] + xf[8] * 6.0f, az = vp[2] + xf[10] * 6.0f;   // ahead of it (its own spot stays drivable)
+                int k = drive_strike(sm, ax, az, 3.0f);
+                if (k == 0) {   // already struck and still stuck there: what holds it is beside / under the front - wider
+                    ax = vp[0] + xf[8] * 4.5f; az = vp[2] + xf[10] * 4.5f;
+                    k = drive_strike(sm, ax, az, 5.0f);
+                }
+                d->reverseUntil = H->frame + (d->reroutes > 1 ? 150 : 105);   // a longer back-off before the new route
+                bot_log("drive: (%.0f, %.0f) struck off the drivable map (%d node(s)); %s re-routes", ax, az, k, pl + OFF_PLAYER_ONLINE_NAME);
+                d->phase = 2;
+            }
+            bot_log("drive: %s is stuck at (%.0f, %.0f) - reversing (wanted %.1f m/s, throttle %.2f, steer %.2f)", pl + OFF_PLAYER_ONLINE_NAME, vp[0], vp[2],
+                    vwant, throttle, steer);
+        } else d->stuckCount = 0;
+        memcpy(d->lastPos, vp, 12);
+        d->checkAt = H->frame;
+    }
+    H->botMove[i][0] = throttle;
+    H->botMove[i][1] = 0;
+    H->botMove[i][2] = steer;
+}

@@ -1,0 +1,5 @@
+LIBRARY xinput9_1_0.dll
+EXPORTS
+    XInputGetCapabilities=xinput9_1_0_orig.XInputGetCapabilities
+    XInputGetState=xinput9_1_0_orig.XInputGetState
+    XInputSetState=xinput9_1_0_orig.XInputSetState

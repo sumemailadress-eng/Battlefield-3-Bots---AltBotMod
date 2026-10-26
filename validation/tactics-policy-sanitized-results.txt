@@ -1,0 +1,1 @@
+PASS: eight actual weapon families over 4,800 range/cycle/alignment cases; convoy and opposing-driver priority; stable landing/pickup/threat abort; missile timing never treats aim as native lock

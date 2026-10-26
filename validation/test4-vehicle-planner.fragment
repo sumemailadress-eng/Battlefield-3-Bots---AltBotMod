@@ -1,0 +1,13 @@
+// Actual Test4 function retained solely to reproduce the regression.
+static int plan_to_vehicle(int i, char *soldier, const float *vp)
+{
+    if (!plan_budget_left()) return 0;
+    int n = plan_path(i, soldier, vp[0], vp[1], vp[2]);
+    for (float r = 3.0f; r <= 9.0f && !n; r += 3.0f)
+        for (int a = 0; a < 4 && !n; a++) {
+            if (!plan_budget_left()) return 0;
+            float ang = a * 1.5707963f + r * 0.26f;
+            n = plan_path(i, soldier, vp[0] + sinf(ang) * r, vp[1] + 1.0f, vp[2] + cosf(ang) * r);
+        }
+    return n;
+}

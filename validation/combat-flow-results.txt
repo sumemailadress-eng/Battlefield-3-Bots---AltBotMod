@@ -1,0 +1,3 @@
+PASS: actual fight/movement sequence separates crowded stationary infantry on BOTH teams (US 8/8, RU 8/8); staggered checked left/right routes survive asynchronous polls
+PASS: absent ground and water never produce unchecked flanks or guessed movement
+PASS: immediate close threats interrupt relocation; target team changes cancel queued movement and fighting

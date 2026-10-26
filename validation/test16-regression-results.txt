@@ -1,0 +1,19 @@
+/tmp/bf3-test16-ergghimk/orders-1.c: In function ‘director_tick’:
+/tmp/bf3-test16-ergghimk/orders-1.c:263:37: warning: comparison of integer expressions of different signedness: ‘int’ and ‘unsigned int’ [-Wsign-compare]
+  263 |         units[i].avoid=b->avoidUntil>H->frame?b->avoidFlag:-1;
+      |                                     ^
+REPRODUCED: Test15 director overrides recovery orders and sends the bot back to the flag it was stuck on (both teams)
+/tmp/bf3-test16-ergghimk/orders-0.c: In function ‘director_tick’:
+/tmp/bf3-test16-ergghimk/orders-0.c:278:37: warning: comparison of integer expressions of different signedness: ‘int’ and ‘unsigned int’ [-Wsign-compare]
+  278 |         units[i].avoid=b->avoidUntil>H->frame?b->avoidFlag:-1;
+      |                                     ^
+In file included from /tmp/bf3-test16-ergghimk/orders-0.c:3:
+/tmp/bf3-test16-ergghimk/orders-0.c: In function ‘main’:
+/tmp/bf3-test16-ergghimk/orders-0.c:441:66: warning: comparison of integer expressions of different signedness: ‘int’ and ‘unsigned int’ [-Wsign-compare]
+  441 |         assert(brains[0].avoidFlag==stuck && brains[0].avoidUntil>H->frame);
+      |                                                                  ^
+PASS: recovery orders win over the director on BOTH teams, avoid the stalled flag, and end on expiry, capture, respawn or team change; the director then resumes without the stalled flag
+REPRODUCED: Test15 queue timeout (never more than a busy planner) blocks the vehicle for every teammate at the base
+PASS: a vehicle-queue timeout (now 20 s) releases the waiting bot without blocking the vehicle for teammates at the same base (both teams)
+REPRODUCED: Test15 activity watchdog re-plans a stuck bot's objective every 3 s, cancelling its route each time (both teams)
+PASS: activity watchdog re-plans a stuck bot's objective once, then every 30 s; 3 s local exit probes continue (both teams)

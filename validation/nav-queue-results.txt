@@ -1,0 +1,8 @@
+PASS: detour route finishes across 5106 bounded slices; no search restart or guessed route; largest clock slice 0.270 ms
+PASS: expensive rejected shortcut checks resume instead of repeating the first candidate
+PASS: 60 owners share one workspace and all receive the correct completed route
+PASS: unfinished work differs from a completed unreachable search
+PASS: waypoint capacity is marked as continuation rather than destination arrival
+PASS: replacement goals and grid destruction clear pending owners and prevent stale pointers
+PASS: both deployment routes; 22m checked parking connector; blocked connector returns no guessed route
+PASS: height-aware vehicle endpoint selects correct bridge/road layer and rejects invalid height

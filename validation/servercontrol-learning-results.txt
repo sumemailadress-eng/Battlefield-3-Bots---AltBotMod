@@ -1,0 +1,1 @@
+PASS: 38 Server Control learning checks (read and judge every entry type, delete moved entries, clear, glass, export, import, merge, older install, foreign file, page scripts parse, settings rows)

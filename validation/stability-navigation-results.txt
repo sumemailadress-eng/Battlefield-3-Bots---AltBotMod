@@ -1,0 +1,5 @@
+PASS: real Desert cache excludes logged tank/deployment area; extension covers both and preserves all surveyed bytes without inventing terrain
+PASS: incremental extension skips old ground and joins both deployment routes through real surveyed seam links
+PASS: malformed boundary links, nonfinite positions and null grids fail safely; valid routes remain usable
+PASS: truncated/overflow/nonfinite caches rejected before use; truncated large cache rejected before allocating its claimed payload
+PASS: every grid/queued/synchronous workspace allocation failure releases partial allocations and reports failure; tracked heap returns to zero

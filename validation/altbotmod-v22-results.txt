@@ -1,0 +1,6 @@
+PASS: V22 bend speed - a hand-recorded straight road (3 m points, +-0.6 m jitter) drives at 29 m/s at its slowest (V21.1: braked to 8 m/s 16 times), a 30 m-radius bend 13.9 m/s (tank 10.9), a junction turn 5
+PASS: V22 aircraft missiles - selected from the first frame on the nose, fired after 2.8 s of lock (frame 84), guns back when the target leaves the nose
+PASS: V22 respawns - the no-shooter death rest is Rush only (Epicenter TDM: two entities, one rested 3 min, team 1 never spawned); a refused team-play spawn rests 3 s; outside Conquest a team with an HQ but no matched deployment tries the team-less entities (Office Domination)
+PASS: V22 Fun-Bots routes first - from 15 m, a stalled route is taken again from the next way onto the network twice before the grid; boats use recorded river lanes to far flags
+PASS: V22 weapons - lock-on launches confirmed by the magazine; aircraft missiles selected through the lock; gunners lead relative to their own platform and by the target's turn, use the coax / guided missile as Fun-Bots does, fire 1.8 s bursts; helicopters fire within ~6 m
+PASS: V22 stationary weapons manned for a target in reach and left after 15 s without a shot; elite sharper; bends by radius; version V22

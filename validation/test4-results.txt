@@ -1,0 +1,4 @@
+PASS: 29 maps, 152 layout profiles including 25 Rush/13 Squad Rush/29 TDM/29 SQDM, correct mode aliases, four-team human reserves, fair full-fleet dispatch
+PASS: actual revive exposure/medic exposure/team/death/range and squad flag allocation regressions
+PASS: actual round retirement, neutral inputs, no suicide retries, fresh identity deletion, mode/event/manual reset
+PASS: all 327 indexed bot arrays compact once; startup spawn probes disabled

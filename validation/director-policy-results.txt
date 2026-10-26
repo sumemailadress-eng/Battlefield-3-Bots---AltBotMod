@@ -1,0 +1,4 @@
+PASS: both teams take the flags nearest their own ground first at four map scales (no soldier sent to the far side), retain long attack trips, cap guard groups at 3-6 and release every captured-flag driver/surplus soldier
+PASS: with all flags owned, the majority patrols between different flags; newly lost flags immediately regain attack priority; human-commanded units are excluded on both teams
+PASS: single-flag and 1-64-bot rosters retain a mobile duty instead of leaving every bot as a guard
+PASS: jet and helicopter patrol orbits use aircraft arrival ranges and advance to another friendly flag after eight seconds

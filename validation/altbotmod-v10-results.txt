@@ -1,0 +1,11 @@
+PASS: SniperEngageMeters (default 550, 150-900) and SniperOverwatch read from enhanced.ini; bolt rifles reach 550 m (V9 368 m), never less than ReconEngageMeters; marksman rifles unchanged
+PASS: snipers keep their 0.12 m fire window within 150 m and take 0.2 m (the chest) beyond it - V9 waited for 0.12 m at 400 m
+PASS: fight_tick aims a sniper at the head only within 150 m, the chest beyond
+PASS: a bolt-rifle recon spots, engages and keeps fighting soldiers out to SniperEngageMeters or the recon range, whichever is further (V25: 607 m at Aggression 2); a marksman-rifle recon keeps the recon range
+PASS: 282 of 400 bolt-rifle recon lives go on overwatch (~70%); marksman-rifle recon, other classes and SniperOverwatch=0 never do
+PASS: perch survey: 8 tick(s), 24 rays; 4 perches on the plateau 15 m up; the hill outside the playing area and the rise behind the wall are not used
+PASS: it plans one route up, walks, and on the perch crouches and glasses the flag (sweeps within 26 deg of it), standing still
+PASS: with SniperPairs=0 two snipers never share a perch (25 m apart)
+PASS: pushed off its perch, a route that fails, or time up: another perch (not the last one); a queued route is waited for; after the third it plays the flag again
+PASS: when the objective moves on, a perch that sees the next flag is kept; a bot already near its flag plays it; while the grid is still surveyed snipers play the flags (retry in 60 s); a new map's grid surveys afresh
+PASS: wired in - Conquest and Rush brains, no side steps / flanking moves / firing-spot walks on a perch, the stuck watchdog leaves a perched sniper be, per-bot tables compacted on roster removal

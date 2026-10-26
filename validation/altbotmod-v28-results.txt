@@ -1,0 +1,2 @@
+PASS: gamertags - a list of 300 is written when there is none and used; a name a player already has is never handed out; a bot under a gamertag keeps its roster identity (side, class, place) and a removed one frees its slot
+PASS: V28 source - gamertags on (BotNames, in Server Control) with roster identity everywhere it is read; door guns on every aircraft seat, re-searched every 20 s; bleed held back only by the game's own bleed; road-keeping aim; every lock-on attempt reported, fire after 3 s of locking; version V28

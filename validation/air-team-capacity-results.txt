@@ -1,0 +1,2 @@
+PASS: BOTH teams simultaneously reserve one jet and five helicopters at their own deployment, after opening priority expires; twelve pilots coexist, each team refuses a seventh even with malformed settings
+PASS: BOTH teams simultaneously dispatch all sixteen available tanks, with independent driver limits and no later-round infantry quota blocking a vehicle

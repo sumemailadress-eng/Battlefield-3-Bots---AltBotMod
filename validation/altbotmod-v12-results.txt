@@ -1,0 +1,5 @@
+PASS: perf line - route planning time is reported once, under paths (V11 also added it to input+steer+gunner)
+PASS: MP_007 - 25 soldier routes: 451324 -> 118457 nodes expanded (74% fewer), total length 12195 -> 12060 m (-1.1%)
+PASS: XP3_Desert - 25 soldier routes: 348795 -> 191976 nodes expanded (45% fewer), total length 11010 -> 10779 m (-2.1%)
+PASS: MP_011 - 25 soldier routes: 547724 -> 544226 nodes expanded (1% fewer), total length 392 -> 383 m (-2.1%)
+PASS: all three maps together: 37% fewer nodes expanded per soldier route

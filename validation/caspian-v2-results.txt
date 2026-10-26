@@ -1,0 +1,79 @@
+/tmp/bf3-caspian-v2-2260wnsl/graph.c: In function ‘main’:
+/tmp/bf3-caspian-v2-2260wnsl/graph.c:31:5: warning: this ‘if’ clause does not guard... [-Wmisleading-indentation]
+   31 |     if(comp[s]!=bigId)continue;checked++;
+      |     ^~
+/tmp/bf3-caspian-v2-2260wnsl/graph.c:31:32: note: ...this statement, but the latter is misleadingly indented as if it were guarded by the ‘if’
+   31 |     if(comp[s]!=bigId)continue;checked++;
+      |                                ^~~~~~~
+  COOP_006_ConquestSmall0.map: 1375 waypoints, 20 paths, 6 vehicle paths excluded, 99% in one network
+  MP_001_ConquestLarge0.map: 3794 waypoints, 47 paths, 7 vehicle paths excluded, 99% in one network
+  MP_001_ConquestSmall0.map: 4301 waypoints, 46 paths, 10 vehicle paths excluded, 100% in one network
+  MP_003_ConquestLarge0.map: 7793 waypoints, 40 paths, 8 vehicle paths excluded, 100% in one network
+  MP_003_ConquestSmall0.map: 5276 waypoints, 55 paths, 13 vehicle paths excluded, 99% in one network
+  MP_007_ConquestLarge0.map: 7015 waypoints, 53 paths, 11 vehicle paths excluded, 97% in one network
+  MP_007_ConquestSmall0.map: 10548 waypoints, 69 paths, 22 vehicle paths excluded, 99% in one network
+  MP_011_ConquestLarge0.map: 6303 waypoints, 38 paths, 3 vehicle paths excluded, 100% in one network
+  MP_011_ConquestSmall0.map: 1587 waypoints, 33 paths, 8 vehicle paths excluded, 43% in one network
+  MP_012_ConquestLarge0.map: 22008 waypoints, 136 paths, 14 vehicle paths excluded, 99% in one network
+  MP_012_ConquestSmall0.map: 3398 waypoints, 61 paths, 8 vehicle paths excluded, 99% in one network
+  MP_013_ConquestLarge0.map: 13302 waypoints, 125 paths, 4 vehicle paths excluded, 100% in one network
+  MP_013_ConquestSmall0.map: 4219 waypoints, 53 paths, 15 vehicle paths excluded, 99% in one network
+  MP_017_ConquestLarge0.map: 3249 waypoints, 66 paths, 13 vehicle paths excluded, 95% in one network
+  MP_017_ConquestSmall0.map: 5096 waypoints, 72 paths, 14 vehicle paths excluded, 99% in one network
+  MP_018_ConquestLarge0.map: 4355 waypoints, 72 paths, 16 vehicle paths excluded, 99% in one network
+  MP_018_ConquestSmall0.map: 10896 waypoints, 75 paths, 14 vehicle paths excluded, 99% in one network
+  MP_Subway_ConquestLarge0.map: 3843 waypoints, 51 paths, 0 vehicle paths excluded, 100% in one network
+  XP1_001_ConquestAssaultLarge0.map: 10535 waypoints, 102 paths, 11 vehicle paths excluded, 99% in one network
+  XP1_001_ConquestAssaultSmall0.map: 11108 waypoints, 90 paths, 4 vehicle paths excluded, 100% in one network
+  XP1_001_ConquestAssaultSmall1.map: 2386 waypoints, 30 paths, 4 vehicle paths excluded, 100% in one network
+  XP1_002_ConquestAssaultSmall0.map: 2695 waypoints, 69 paths, 13 vehicle paths excluded, 99% in one network
+  XP1_002_ConquestLarge0.map: 23774 waypoints, 147 paths, 16 vehicle paths excluded, 98% in one network
+  XP1_002_ConquestSmall0.map: 7075 waypoints, 76 paths, 10 vehicle paths excluded, 97% in one network
+  XP1_003_ConquestAssaultLarge0.map: 6079 waypoints, 86 paths, 16 vehicle paths excluded, 99% in one network
+  XP1_003_ConquestAssaultSmall0.map: 7420 waypoints, 99 paths, 8 vehicle paths excluded, 98% in one network
+  XP1_003_ConquestAssaultSmall1.map: 2178 waypoints, 38 paths, 7 vehicle paths excluded, 100% in one network
+  XP1_004_ConquestAssaultLarge0.map: 5804 waypoints, 54 paths, 21 vehicle paths excluded, 96% in one network
+  XP1_004_ConquestAssaultSmall0.map: 3123 waypoints, 18 paths, 0 vehicle paths excluded, 100% in one network
+  XP1_004_ConquestAssaultSmall1.map: 10329 waypoints, 65 paths, 19 vehicle paths excluded, 98% in one network
+  XP3_Alborz_ConquestLarge0.map: 24942 waypoints, 106 paths, 23 vehicle paths excluded, 92% in one network
+  XP3_Alborz_ConquestSmall0.map: 14197 waypoints, 92 paths, 12 vehicle paths excluded, 99% in one network
+  XP3_Desert_ConquestLarge0.map: 19964 waypoints, 130 paths, 34 vehicle paths excluded, 94% in one network
+  XP3_Desert_ConquestSmall0.map: 10555 waypoints, 68 paths, 11 vehicle paths excluded, 92% in one network
+  XP3_Shield_ConquestLarge0.map: 13816 waypoints, 130 paths, 32 vehicle paths excluded, 94% in one network
+  XP3_Shield_ConquestSmall0.map: 7390 waypoints, 81 paths, 15 vehicle paths excluded, 99% in one network
+  XP3_Valley_ConquestLarge0.map: 5913 waypoints, 54 paths, 29 vehicle paths excluded, 99% in one network
+  XP3_Valley_ConquestSmall0.map: 14499 waypoints, 89 paths, 12 vehicle paths excluded, 99% in one network
+  XP4_FD_ConquestLarge0.map: 3324 waypoints, 53 paths, 10 vehicle paths excluded, 98% in one network
+  XP4_FD_ConquestSmall0.map: 2732 waypoints, 37 paths, 21 vehicle paths excluded, 42% in one network
+  XP4_Parl_ConquestLarge0.map: 3550 waypoints, 55 paths, 12 vehicle paths excluded, 94% in one network
+  XP4_Parl_ConquestSmall0.map: 2577 waypoints, 43 paths, 10 vehicle paths excluded, 99% in one network
+  XP4_Quake_ConquestLarge0.map: 3323 waypoints, 74 paths, 0 vehicle paths excluded, 99% in one network
+  XP4_Quake_ConquestSmall0.map: 1680 waypoints, 29 paths, 3 vehicle paths excluded, 100% in one network
+  XP4_Rubble_ConquestAssaultSmall0.map: 3463 waypoints, 91 paths, 6 vehicle paths excluded, 99% in one network
+  XP5_001_ConquestLarge0.map: 12078 waypoints, 94 paths, 22 vehicle paths excluded, 99% in one network
+  XP5_001_ConquestSmall0.map: 10273 waypoints, 90 paths, 18 vehicle paths excluded, 99% in one network
+  XP5_002_ConquestLarge0.map: 3285 waypoints, 43 paths, 17 vehicle paths excluded, 97% in one network
+  XP5_002_ConquestSmall0.map: 10470 waypoints, 83 paths, 11 vehicle paths excluded, 100% in one network
+  XP5_003_ConquestLarge0.map: 22043 waypoints, 124 paths, 17 vehicle paths excluded, 98% in one network
+  XP5_003_ConquestSmall0.map: 7683 waypoints, 73 paths, 13 vehicle paths excluded, 99% in one network
+  XP5_004_ConquestLarge0.map: 13077 waypoints, 113 paths, 25 vehicle paths excluded, 99% in one network
+  XP5_004_ConquestSmall0.map: 4210 waypoints, 47 paths, 17 vehicle paths excluded, 99% in one network
+PASS: all 53 Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected
+In file included from /tmp/bf3-caspian-v2-2260wnsl/plan.c:42:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘boat_lane_to’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:266:98: warning: implicit declaration of function ‘objective_count’ [-Wimplicit-function-declaration]
+  266 |     if (!g_traceWater.count || !g_enhanced.funBotsRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
+      |                                                                                                  ^~~~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: implicit declaration of function ‘objective_pos’ [-Wimplicit-function-declaration]
+  267 |     const float *fp = objective_pos(f);
+      |                       ^~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: initialization of ‘const float *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘trace_stats_tick’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:314:5: warning: implicit declaration of function ‘zone_stats’ [-Wimplicit-function-declaration]
+  314 |     zone_stats();   // AltBotMod V34
+      |     ^~~~~~~~~~
+PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump
+PASS: a retired bot whose kick does not unspawn it is killed after 5 s and replaced (Test15 left it as a brain-less zombie); round cleanup never kills
+PASS: Aggression 0/1/2 parses, keeps the aim window (V3), scales engage range (never past the weapon's maximum), bursts and pauses; the director sends more bots to a flag the team just lost, on both teams
+PASS: an abandoned ground vehicle in the field gets the nearest free infantry bot on BOTH teams; busy bots, base vehicles and occupied vehicles are left alone
+PASS: a target with its body up to the chest behind cover stays in sight and is aimed at above the cover (Test15 lost it and shot the cover); the open-ground aim point is the chest less the calibrated rise; a fully hidden one is dropped after 4.8 s when aggressive

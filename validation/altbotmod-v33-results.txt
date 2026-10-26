@@ -1,0 +1,5 @@
+speed samples 59: 12.00 .. 12.00 m/s
+vehicle_pos ok
+PASS: vehicles use the physics position (smooth speed, body / seat fallback)
+PASS: AltBotMod Command ships with Server Control
+PASS: version V34

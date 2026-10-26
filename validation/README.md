@@ -1,0 +1,5 @@
+# Offline checks
+
+Run `python3 validation/run_release_checks.py --pwsh /path/to/pwsh` with GCC and PowerShell 7. Results are in `validation/test15-results.json`; all 37 groups must pass. Harnesses compile actual policy modules or extracted native functions against mocked native entities, seats, clocks, collision, terrain and spawn calls. Native groups use ASan/UBSan; leak checks are disabled. These are not live BF3 physics/replication checks.
+
+`test15_regressions.py` covers the actual activity adapter, late-aircraft dispatch, live hull-width departures and changing duties for both teams across 2–16 flags. `survey_budget_checks.py` covers actual paving/tree limits and sliced completion. Historical Test12/Test13/Test14 reproductions and obstacle/spawn/navigation/combat/transport tests remain. `native-build-checks.json` records DLL compatibility and preserved functions; `source-audit.json` inventories the whole current source tree. `PROJECT-AUDIT-Test15.md` maps the inspected wait/assignment paths and remaining native limitations.

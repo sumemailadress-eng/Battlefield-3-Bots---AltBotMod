@@ -1,0 +1,15 @@
+Battlefield 3 map thumbnails
+
+29 map thumbnails downloaded from EA's official Battlelog image CDN.
+Source page: https://battlelog.battlefield.com/bf3/servers/
+Rights/credit: Electronic Arts / DICE, Battlefield 3 / Battlelog.
+These are the original 146 x 79 pixel Battlelog thumbnails, displayed at
+thumbnail sizes. They are real map images, not generated map artwork.
+
+Each image's map code, title, source page and complete original image URL is
+recorded in MAP-IMAGE-SOURCES.json in this package. Files are cached locally
+under ServerControl/Command-Web/maps/ for offline use; the running launcher
+does not scrape or contact Battlelog.
+
+The generated abstract theme backgrounds are separate assets. See
+ARTWORK-PROMPTS.txt for their prompts and project paths.

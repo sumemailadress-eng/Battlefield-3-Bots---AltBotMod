@@ -1,0 +1,7 @@
+/tmp/bf3-altbotmod-v6-1d1dwb3i/v6.c: In function ‘main’:
+/tmp/bf3-altbotmod-v6-1d1dwb3i/v6.c:16:14: warning: unused parameter ‘argc’ [-Wunused-parameter]
+   16 | int main(int argc, char **argv)
+      |          ~~~~^~~~
+PASS: Fun-Bots vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged
+PASS: the director sends a free bot to a neutral flag before an equally distant enemy flag (neutral flags were left untaken)
+PASS: a bot tank engages an enemy tank / vehicle out to 400 m before nearby infantry (V5 kept shooting soldiers while a player's tank drove up); V7: helicopters after armour and close infantry

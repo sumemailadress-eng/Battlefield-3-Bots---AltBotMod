@@ -1,0 +1,1 @@
+PASS: actual vault jump/forward-hold timing and retry cooldown retained; knifeable fence selects knife, slashes three times and restores rifle; second try bounded and sheet metal requests detour

@@ -1,0 +1,5 @@
+PASS: actual cmd_spawn deploys BOTH human-free teams with discovered MpSoldier after failed squad moves; repeated recent RCON requests cannot extend the deadline
+PASS: refused native deployments do not set successful-spawn timestamps
+PASS: dead bot's named team is restored before native spawn; no living soldier is killed
+PASS: a refused closer vehicle flag spawn falls back to the real same-team HQ with its exact arguments on BOTH teams
+PASS: complete drive_tick -> bot_motion_tick emits positive native throttle on BOTH teams despite absent passengers and stale infantry navigation; reverse/brake releases on departure

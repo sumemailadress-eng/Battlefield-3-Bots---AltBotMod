@@ -1,0 +1,29 @@
+In file included from /tmp/bf3-route-coverage-81oqv6gk/coverage.c:42:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘boat_lane_to’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:266:98: warning: implicit declaration of function ‘objective_count’ [-Wimplicit-function-declaration]
+  266 |     if (!g_traceWater.count || !g_enhanced.funBotsRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
+      |                                                                                                  ^~~~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: implicit declaration of function ‘objective_pos’ [-Wimplicit-function-declaration]
+  267 |     const float *fp = objective_pos(f);
+      |                       ^~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: initialization of ‘const float *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘trace_stats_tick’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:314:5: warning: implicit declaration of function ‘zone_stats’ [-Wimplicit-function-declaration]
+  314 |     zone_stats();   // AltBotMod V34
+      |     ^~~~~~~~~~
+PASS: all 215 map/mode combinations load Fun-Bots routes through the real trace_level_load: 156 with their own file, 59 borrowing the nearest same-level one; 215 with a companion (+642494 waypoints of the level's other recordings within the mode's area); worst share in networks of 100+ waypoints 94% (XP3_Alborz_ConquestLarge0), worst companion join 95% (XP5_003_RushLarge0); routes reach >=95% of each network
+In file included from /tmp/bf3-route-coverage-81oqv6gk/placeholder.c:42:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘boat_lane_to’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:266:98: warning: implicit declaration of function ‘objective_count’ [-Wimplicit-function-declaration]
+  266 |     if (!g_traceWater.count || !g_enhanced.funBotsRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
+      |                                                                                                  ^~~~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: implicit declaration of function ‘objective_pos’ [-Wimplicit-function-declaration]
+  267 |     const float *fp = objective_pos(f);
+      |                       ^~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: initialization of ‘const float *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘trace_stats_tick’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:314:5: warning: implicit declaration of function ‘zone_stats’ [-Wimplicit-function-declaration]
+  314 |     zone_stats();   // AltBotMod V34
+      |     ^~~~~~~~~~
+PASS: a one-point placeholder file is skipped for the level's Conquest routes; a companion built for another file is not attached; Squad Rush borrows Rush, CTF / Scavenger the team-play routes; a (no join here) route to another floor 9-14 m away is tried, and (V23) the same trip on one floor too
+PASS: route companions - the generator mirrors the runtime fallback order and the Server Control map/mode table

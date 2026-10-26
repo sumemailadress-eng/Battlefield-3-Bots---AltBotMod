@@ -1,0 +1,15 @@
+PASS: names and weapons are made safe for a tab-separated line (tabs / line breaks -> _, empty -> -, cut to size)
+PASS: no-progress watch - reported once after 30 s without 4 m of movement towards a goal over 20 m away; also when jittering on the spot; not for holding near a goal, not while dead, again after moving on
+PASS: events file - lines end in CRLF, past the size cap it rolls over to events_<port>.old.txt (one kept) and starts again; reopening appends
+PASS: map picture - north (+z) up, east (+x) right, bounds = the grid's outer cell edges; BMP is 24-bit bottom-up BGR with padded rows
+PASS: drawing the picture a strip of rows at a time gives the same picture as drawing it at once
+PASS: MP_007 picture 715x1024 (99% walkable), set-up 37.0 ms, 32 strips of 32 rows, slowest strip 15.5 ms
+PASS: XP3_Desert picture 1024x1005 (99% walkable), set-up 16.4 ms, 32 strips of 32 rows, slowest strip 30.1 ms
+PASS: MP_011 picture 616x778 (51% walkable), set-up 5.3 ms, 25 strips of 32 rows, slowest strip 4.7 ms
+PASS: live picture - header, round, flags with owners, one line per player (bot / team / alive / position / vehicle with its tab cleaned / what it is doing / goal / health / the rest of its route, every few points), written whole (a .tmp renamed over it)
+PASS: map picture - drawn from the nav grid 16 rows a frame (500 rows: 32 frames), written as map_<level>.bmp once, its bounds in the live picture
+PASS: kills - killer and victim with bot / team / position, weapon, head shot, distance; the victim where it was last alive (not where the body flew), the world's kills at the victim, players never seen left out
+PASS: stuck spots - the mod's watchdogs (one event per bot and spot in 10 s) and the no-progress watch (bot 0, 50 m from its flag, and the tank, 680 m from its goal, both still after 30 s; the sniper on its perch is not reported); 28 move lines in 32 s (4 soldiers every 5 s)
+PASS: LiveMap=0 - the live picture says off, nothing more is written, kills meanwhile are dropped (not written late); LiveMap=1 again picks up at once; a new round starts a new round id
+PASS: the mock server's live_25300.txt / events_25300.txt are kept as the Server Control Live map test fixture
+PASS: hooks - the live map runs every frame before the round clean-up return (so kills are drained even then); stuck spots from the on-foot, driving, 15 s stall and retire watchdogs (through the bm_report_stuck hook in enhanced.h, a no-op in the other offline tests); the no-progress watch is compacted with the roster; RCON player.onKill keeps killer, victim, weapon and head shot in its own queue (the round code's death queue is unchanged)

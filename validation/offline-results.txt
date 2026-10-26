@@ -1,0 +1,25 @@
+PASS: 371 vehicle/config/recovery/steering/ballistic/compaction checks
+PASS: 60370 aircraft profile/config/PID/intercept/flight safety/property checks
+PASS: BOTH teams recover idle deployment infantry; combat, human orders and active captures are retained without suicides
+PASS: BOTH teams leave distant firefights for a nearby abandoned tank; human orders, recent hits and close enemies retain priority
+PASS: nearby idle infantry can take an unused ground vehicle from a distant teammate's walking claim; no seated crew or opposing-team claim is displaced
+PASS: shared local vehicle-route failures preserve distant/opposing-team use; thirty-second pending timeout releases infantry
+PASS: BOTH teams can claim immediately nearby vehicles while two distant walks are queued; moving drivers release a queue slot
+PASS: pending pilots counted; enemy HQ spawn refused; stale original base refreshed without swapping teams
+PASS: fleet base selection accepts a discovery-validated RU HQ despite a generic child team field
+PASS: actual transport lands/unloads bot cargo/takes off; human and gunner seats preserved; water/obstruction reject landing
+PASS: captured-flag owner refresh, new-cache retry, and newly appeared vehicle dispatch on both teams
+PASS: actual vertical helicopter takeoff/jet runway guard, armed patrol coverage/dwell and occupied ground-driver adoption
+PASS: Test7 abandoned map vehicles, six-pilot claim/takeover cap, independent team quotas, crew-team targeting, infantry fallback and bounded empty scans
+PASS: actual native aircraft/fleet HQ-respawn/replacement reservation/return routing/jet capacity/passenger takeover/crew protection/compaction; six pilots reserve one jet and five helicopters on BOTH teams
+PASS: Test7 jet long-range/occluded pursuit and helicopter stand-off/aligned firing/LOS gate
+PASS: jet climb ceiling/finite recovery/ground dive/attack run/guidance fixture/threat scores/new settings regressions
+PASS: actual tank selector close-infantry over distant helicopter/near armor/engineer/aim hysteresis/visibility/friendly/point-blank checks
+PASS: V16 - the soldier who just hit the tank is engaged first for 5 s; a soldier within 25 m of the hull beats a far engineer
+PASS: V23 - armour never slows for a target any more (V8-V22: 2 s slow, 6 s full pace - the convoys' slowdown-go); it fires on the move
+PASS: actual armor stand-off against visible ground targets, aircraft/occlusion/manual/team and point-blank exclusions
+PASS: eight actual weapon families over 4,800 range/cycle/alignment cases; convoy and opposing-driver priority; stable landing/pickup/threat abort; missile timing never treats aim as native lock
+/tmp/botmod-checks-lyazr7z3/native-regressions.c:85:12: warning: ‘traffic_controls’ defined but not used [-Wunused-function]
+   85 | static int traffic_controls(int i,const float *vp,const float *xf,float *throttle,float *steer){(void)i;(void)vp;(void)xf;(void)throttle;(void)steer;return 0;}
+      |            ^~~~~~~~~~~~~~~~
+PASS: original forward-stuck and cooldown bugs reproduced; actual patched native blocks recover correctly

@@ -1,0 +1,11 @@
+PASS: Live map page and core parse, are plain ASCII, and are loaded by the Server Control window
+PASS: live picture - header, map / mode / round, map picture bounds, flags with owners, players (bot or person, team, place, vehicle, what each bot is doing, its goal and route, class from the bot name)
+PASS: live picture edge cases - half written (no end line), switched off, not ours, missing, damaged lines, file held open by the server
+PASS: (compiled reader) history - kills (who, whom, weapon, head shot, distance, places; suicides and team kills told apart), stuck reports, rounds; heat per layer (kills where the killer stood, deaths, stuck, traffic) per round or per map in 10 m cells; scoreboard; stuck spots grouped
+PASS: (compiled reader) reading the history as it grows - pieces of any size, appended lines, a half-written line completed later, the server rolling the file over, a long file read from its last 8 MB only
+PASS: (PowerShell reader) history - kills (who, whom, weapon, head shot, distance, places; suicides and team kills told apart), stuck reports, rounds; heat per layer (kills where the killer stood, deaths, stuck, traffic) per round or per map in 10 m cells; scoreboard; stuck spots grouped
+PASS: (PowerShell reader) reading the history as it grows - pieces of any size, appended lines, a half-written line completed later, the server rolling the file over, a long file read from its last 8 MB only
+PASS: the compiled and PowerShell readers agree line for line (kills, stuck, rounds, heat per map / layer / round, heat pixels); compiled 6 ms vs PowerShell 1687 ms for 4000 lines
+PASS: drawing helpers - fit, north up / east right, flips, screen <-> world, zoom at the mouse with limits, bounds with / without a map picture, heat colours and grid, weapon and class names
+PASS: Live map switch - per server (LiveMap in enhanced_<port>.ini, overriding the all-servers file), applied at once through the settings-only reload; file places; the settings window lists the four Live map settings
+PASS: Server Control Live map core

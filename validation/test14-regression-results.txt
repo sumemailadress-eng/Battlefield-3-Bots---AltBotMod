@@ -1,0 +1,11 @@
+PASS: actual pre-ground dispatcher assigns both teams one jet and five choppers, boards native seats and emits takeoff inputs; no seventh pilot; NaN SIMD padding does not reject usable aircraft
+PASS: actual far pilot claim transfers to a nearby teammate and boards an abandoned helicopter
+PASS: complete native driver for both teams leaves clear deployment despite queued A*, rejects blocked corridors, then resumes objectives and retargets captured flags without ejecting crew
+In file included from /tmp/bf3-test14-4okszdub/native-director.c:219:
+/home/claude/caspian/v3/files/BotMod/src/director_native.inc: In function ‘director_tick’:
+/home/claude/caspian/v3/files/BotMod/src/director_native.inc:53:37: warning: comparison of integer expressions of different signedness: ‘int’ and ‘unsigned int’ [-Wsign-compare]
+   53 |         units[i].avoid=b->avoidUntil>H->frame?b->avoidFlag:-1;
+      |                                     ^
+PASS: actual native director preserves pending routes, resumes objectives after distant side engagements, retains immediate/path threats, excludes human commands and dead soldiers
+REPRODUCED: Test13 last-enemy-flag support job stops permanently because there is no different hostile flag
+PASS: actual last-enemy-flag job repositions after eight seconds; a committed patrol does not bounce between competing allocators; captured flag advances when the director changes duty

@@ -1,0 +1,194 @@
+// Extracted unchanged Test 9 cmd_spawn and movement/input sequence.
+static void cmd_spawn(const char *name)
+{
+    char *bot = find_player(name);
+    if (!bot) { bot_log("spawn: no player named '%s'", name); return; }
+    if (*(void **)(bot + OFF_PLAYER_SOLDIER)) { bot_log("spawn: '%s' is already alive", name); return; }
+    if (!g_levelReady) { bot_log("spawn: '%s' waits - level not ready", name); return; }
+    if (!player_squad(bot) && squad_request_recent(bot)) return;   // squad move on its way (only works while dead)
+    // The game swaps teams between rounds: keep "... US" bots on team 1 and "... RU" bots on team 2.
+    {
+        int want = bm_roster_team(name,g_mode,0);
+        if (want && player_team(bot) != want) {
+            char ok = ((AddToTeam_t)ADDR_ADD_TO_TEAM)(bot, want, 0, 1);
+            bot_log("spawn: moved '%s' back to team %d (%s)", name, want, ok ? "ok" : "FAILED");
+        }
+        if (want && player_team(bot) != want) return;   // still on the wrong side: wait (never spawn there to be killed later)
+    }
+    if (!mode_is_cq()) { mode_spawn(bot); return; }
+    if (deployment_spawn(bot)) return;
+    int team = player_team(bot) == 2 ? 2 : 1;
+    if (!*(void **)(bot + OFF_PLAYER_BLUEPRINT)) {
+        if (!H->teamBlueprint[team]) { bot_log("spawn: no SoldierBlueprint known for team %d yet (a human on that team must deploy once)", team); return; }
+        ((SetPtr_t)ADDR_PLAYER_SET_BLUEPRINT)(bot, H->teamBlueprint[team]);
+    }
+    if (player_squad(bot) == 0 && squad_join(bot, team)) return;   // joins a squad first; spawns on the next try
+    // the team's HQ spawn point gone: the level is being torn down (next map / restart) - nobody spawns, and no kit is
+    // handed out (its assets are being freed: that crashed the server during map changes)
+    if (H->teamSpawn[team].entity && !cse_valid(H->teamSpawn[team].entity)) {
+        H->teamSpawn[team].entity = NULL;
+        g_levelReady = 0;
+        bot_log("level: team %d's HQ spawn point is gone - the level is unloading, bots wait", team);
+        return;
+    }
+    BotTeamSpawn *ts = &H->teamSpawn[team];
+    BotTeamSpawn flagArgs = {0};
+    int noHq = !ts->entity;   // Conquest Assault defenders: flags only
+    if (noHq) { flagArgs.a2 = 0xffffffff; flagArgs.a3 = 1; flagArgs.a4 = 0; ts = &flagArgs; }
+    // Front-line spawn: of HQ and the flags the team holds (not being taken by the enemy), the one closest to a flag
+    // the team still has to capture - so bots on long maps / carrier starts get into the fight quickly.
+    void *vehicleSpawn = noHq ? NULL : fleet_spawn(bot);
+    if (vehicleSpawn) {
+        flagArgs.entity = vehicleSpawn;
+        flagArgs.a2 = g_fleetBaseArgs[team][0]; flagArgs.a3 = g_fleetBaseArgs[team][1]; flagArgs.a4 = g_fleetBaseArgs[team][2];
+        ts = &flagArgs;
+    }
+    void *ent = ts->entity;
+    const char *where = vehicleSpawn ? "original HQ (vehicle assignment)" : "HQ";
+    int best = -1;
+    float bestD = 1e30f;
+    {   // a defending squad spawns at the flag it guards (if it is ours and not being taken)
+        int sqf = squad_objective(team, player_squad(bot));
+        if (!vehicleSpawn && sqf >= 0 && squad_defending(team, player_squad(bot)) && flag_owner(sqf) == team && g_flagSpawn[sqf][team]) {
+            int ctl = *(int *)(g_flags[sqf] + OFF_CP_CONTROL_TEAM);
+            if (!ctl || ctl == team) { best = sqf; bestD = -1; }
+        }
+    }
+    int sqObj = vehicleSpawn ? -1 : squad_objective(team, player_squad(bot));   // attacking squad: get near its flag
+    if (sqObj >= 0 && squad_defending(team, player_squad(bot))) sqObj = -1;
+    for (int s = noHq ? 0 : -1; !vehicleSpawn && s < g_flagCount && bestD >= 0; s++) {
+        const float *sp = s < 0 ? g_hqPos[team] : flag_pos(s);
+        if (s >= 0) {
+            int ctl = *(int *)(g_flags[s] + OFF_CP_CONTROL_TEAM);
+            if (flag_owner(s) != team || !g_flagSpawn[s][team] || (ctl && ctl != team)) continue;
+        }
+        float d = 1e30f;
+        if (sqObj >= 0) d = dist2(flag_pos(sqObj), sp);   // the squad's flag
+        else
+            for (int f = 0; f < g_flagCount; f++) {
+                if (flag_owner(f) == team) continue;
+                float dx = flag_pos(f)[0] - sp[0], dz = flag_pos(f)[2] - sp[2], dd = dx * dx + dz * dz;
+                if (dd < d) d = dd;
+            }
+        if (s < 0 && d > 1e29f) break;   // team holds every flag: HQ
+        if (d < bestD || (noHq && best < 0)) { bestD = d; best = s; }
+    }
+    if (!vehicleSpawn && sqObj < 0 && bestD >= 0 && player_squad(bot) > 0) {   // in a player's squad: on the human leader (alive, on foot, not shooting)
+        char *pm = player_manager(), *lead = NULL;
+        void **arr = pm ? *(void ***)(pm + 0xac) : NULL;
+        unsigned count = pm ? *(unsigned *)(pm + 8) : 0;
+        for (unsigned k = 0; k < count && k < 64 && !lead; k++) {
+            char *m = arr[k], *ms;
+            if (!m || is_bot(m) || player_team(m) != team || player_squad(m) != player_squad(bot) || !m[0x788]) continue;
+            if (!(ms = *(char **)(m + OFF_PLAYER_SOLDIER)) || *(float *)(ms + OFF_SOLDIER_HEALTH) <= 0) continue;
+            if (player_vehicle(m) && !free_seat_count(player_vehicle(m))) continue;
+            if (squadmate_spawned_on_recently(m) || squadmate_in_combat(m, ms) || !squadmate_spawnable(m, ms)) continue;
+            lead = m;
+        }
+        if (lead) {
+            typedef char (__attribute__((thiscall)) *SpawnOnSquad_t)(void *extent, void *mate);
+            apply_kit(bot);   // the bot's class loadout from the library (only right before it really spawns)
+            {
+                float *lp = (float *)(*(char **)(lead + OFF_PLAYER_SOLDIER) + OFF_SOLDIER_POSITION);
+                bot_log("spawn: '%s' tries its squad leader %s at (%.0f, %.1f, %.0f)%s", name, lead + OFF_PLAYER_ONLINE_NAME, lp[0], lp[1], lp[2],
+                        player_vehicle(lead) ? " (in a vehicle)" : "");
+            }
+            char ok = ((SpawnOnSquad_t)0x01185b50)(bot + *(int *)0x0285bad8, lead);
+            char *s = *(char **)(bot + OFF_PLAYER_SOLDIER);
+            if (ok && s) {
+                squadmate_note_spawn(lead);
+                bot_log("spawn: '%s' team=%d on its squad leader %s%s -> soldier=%p", name, team, lead + OFF_PLAYER_ONLINE_NAME,
+                        player_vehicle(bot) ? " into a vehicle seat" : "", s);
+                int k = bot_index(bot);
+                if (k >= 0) { g_lastSpawnedBot[k] = bot; g_lastSpawnedAt[k] = H->frame; if (player_vehicle(bot)) squadmate_ride(k, player_vehicle(bot)); }
+                return;
+            }
+        }
+    }
+    if (sqObj >= 0 && bestD > 0) {   // ...or on the squadmate nearest it, like players do (not one in a vehicle or a fight)
+        char *pm = player_manager(), *mate = NULL;
+        float mateD = bestD;
+        int squad = player_squad(bot);
+        void **arr = pm ? *(void ***)(pm + 0xac) : NULL;
+        unsigned count = pm ? *(unsigned *)(pm + 8) : 0;
+        for (unsigned k = 0; k < count && k < 64; k++) {
+            char *m = arr[k], *ms;
+            if (!m || m == bot || player_team(m) != team || player_squad(m) != squad) continue;
+            if (!(ms = *(char **)(m + OFF_PLAYER_SOLDIER)) || *(float *)(ms + OFF_SOLDIER_HEALTH) <= 0) continue;
+            if (player_vehicle(m) && !free_seat_count(player_vehicle(m))) continue;   // a full vehicle
+            if (squadmate_spawned_on_recently(m) || squadmate_in_combat(m, ms) || !squadmate_spawnable(m, ms)) continue;
+            float d = dist2((float *)(ms + OFF_SOLDIER_SPAWN_POSITION), flag_pos(sqObj));
+            if (d < mateD) { mateD = d; mate = m; }
+        }
+        if (mate) {
+            typedef char (__attribute__((thiscall)) *SpawnOnSquad_t)(void *extent, void *mate);
+            apply_kit(bot);
+            {
+                float *mp = (float *)(*(char **)(mate + OFF_PLAYER_SOLDIER) + OFF_SOLDIER_POSITION);
+                bot_log("spawn: '%s' tries squadmate %s at (%.0f, %.1f, %.0f)%s", name, mate + OFF_PLAYER_ONLINE_NAME, mp[0], mp[1], mp[2],
+                        player_vehicle(mate) ? " (in a vehicle)" : "");
+            }
+            char ok = ((SpawnOnSquad_t)0x01185b50)(bot + *(int *)0x0285bad8, mate);   // VeniceServerPlayerExtent::spawnOnSquad
+            char *s = *(char **)(bot + OFF_PLAYER_SOLDIER);
+            if (ok && s) {
+                squadmate_note_spawn(mate);
+                bot_log("spawn: '%s' team=%d on squadmate %s (%.0f m from flag %d)%s -> soldier=%p", name, team, mate + OFF_PLAYER_ONLINE_NAME,
+                        sqrtf(mateD), sqObj, player_vehicle(bot) ? " into a vehicle seat" : "", s);
+                int k = bot_index(bot);
+                if (k >= 0) { g_lastSpawnedBot[k] = bot; g_lastSpawnedAt[k] = H->frame; if (player_vehicle(bot)) squadmate_ride(k, player_vehicle(bot)); }
+                return;
+            }
+            bot_log("spawn: '%s' could not spawn on %s - using a spawn point", name, mate + OFF_PLAYER_ONLINE_NAME);
+        }
+    }
+    if (noHq && best < 0) { bot_log("spawn: '%s' waits - its team has no HQ and no flag to spawn on", name); return; }
+    if (best >= 0) {
+        static char flagName[16];
+        snprintf(flagName, sizeof flagName, "flag %d", best);
+        ent = g_flagSpawn[best][team];
+        where = flagName;
+    }
+    int cand = -1;
+    int slot = -1; /* no spawn probes: do not create sacrificial soldiers */
+
+    if (0)   // spawning at HQ: is there a closer HQ to discover?
+        for (int k = 0; k < g_hqCandCount; k++)
+            if (!g_hqCandTried[team][k] && g_hqCand[k] != ts->entity && spawn_team(g_hqCand[k]) != 3 - team) { cand = k; break; }   // not the other team's
+    if (cand >= 0) { g_hqCandTried[team][cand] = 1; ent = g_hqCand[cand]; where = "HQ candidate (probe)"; }
+    if (!cse_valid(ent)) {   // a spawn point that is gone (or never was one): back to HQ, else wait
+        bot_log("spawn: '%s' - spawn point %p (%s) is not valid", name, ent, where);
+        if (cand >= 0) cand = -1;
+        if (ent == ts->entity || noHq || !cse_valid(ts->entity)) { if (ent == ts->entity && !noHq) ts->entity = NULL; return; }
+        ent = ts->entity; where = "HQ";
+    }
+    apply_kit(bot);
+    void *r = ((CseSpawn_t)ADDR_CSE_SPAWN)(ent, bot, ts->a2, ts->a3, ts->a4);
+    if (cand >= 0 && r) { HqProbe *q = &g_hqProbes[slot]; q->bot = bot; q->team = team; q->cand = cand; q->at = H->frame ? H->frame : 1; }
+    if (cand >= 0 && !r) bot_log("spawn: HQ candidate %p refused team %d - dropped", ent, team);
+    if (!r && ent != ts->entity && !noHq && cse_valid(ts->entity)) {   // flag spawn refused: fall back to HQ
+        where = "HQ (flag spawn refused)";
+        ent = ts->entity;
+        r = ((CseSpawn_t)ADDR_CSE_SPAWN)(ent, bot, ts->a2, ts->a3, ts->a4);
+    }
+    bot_log("spawn: '%s' team=%d at %s via entity=%p -> soldier=%p", name, team, where, ent, r);
+    {
+        int k = bot_index(bot);
+        if (k >= 0) { g_lastSpawnedBot[k] = bot; g_lastSpawnedAt[k] = H->frame; }
+    }
+}
+static void bot_motion_tick(int i,void *in)
+{
+        fleet_takeover(i);
+        air_consider(i);
+        if (g_air[i].phase) air_tick(i);
+        else if (g_drive[i].phase) drive_tick(i);
+        if (!air_pilot(i)) steer_bot(i, *(char **)((char *)H->bots[i] + OFF_PLAYER_SOLDIER));
+        if (level_ready()) { gunner_tick(i); fall_tick(i); }
+        if (player_vehicle(H->bots[i]) && g_driving[i]) {   // a driver: S is the brake / reverse (EIABrake), not a negative throttle
+            float t = H->botMove[i][0];
+            ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(in, EIA_THROTTLE, t > 0 ? t : 0.0f);
+            ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(in, EIA_BRAKE, t < 0 ? -t : 0.0f);
+        } else ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(in, EIA_THROTTLE, H->botMove[i][0]);
+        ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(in, EIA_STRAFE, H->botMove[i][1]);
+        ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(in, EIA_YAW, H->botMove[i][2]);
+}

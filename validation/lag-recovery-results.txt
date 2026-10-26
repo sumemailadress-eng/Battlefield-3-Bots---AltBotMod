@@ -1,0 +1,26 @@
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c: In function ‘rush_target’:
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:130:13: warning: implicit declaration of function ‘squad_order_rush’ [-Wimplicit-function-declaration]
+  130 |     {int ro=squad_order_rush(i);if(ro)return ro;}   // AltBotMod V34: the squad was told which M-COM
+      |             ^~~~~~~~~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c: In function ‘mode_brain_tick’:
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:179:101: warning: implicit declaration of function ‘player_exists’ [-Wimplicit-function-declaration]
+  179 |                 char *holder=g_rush.objective[j].operatorPlayer,*hs=holder && holder!=H->bots[i] && player_exists(holder)?*(char **)(holder+OFF_PLAYER_SOLDIER):NULL;
+      |                                                                                                     ^~~~~~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:207:16: warning: implicit declaration of function ‘sniper_overwatch_tick’ [-Wimplicit-function-declaration]
+  207 |             if(sniper_overwatch_tick(i,bot_brain(i),soldier,goal,1000+target)){g_modeBot[i].snipe=1;return;}
+      |                ^~~~~~~~~~~~~~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:222:52: warning: implicit declaration of function ‘mcom_pane_tick’ [-Wimplicit-function-declaration]
+  222 |         if(operator && !g_modeBot[i].interactAt && mcom_pane_tick(i,soldier,goal))return;
+      |                                                    ^~~~~~~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:232:61: warning: implicit declaration of function ‘bot_crouch’ [-Wimplicit-function-declaration]
+  232 |                 g_modeBot[i].interactAt=H->frame?H->frame:1;bot_crouch(i);
+      |                                                             ^~~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:240:127: warning: implicit declaration of function ‘bot_stand’ [-Wimplicit-function-declaration]
+  240 |                 g_modeBot[i].interactAt=0;g_modeBot[i].closerUntil=H->frame+20*30;g_modeBot[i].approachAt=H->frame?H->frame:1;bot_stand(i);
+      |                                                                                                                               ^~~~~~~~~
+/tmp/bf3-lag-recovery-enixfq5y/objectives.c:285:55: warning: implicit declaration of function ‘zone_guard_point’ [-Wimplicit-function-declaration]
+  285 |                 if((i+g_modeBot[i].candidate)%3!=0 && zone_guard_point(goal,(unsigned)(i*7919u+g_modeBot[i].candidate*104729u),zp) &&
+      |                                                       ^~~~~~~~~~~~~~~~
+PASS: 200 unchanged objective decisions; capture/avoid changes; queued flag/body identity; alternate floors advance after real failures
+PASS: actual path follower waits for continuation and only reports final arrival
+PASS: actual retirement helper neutralizes, kicks and deletes a fresh identity without suicide

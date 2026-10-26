@@ -1,0 +1,7 @@
+PASS: actual mode_spawn naturally deploys BOTH human-free teams on all 25 Rush profiles after the bounded failed-squad deadline; team, base, loadout and vehicle requisition preserved
+PASS: native refused spawns rotate to another validated current-team child, cool down ten seconds, and never mark a failed deployment successful
+PASS: four-team SQDM shares the bounded squad wait and alternates the two observed soldier blueprints without changing native team assignment
+PASS: bots cannot probe or advance future Rush sectors; a successful human menu deployment confirms the next sector and reuses its exact native spawn arguments; no forced body, suicide or timer progression
+PASS: V15 loose spawning - with no spawn entity in the play area (Tehran Highway TDM, V14: never started) bots try the level's team-less ones, each side keeps the one the engine accepts, a refusal rests 3 s for that side only
+PASS: V15/V16 Rush without team spawn entities - a blind spawn is judged once the soldier is placed (V15 judged it at (0, 0, 0)); one away from the bot's sector base rests that entity for the team 2 min; one at the base is learned for the sector
+PASS: V16 out-of-bounds spawns - two deaths with no shooter within 25 s of spawning at one entity rest it for that team 3 min (a shot death or a longer life does not count)

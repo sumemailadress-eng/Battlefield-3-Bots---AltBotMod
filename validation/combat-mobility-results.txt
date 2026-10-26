@@ -1,0 +1,5 @@
+PASS: 3780 exact ballistic impact checks, longer ranges, burst/reaction configuration, speed/braking and useful objective vehicles
+PASS: actual 0.2-second reaction, 160m rifle burst, 300m recon range, occlusion releases fire, team change ends fight
+PASS: actual full 64-player range/FOV shortlist bounds LOS at eight rays, nearest visible enemy and friendly exclusion
+PASS: native own-hull retrace clears only own hull; wall behind remains blocked; no owner and repeated self-hit fail closed
+PASS: actual 16 weapon/attachment variants, class/team distribution, respawn rotation, gadget/message preservation, partial asset and disabled-option fallbacks

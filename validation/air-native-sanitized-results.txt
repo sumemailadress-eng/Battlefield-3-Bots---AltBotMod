@@ -1,0 +1,12 @@
+PASS: BOTH teams recover idle deployment infantry; combat, human orders and active captures are retained without suicides
+PASS: BOTH teams leave distant firefights for a nearby abandoned tank; human orders, recent hits and close enemies retain priority
+PASS: nearby idle infantry can take an unused ground vehicle from a distant teammate's walking claim; no seated crew or opposing-team claim is displaced
+PASS: shared local vehicle-route failures preserve distant/opposing-team use; thirty-second pending timeout releases infantry
+PASS: BOTH teams can claim immediately nearby vehicles while two distant walks are queued; moving drivers release a queue slot
+PASS: pending pilots counted; enemy HQ spawn refused; stale original base refreshed without swapping teams
+PASS: fleet base selection accepts a discovery-validated RU HQ despite a generic child team field
+PASS: actual transport lands/unloads bot cargo/takes off; human and gunner seats preserved; water/obstruction reject landing
+PASS: captured-flag owner refresh, new-cache retry, and newly appeared vehicle dispatch on both teams
+PASS: actual vertical helicopter takeoff/jet runway guard, armed patrol coverage/dwell and occupied ground-driver adoption
+PASS: Test7 abandoned map vehicles, six-pilot claim/takeover cap, independent team quotas, crew-team targeting, infantry fallback and bounded empty scans
+PASS: actual native aircraft/fleet HQ-respawn/replacement reservation/return routing/jet capacity/passenger takeover/crew protection/compaction; six pilots reserve one jet and five helicopters on BOTH teams

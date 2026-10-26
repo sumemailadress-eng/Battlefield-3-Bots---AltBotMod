@@ -1,0 +1,14 @@
+PASS: Difficulty (off / easy..elite / 0-5) and RandomDifficulty read from enhanced.ini, elite by default, bad values ignored
+PASS: easy and normal (2 x 31 profile values) equal the table in the dev's BotModCore.dll (read from its .rdata here); hard, veteran and elite are AltBotMod's sharper ones (V22-V26)
+PASS: RandomDifficulty gives each bot its own level one either side (stable per bot, clamped to easy..elite); off = V8 combat
+PASS: weapon bursts / pauses scale with the level (elite x1.67 / x0.3, easy x0.67 / x1.6), far shots stay short taps
+PASS: a helicopter engages an enemy helicopter from 150-800 m and fires (V8 flew in to under 700 m)
+PASS: inside 150 m (or 250 m and closing fast) it breaks off to a 350 m stand-off ring, inside 70 m it climbs out - no ramming
+PASS: ground attack runs unchanged
+PASS: 29 Team Deathmatch route files (the dev build's set) load as Fun-Bots routes - 67817 waypoints
+PASS: elite fire window 0.5 m (2.5x V8's), at most 0.065 rad close in; snipers keep their precise window
+PASS: an elite bot crouches for a far fight (>22 m) about 60% of the time, never when closing in, and stands when it ends
+PASS: side steps check the side for walls, drops and water first
+PASS: close in with an empty magazine the bot swaps to its pistol instead of reloading (not at range, not with ammo left, not with Difficulty=off)
+PASS: hard+ bots throw a grenade at one that ducked behind cover (8-28 m) or sits still in a standoff - two a life, one per 15 s
+PASS: tickets - a bot's first deploy of the round is free (V8 charged it: ~30 per team at every round start), each respawn after a death costs one, a human's deploy is left to the game; V16 BotTicketCost 0.5 charges half a ticket

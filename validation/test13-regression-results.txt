@@ -1,0 +1,11 @@
+/tmp/bf3-test13-dz0wmqzf/driver-1.c: In function ‘drive_tick’:
+/tmp/bf3-test13-dz0wmqzf/driver-1.c:524:15: warning: variable ‘lastBody’ set but not used [-Wunused-but-set-variable]
+  524 |         void *lastBody = NULL;
+      |               ^~~~~~~~
+REPRODUCED: Test12 retains stale forward throttle/yaw while a vehicle route is deferred on both teams
+REPRODUCED: Test12 recovery traffic bypass creates an unconditional stop with no vehicle blocking it
+REPRODUCED: Test12 jet rudder opposes the supplied FunBots sign and provides no turn elevator for a level bank
+PASS: full native driver cancels stale inputs, resumes completed paths, executes checked reverse before queued planning and rejects blocked rear corridors on both teams
+PASS: recovery bypass releases virtual road waits but still yields to real vehicles on both teams
+PASS: jet guidance follows FunBots rudder direction and converts finite world guidance into banked body-axis elevator
+PASS: idle replans reach every bot slot under the actual alternating 15-Hz brain schedule

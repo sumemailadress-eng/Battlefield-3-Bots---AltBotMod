@@ -1,0 +1,51 @@
+PASS: the watchdog no longer ends a fight against a visible enemy within 150 m (V2 cut 160 of 353 fights); far or unseen targets still count as a stall
+In file included from /tmp/bf3-caspian-v3-ugfj25vd/points.c:42:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘boat_lane_to’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:266:98: warning: implicit declaration of function ‘objective_count’ [-Wimplicit-function-declaration]
+  266 |     if (!g_traceWater.count || !g_enhanced.funBotsRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
+      |                                                                                                  ^~~~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: implicit declaration of function ‘objective_pos’ [-Wimplicit-function-declaration]
+  267 |     const float *fp = objective_pos(f);
+      |                       ^~~~~~~~~~~~~
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:267:23: warning: initialization of ‘const float *’ from ‘int’ makes pointer from integer without a cast [-Wint-conversion]
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc: In function ‘trace_stats_tick’:
+/home/claude/caspian/v3/files/BotMod/src/trace_native.inc:314:5: warning: implicit declaration of function ‘zone_stats’ [-Wimplicit-function-declaration]
+  314 |     zone_stats();   // AltBotMod V34
+      |     ^~~~~~~~~~
+PASS: Fun-Bots routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid
+PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a Fun-Bots route before any grid search
+PASS: closed-loop aim - each bot fits where its gun points relative to its look pitch (a height offset, an angle and recoil climb per frame of a burst) from its own impacts: untrained it is metres off, trained over fights at 10-90 m every shot is within 0.4 m of the chest at every range; sideways error cancelled; shotgun pellets count once; clamped
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:16: warning: missing initializer for field ‘pilot’ of ‘Veh’ [-Wmissing-field-initializers]
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                ^
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:54: note: ‘pilot’ declared here
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                                                      ^~~~~
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:16: warning: missing initializer for field ‘pilot’ of ‘Veh’ [-Wmissing-field-initializers]
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                ^
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:54: note: ‘pilot’ declared here
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                                                      ^~~~~
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:16: warning: missing initializer for field ‘pilot’ of ‘Veh’ [-Wmissing-field-initializers]
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                ^
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:54: note: ‘pilot’ declared here
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                                                      ^~~~~
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:16: warning: missing initializer for field ‘pilot’ of ‘Veh’ [-Wmissing-field-initializers]
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                ^
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:54: note: ‘pilot’ declared here
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                                                      ^~~~~
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:16: warning: missing initializer for field ‘pilot’ of ‘Veh’ [-Wmissing-field-initializers]
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                ^
+/tmp/bf3-caspian-v3-ugfj25vd/crew.c:18:54: note: ‘pilot’ declared here
+   18 | typedef struct { char name[32]; int freeSeats; char *pilot; } Veh; static Veh heli={"Viper",1},tank={"M1A2",1},jet={"f16",0},jeep={"Growler",3},transport={"Venom",4};
+      |                                                      ^~~~~
+PASS: AltBotMod V6 - a respawning bot picks a parked jet / base vehicle at the spawn screen and is seated as its driver after spawning; crew seats do not override it; refusals back off
+PASS: a respawning bot takes a free seat in a teammate bot's attack helicopter (first), transport helicopter, tank or (V16) driven jeep right after spawning (the native squad spawn never seated anyone); no double booking, jets/enemy/passenger seats skipped, refusals back off; the live US 'Viper' and the 9K22 are known vehicles
+PASS: a driver that means to move but has not for 6 s reverses on full lock then pulls away on the other lock (alternating), not while waiting for traffic/riders/a fight or parked; after 4 tries the spot ahead is struck off and re-planned (V3: sat at 0 m/s for 45 s, then got out)
+PASS: a boat in the US carrier's well deck finds the way out astern (24 rays round the hull; V4 steered at the deck walls for 20 s); it lands - everyone out - at its landing, or on a beach about as near its flag, or after 25 s with no water route near the shore; never in its own slip, nor along a distant canal bank
