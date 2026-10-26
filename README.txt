@@ -1,4 +1,4 @@
-AltBotMod V34 - Squad Up (formerly Project Caspian)
+AltBotMod Release V1 (internal V34 "Squad Up") (formerly Project Caspian)
 
 1. Stop the BF3 server.
 2. Extract the whole package.
@@ -8,5 +8,6 @@ AltBotMod V34 - Squad Up (formerly Project Caspian)
 AltBotMod Command (web launcher, also on your phone): the desktop shortcut 'AltBotMod Command'.
 Squad orders in game chat: !attack B, !defend A (or look at it and type !attack), !orders, !orders off.
 
-Details, settings and changes: README-AltBotMod-V34.md
+Full guide, settings and features: README.md
+Development history: CHANGELOG-AltBotMod.md
 Remove: Uninstall-AltBotMod.bat
