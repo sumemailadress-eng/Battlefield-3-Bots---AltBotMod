@@ -110,7 +110,7 @@ def native_source():
     kind = re.search(r'static LONG g_modeFallbackEpoch=-1;.*?static int mode_is_ctf\(void\)\{[^\n]*\}', state, re.S).group(0)
     ctf = re.search(r'static const struct \{const char \*level;float us\[3\],ru\[3\];\} g_ctfBases\[\]=\{.*?\n\};', native, re.S).group(0)
     fns = ctf + '\nstatic char g_level[64];\n' + '\n'.join(function(native, n) for n in ['mode_profile', 'objective_count', 'objective_pos', 'objective_wanted', 'rush_target', 'mode_reassign_idle', 'ctf_base', 'mode_ctf_goal'])
-    return NATIVE_PRE + profile + '\n#include "mode_profiles.inc"\nstatic const BMModeProfile *g_modeProfile;\n' + bot + '\n' + base + '\n' + kind + '\n' + fns + r'''
+    return NATIVE_PRE + profile + '\n#include "mode_profiles.inc"\nstatic const BMModeProfile *g_modeProfile;\n#include "mcom_aim.h"   /* AltBotMod V35 */\n' + bot + '\n' + base + '\n' + kind + '\n' + fns + r'''
 static void bot(int i,int team,float x,float z){H->bots[i]=players[i];*(int *)(players[i]+8)=team;bodies[i][0]=x;bodies[i][2]=z;*(float **)(players[i]+16)=bodies[i];if(H->botCount<=i)H->botCount=i+1;}
 int main(void){
  /* Squad Rush: one M-COM a sector */
@@ -131,14 +131,14 @@ int main(void){
   assert(p->stages>=1&&p->stages<=4);for(int s=1;s<=p->stages;s++){assert(p->mcom[(s-1)*2+1].present&&!p->mcom[s*2].present&&p->baseMask[s]==6);
    for(int t=1;t<=2;t++)assert(!near_origin(p->bases[s][t])||p->bases[s][t][1]!=0);
    assert(p->mcom[(s-1)*2+1].pos[0]>=p->low[0]-1&&p->mcom[(s-1)*2+1].pos[0]<=p->high[0]+1);}}
- assert(sr==13);
+ assert(sr==25);   /* V35: 13 recorded + 12 from the Fun-Bots RC2 meshes */
  /* plain Rush unchanged: two a sector */
  snprintf(g_modeName,sizeof g_modeName,"RushLarge0");g_modeProfile=mode_profile("MP_011","RushLarge0");g_rushStage=1;bm_rush_reset(&g_rush,g_modeProfile->stages,2,0);
  assert(!mode_is_squad_rush()&&objective_count()==2&&objective_pos(1)==g_modeProfile->mcom[2].pos);
  /* Gun Master plays on the TDM play area; Squad Rush with no recorded M-COMs has no profile (falls back to team play) */
  {const char *gm[]={"XP2_Factory","XP2_Office","XP2_Palace","XP2_Skybar","XP4_FD","XP4_Parl","XP4_Quake","XP4_Rubble"};
   for(int k=0;k<8;k++)assert(mode_profile(gm[k],"GunMaster0")&&mode_profile(gm[k],"GunMaster0")==mode_profile(gm[k],"TeamDeathMatch0"));}
- assert(!mode_profile("MP_012","SquadRush0")&&mode_profile("MP_Subway","SquadRush0"));
+ assert(mode_profile("MP_012","SquadRush0")&&mode_profile("MP_012","SquadRush0")->mcom[1].present==1&&mode_profile("XP3_Alborz","SquadRush0")->mcom[1].present==2&&!mode_profile("XP2_Office","SquadRush0")&&mode_profile("MP_Subway","SquadRush0"));   /* V35: every Squad Rush level has a layout now */
  /* the fallback lasts the round */
  assert(mode_kind("CaptureTheFlag0")==BM_MODE_CQ);g_modeFallbackEpoch=g_roundEpoch;assert(mode_kind("CaptureTheFlag0")==BM_MODE_TDM&&mode_kind("SquadRush0")==BM_MODE_TDM);
  g_roundEpoch++;assert(mode_kind("CaptureTheFlag0")==BM_MODE_CQ&&mode_kind("SquadRush0")==BM_MODE_RUSH&&mode_kind("")==BM_MODE_UNKNOWN);
@@ -177,6 +177,9 @@ def run(cmd):
 
 def profile_checks():
     inc = (SRC / 'mode_profiles.inc').read_text()
+    # (AltBotMod V35: the Squad Rush layouts made from the Fun-Bots RC2 meshes come after this mark - altbotmod_v35_checks.py)
+    MARK = '// AltBotMod V35: Squad Rush from the Fun-Bots V3.6.0-RC2 objective meshes'
+    inc = inc[:inc.index(MARK)] if MARK in inc else inc
     # the generator reproduces the shipped Rush records (sectors, bases, M-COMs, patrol points)
     recs = {(m.group(1), m.group(2)): m.group(0) for m in re.finditer(r'^\{"([^"]+)","([^"]+)",[^\n]*?\}\}\}(?=,?$)', inc, re.M)}
     same = 0
@@ -195,7 +198,7 @@ def profile_checks():
         assert recs[(lv, 'SquadRush0')] == generate_profiles.record(lv, 'SquadRush0', generate_profiles.profile(TRACES / f'{lv}_SquadRush0.map', 'SquadRush0'))
     missing = sorted(set(EXTRA['SquadRush0']) - {lv for lv, _ in sr})
     print(f'PASS: profiles - the rebuilt generator reproduces all 25 shipped Rush sectors/bases/M-COMs/patrol points; {len(sr)} Squad Rush profiles (one M-COM a sector) match it; '
-          f'Squad Rush without recorded M-COMs ({len(missing)} levels: {" ".join(missing)}) is played as team play')
+          f'Squad Rush without recorded M-COMs ({len(missing)} levels: {" ".join(missing)}) has a layout from the Fun-Bots RC2 meshes since V35')
     return missing
 
 

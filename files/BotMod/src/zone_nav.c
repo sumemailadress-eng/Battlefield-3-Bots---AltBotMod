@@ -17,6 +17,7 @@ void zn_free(ZoneNet *z)
     if (!z) return;
     free(z->pts); free(z->edges); free(z->corners); free(z->zones); free(z->inside);
     free(z->adjStart); free(z->adj); free(z->g); free(z->from); free(z->heap); free(z->heapPos); free(z->seen);
+    free(z->danger[1]); free(z->danger[2]);
     memset(z, 0, sizeof *z);
 }
 
@@ -239,7 +240,66 @@ static int zn_edge_between(const ZoneNet *z, int u, int v, float *cost)
     if (cost) *cost = bc;
     return best;
 }
+// AltBotMod V35: how much longer the region of (x, z) seems to the bot with this seed: 1 .. 1 + ZN_SPREAD
+// (NavZones.lua _RegionSpread, the same hash).
+static float zn_region_spread(unsigned seed, float x, float zc)
+{
+    if (!seed) return 1.0f;
+    double h = sin((double)(seed % 100000u) * 12.9898 + floor(x / ZN_SPREAD_REGION) * 78.233 + floor(zc / ZN_SPREAD_REGION) * 37.719) * 43758.5453;
+    h -= floor(h);
+    return 1.0f + ZN_SPREAD * (float)h;
+}
+int zn_cautious(unsigned seed)
+{
+    double h = sin((double)(seed % 100000u) * 91.3458 + 17.17) * 47453.5453;
+    return h - floor(h) < 0.75;
+}
+float zn_danger(const ZoneNet *z, int team, int n)
+{
+    if (!z || team < 1 || team > 2 || !z->danger[team] || n < 0 || n >= z->np) return 0;
+    return z->danger[team][n];
+}
+int zn_on_killed(ZoneNet *z, int team, const float *pos, float now)
+{
+    if (!z || !z->np || team < 1 || team > 2 || !pos || !isfinite(pos[0]) || !isfinite(pos[1]) || !isfinite(pos[2])) return 0;
+    zn_decay(z, now);
+    if (!z->danger[team]) { z->danger[team] = (float *)calloc((size_t)z->np, sizeof(float)); if (!z->danger[team]) return 0; }
+    float *d = z->danger[team]; int marked = 0;
+    for (int n = 0; n < z->np; n++) {
+        const float *p = z->pts[n].p;
+        float dx = p[0] - pos[0], dz = p[2] - pos[2];
+        if (dx * dx + dz * dz > ZN_DANGER_RANGE * ZN_DANGER_RANGE || fabsf(p[1] - pos[1]) > ZN_DANGER_FLOOR) continue;
+        if (d[n] < ZN_DANGER_MIN) z->dangerCount[team]++;
+        d[n] = fminf(d[n] + ZN_DANGER_PER_DEATH, ZN_DANGER_MAX);
+        marked++;
+    }
+    return marked;
+}
+void zn_decay(ZoneNet *z, float now)
+{
+    if (!z) return;
+    if (z->dangerTime <= 0 || now < z->dangerTime) { z->dangerTime = now > 0 ? now : 1e-3f; return; }
+    float elapsed = now - z->dangerTime;
+    if (elapsed < ZN_DANGER_STEP) return;
+    z->dangerTime = now;
+    float f = powf(0.5f, elapsed / ZN_DANGER_HALF_LIFE);
+    for (int t = 1; t <= 2; t++) {
+        float *d = z->danger[t];
+        if (!d || !z->dangerCount[t]) continue;
+        int left = 0;
+        for (int n = 0; n < z->np; n++) {
+            if (d[n] <= 0) continue;
+            d[n] *= f;
+            if (d[n] < ZN_DANGER_MIN) d[n] = 0; else left++;
+        }
+        z->dangerCount[t] = left;
+    }
+}
 int zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int maxPts, int *partial, float *length)
+{
+    return zn_route_ex(z, a, b, 0, 0, out, flags, maxPts, partial, length);
+}
+int zn_route_ex(ZoneNet *z, int a, int b, unsigned seed, int team, float *out, unsigned char *flags, int maxPts, int *partial, float *length)
 {
     if (partial) *partial = 0;
     if (length) *length = 0;
@@ -253,6 +313,7 @@ int zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int max
     unsigned closedTag = 0x80000000u;   // seen[n] == stamp: open / known; seen[n] == (stamp | closed): done
     unsigned st = z->stamp & 0x7fffffffu; if (!st) st = 1;
     int n = 0;
+    const float *danger = team >= 1 && team <= 2 && z->dangerCount[team] ? z->danger[team] : NULL;
     z->seen[a] = st; z->g[a] = 0; z->from[a] = -1; fbuf[a] = zn_h(z, a, b);
     z->heap[n] = a; z->heapPos[a] = n; n++;
     int found = 0;
@@ -267,7 +328,8 @@ int zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int max
             int v = e->a == u ? e->b : e->a;
             if ((e->a == u && e->oneway == -1) || (e->b == u && e->oneway == 1)) continue;
             if (z->seen[v] == (st | closedTag)) continue;
-            float gv = z->g[u] + e->len + e->penalty;
+            float gv = z->g[u] + (e->len + e->penalty) * zn_region_spread(seed, z->pts[v].p[0], z->pts[v].p[2]);
+            if (danger) gv += danger[v];
             if (z->seen[v] != st) { z->seen[v] = st; z->g[v] = gv; z->from[v] = u; fbuf[v] = gv + zn_h(z, v, b); z->heap[n] = v; z->heapPos[v] = n; n++; heap_up(z, n - 1); }
             else if (gv < z->g[v]) { z->g[v] = gv; z->from[v] = u; fbuf[v] = gv + zn_h(z, v, b); heap_up(z, z->heapPos[v]); }
         }

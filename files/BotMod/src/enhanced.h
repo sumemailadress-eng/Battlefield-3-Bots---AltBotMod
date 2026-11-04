@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include "air.h"
 
-#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"
+#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"
 enum BMVehicleKind { BM_UNKNOWN, BM_LIGHT, BM_BOAT, BM_TANK, BM_IFV, BM_AIR, BM_AA, BM_AMTRAC };
 typedef struct BMVehicleProfile {
     const char *label;

@@ -117,7 +117,7 @@ def main():
           'the last throttle held through a re-plan, a turn on the spot instead of reverse-and-re-plan, plans are not tries, grid legs onto the road, speed caps only for hard steering')
     assert 'if(hostile)value+=rank[f]*300.0f;' in pol and 'int reach=units[i].mobile?3:2;' in pol
     assert '{0.05f, 26,  2, 0.050f, 0.45f, 0.015f, 6.0f, 380, 300, 350, 170.00f' in en and '{0.15f, 18,  4, 0.055f, 0.42f, 0.05f, 4.0f, 280, 230, 270' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V25 flags nearest-first (director ranks the front), elite engages from 240 m / sees 290 m (130 / 150), veteran 170 / 200 m; version V25')
 
 if __name__ == '__main__':

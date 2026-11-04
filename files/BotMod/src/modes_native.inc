@@ -10,9 +10,11 @@ static const BMModeProfile *mode_profile(const char *level,const char *mode)
     if(bm_mode_gun_master(mode))return mode_profile(level,"TeamDeathMatch0");
     return NULL;
 }
+#include "mcom_aim.h"   // AltBotMod V35: M-COMs without a recorded arming spot
 static void mode_reset(void)
 {
     g_modeProfile=NULL;g_modeSpawnCount=0;g_rushStage=1;g_rushAdvanceAt=0;g_rushBeforeStage=0;g_rushBadDeaths=0;memset(g_mcomDestroyedBy,0,sizeof g_mcomDestroyedBy);
+    memset(g_mcomAimTry,0,sizeof g_mcomAimTry);memset(g_mcomAimKnown,0,sizeof g_mcomAimKnown);   // AltBotMod V35
     bm_rush_reset(&g_rush,1,2,H->frame);
     memset(g_modeSpawns,0,sizeof g_modeSpawns);memset(g_modeTeamSpawn,0,sizeof g_modeTeamSpawn);
     memset(g_modeFailedSpawn,0,sizeof g_modeFailedSpawn);memset(g_modeSpawnOk,0,sizeof g_modeSpawnOk);memset(g_modeSpawnNo,0,sizeof g_modeSpawnNo);memset(g_rushBlind,0,sizeof g_rushBlind);
@@ -310,6 +312,14 @@ static void rush_crate_event(int kind,char *pl)
     if(!k)k=rush_report_target(kind!=0);
     bot_log("rush: the game says M-COM %s by %s -> station %d",kind==0?"armed":kind==1?"disarmed":"destroyed",
         pl && player_exists(pl)?pl+OFF_PLAYER_ONLINE_NAME:"?",k);
+    if(k && kind<2 && mcom_aim_unknown(k) && !g_mcomAimKnown[k] && pl && is_bot(pl)){   // AltBotMod V35: that aim works here
+        int bi=bot_index(pl);
+        if(bi>=0 && g_modeBot[bi].target==k && g_modeBot[bi].interactAt){
+            g_mcomAimKnown[k]=1;g_mcomAimYaw[k]=g_mcomAimLastYaw[k];g_mcomAimPitch[k]=g_mcomAimLastPitch[k];
+            bot_log("rush: M-COM %d (no recorded spot) %s by a bot looking at yaw %.2f pitch %.2f (try %d) - kept for this level",k,
+                    kind==0?"armed":"disarmed",g_mcomAimYaw[k],g_mcomAimPitch[k],g_mcomAimTry[k]+1);
+        }
+    }
     if(k)rush_mark(k,kind==0?BM_RUSH_ARMED:kind==1?BM_RUSH_IDLE:BM_RUSH_DESTROYED,
         kind==0?"the game reported it armed":kind==1?"the game reported it disarmed":"the game reported it destroyed");
 }
@@ -675,7 +685,8 @@ static void mode_brain_tick(int i,char *soldier)
         // could not get closer in 4 s. (V16.2.2 started at 2.6 m - the walk there stops 2 m short - and mostly did nothing.)
         // AltBotMod V34: a window between the operator and its M-COM - knifed (then shot) open
         if(operator && !g_modeBot[i].interactAt && mcom_pane_tick(i,soldier,goal))return;
-        float d2=dist2(me,goal),need=H->frame<g_modeBot[i].closerUntil?0.4f:0.6f;int level=fabsf(me[1]-goal[1])<2.5f;
+        float d2=dist2(me,goal),need=mcom_aim_unknown(target)?MCOM_UNRECORDED_REACH:H->frame<g_modeBot[i].closerUntil?0.4f:0.6f;   // (V35: no recorded spot - 1.3 m from the M-COM itself)
+        int level=fabsf(me[1]-goal[1])<2.5f;
         if(!g_modeBot[i].interactAt){
             if(operator && level && d2<RUSH_ARM_REACH*RUSH_ARM_REACH){if(!g_modeBot[i].approachAt)g_modeBot[i].approachAt=H->frame?H->frame:1;}
             else g_modeBot[i].approachAt=0;
@@ -693,6 +704,10 @@ static void mode_brain_tick(int i,char *soldier)
                 // panel was not in reach from here - walk up to within 1.2 m of the spot (for 20 s) and hold again.
                 bot_log("rush: %s held the key 8 s at M-COM %d with no %s - moves onto the spot and tries again",H->bots[i]+OFF_PLAYER_ONLINE_NAME,target,team==1?"arm":"defuse");
                 g_modeBot[i].interactAt=0;g_modeBot[i].closerUntil=H->frame+20*30;g_modeBot[i].approachAt=H->frame?H->frame:1;bot_stand(i);
+                if(mcom_aim_unknown(target) && !g_mcomAimKnown[target]){   // AltBotMod V35: the next try looks a little further round
+                    g_mcomAimTry[target]++;
+                    bot_log("rush: M-COM %d has no recorded spot - the next try looks another way (try %d)",target,g_mcomAimTry[target]+1);
+                }
             }else if(H->frame-g_modeBot[i].interactAt>=RUSH_HOLD_FRAMES){
                 // V16.1: a full hold arms (attacker) / defuses (defender) it as far as the bots know - the game reports
                 // nothing readable yet. Defenders then come to defuse; an arm that did not take is retried (rush_watch_tick).
@@ -842,8 +857,9 @@ static void mode_apply(int i,void *input)
         ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_PITCH,0);
         ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_FIRE,0);((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_ZOOM,0);   // (V16.2.3: firing breaks an arm)
         *(int *)((char *)input+OFF_INPUT_AIM_VALID)=1;
-        *(float *)((char *)input+OFF_INPUT_AIM_YAW)=g_modeProfile->mcom[target].yaw;
-        *(float *)((char *)input+OFF_INPUT_AIM_PITCH)=g_modeProfile->mcom[target].pitch;
+        float aimYaw,aimPitch;mode_mcom_aim(target,(float *)(s+OFF_SOLDIER_POSITION),&aimYaw,&aimPitch);   // (V35: or the M-COM itself)
+        *(float *)((char *)input+OFF_INPUT_AIM_YAW)=aimYaw;
+        *(float *)((char *)input+OFF_INPUT_AIM_PITCH)=aimPitch;
     }
 }
 static int rush_command(const char *who,const char *arg)

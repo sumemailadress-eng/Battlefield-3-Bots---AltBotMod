@@ -1145,6 +1145,31 @@ void nav_mask_strip(const NavGrid *g, unsigned char *mask, unsigned char cls, co
     }
 }
 
+// AltBotMod V35.1: nav_mask_strip's keep disks without the whole-grid pass - every node within r (horizontal, as
+// nav_mask_strip measures it) of (x, z) gets src's value, or 0 where src has class `strip` (strip 0: a plain copy).
+// Returns the nodes written.
+int nav_mask_patch_disk(const NavGrid *g, unsigned char *dst, const unsigned char *src, unsigned char strip, float x, float z, float r)
+{
+    if (!g || !dst || !src || !(r > 0)) return 0;
+    int c = nav_cell_index(g, x, z);
+    int cx, cz, rc = (int)(r / g->cell) + 2, n = 0;
+    if (c >= 0) { cx = c % g->w; cz = c / g->w; }
+    else { cx = (int)floorf((x - g->x0) / g->cell); cz = (int)floorf((z - g->z0) / g->cell); }   // (a keep point just off the grid)
+    for (int dz = -rc; dz <= rc; dz++)
+        for (int dx = -rc; dx <= rc; dx++) {
+            int x2 = cx + dx, z2 = cz + dz;
+            if (x2 < 0 || z2 < 0 || x2 >= g->w || z2 >= g->h) continue;
+            for (int l = 0; l < L; l++) {
+                int node = (z2 * g->w + x2) * L + l;
+                float p[3]; node_pos(g, node, p);
+                float ex = p[0] - x, ez = p[2] - z;
+                if (ex * ex + ez * ez >= r * r) continue;
+                dst[node] = strip && src[node] == strip ? 0 : src[node]; n++;
+            }
+        }
+    return n;
+}
+
 int nav_open_water_near(const NavGrid *g, const unsigned char *mask, float x, float z, float maxDist, float *out)
 {
     int c = nav_cell_index(g, x, z);

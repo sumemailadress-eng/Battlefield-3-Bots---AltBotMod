@@ -34,7 +34,7 @@ def main():
     assert 'float L = fminf(30.0f, fmaxf(15.0f, 10.0f + 0.6f * (isfinite(speed) ? speed : 0)))' in en
     # (V29: the one-at-a-time departure is gone - it made convoys stop and wait for one another; drive_lane_scan follows and passes)
     assert 'drive_wait_turn(' not in core and 'd->trafficWait = d->laneBlocker && d->laneLimit < 0.5f' in core
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V27 source - tanks pivot on the spot without throttle until they face the road, look-ahead 15-30 m, (V29: the one-at-a-time departure replaced by the lane scan); version V27')
 
 if __name__ == '__main__':

@@ -48,7 +48,7 @@ def main():
     assert 'learn_route_costs();' in nat and 'tn_penalize_near' in nat
     assert 'learn_heli_tick' in nat and 'steep' in nat and 'map\\tmap_%s.bmp' in nat
     assert 'src\\learn.c' in (ROOT / 'files/BotMod/build.bat').read_text()
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in (SRC / 'enhanced.h').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
     ec = (SRC / 'enhanced.c').read_text(); assert 'BOOL_KEY("Learning", learning)' in ec and 'BOOL_KEY("LearnFromPlayers", learnFromPlayers)' in ec
     print('PASS: V21 sources: every learning hook wired (foot, jumps, deaths, ground/boat, aircraft, landing spots, routes, killing grounds), build.bat, settings, version')
 

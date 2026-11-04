@@ -109,8 +109,8 @@ def check_command():
 
 def check_version():
     eh = (SRC / 'enhanced.h').read_text()
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
-    assert 'New-BmBanner "AltBotMod V34"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
+    assert 'New-BmBanner "AltBotMod V35.1"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
     print('PASS: version V34')
 
 if __name__ == '__main__':

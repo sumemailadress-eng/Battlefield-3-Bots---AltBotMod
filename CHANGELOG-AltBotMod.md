@@ -1,4 +1,6 @@
-# AltBotMod V34 - Squad Up
+# AltBotMod changelog
+
+Public releases: **Release 1.1** = internal V35.1, **Release V1** = internal V34. Older entries are the internal development history.
 
 This is a native bot mod for the Battlefield 3 dedicated server: no Venice Unleashed, and clients need nothing extra. It works with the ALP, bf4play and BF-Portable builds of `bf3_server_Final.exe`; the installer checks for that file.
 
@@ -13,6 +15,47 @@ The installer keeps your settings and adds the new ones (V31: `LockOnSeconds` an
 **Checking that it loaded:** the log `BotMod_<port>.log` shows `enhanced: AltBotMod V34 - Squad Up`.
 
 **Going back:** the V33, V32 and V29 DLLs are in `rollback\AltBotMod-V33`, `rollback\AltBotMod-V32` and `rollback\AltBotMod-V29`. Copy one over `BotModCore.dll` in the server folder.
+
+## Release 1.1 (internal V35.1)
+
+Built and tested offline (72 check groups with AddressSanitizer / UndefinedBehaviorSanitizer, 174 installer checks). Not yet played live.
+
+### Fixes
+
+**Server lag on maps with boats (rubber-banding).**
+- **Symptom:** on Kharg Island the server dropped from 30 to 18-26 ticks a second for 1-3 minutes at a time, and players were put back a step or two. The bots' driving step took 13-40 ms of each 33 ms tick (up to 60-90 ms).
+- **Cause:** while a bot boat's route waited for the planning budget, the planner came back every tick. Each time, it copied and re-stripped the whole water map (3 million points on Kharg Island) and searched all of it for a landing beach.
+- **Fix:** the shallows-free water map is made once and kept; each plan only opens two 40 m circles round the boat and its landing. The landing beach is kept for 30 s while the boat stays within 25 m of where it was worked out. The planner sees the same map as before (checked in 360 comparisons); on the real Kharg Island map the per-plan work fell from 2.4 ms to 0.2 ms on the build machine.
+
+**Bot boats never left their slip.**
+- **Symptom:** bot RHIBs backed out of the slip, logged `finds no route 6 m clear of land - allows the shallows` over and over, then the crew got out and walked after about two minutes.
+- **Cause:** a boat has three route tries (6 m clear of land, through the shallows, out of a pocket to open water first), each a queued search that restarts when the request changes. The first try was asked for again on every tick, which cancelled the shallows search before it finished. A start that drifted over 4 m restarted it too.
+- **Fix:** a boat keeps the try it is on until it answers, for the same landing, and its start is held while it drifts less than 15 m.
+
+### New
+
+**Squad Rush on 12 more levels.** Operation Firestorm, Damavand Peak, Kharg Island, Strike at Karkand, Gulf of Oman, Sharqi Peninsula, Wake Island, Alborz Mountains, Markaz Monolith, Azadi Palace, Operation Riverside and Kiasar Railroad had no Squad Rush layout and were played as team deathmatch.
+- **M-COMs:** from the objective meshes' M-COM zones (`tools/generate_sr_mesh_profiles.py`). 9 of the 24 match a recorded Rush arming spot and use it exactly.
+- **The other 15:** the bot walks up to 1.3 m from the M-COM, crouches and looks at it. If the game does not report an arm or defuse after the 8 s hold, the next try looks a little further round, then lower; the aim that works is kept for the level.
+- **Stage bases:** estimated from the meshes' spawn zones along the line from M-COM 1 to M-COM 2. A wrong one is caught by the existing spawn safety nets.
+
+**Updated objective meshes (Fun-Bots V3.6.0-RC2).** 110 map/mode combinations, 13 more than Release V1 (12 Squad Rush and Alborz Mountains Tank Superiority). All meshes were re-cut: floors only (stairs and multi-storey buildings covered) and corners that keep clear of wall and barrier ends.
+
+**Bots spread out over the ways.** Each bot life takes its own way among similar ones on the mesh (an area can seem up to 25% longer to one bot than another), never more than a quarter longer than the shortest.
+
+**Bots avoid where their team just died.** A death on foot makes the mesh within 6 m on that floor cost the dead soldier's team 15 m more (up to 50 m a point), fading by half each minute. Three of four bot lives take another way when there is one.
+
+**Diagnostics.** `perf: slow think` lines now split the time into brain / route planning / vehicle choice / talk and give the bot's position. The `zone:` summary counts `deaths weighed`.
+
+### Not taken from Fun-Bots V3.6.0-RC2
+
+- Its new route files for the Squad Rush levels and Alborz Tank Superiority (short paths between the meshes with no objective tags, which AltBotMod needs).
+- Its Nebandan Flats Conquest Large depot fix (it changes a path AltBotMod's own route file does not have).
+- Reworked aim error, moving bots that spawn far from a path straight onto it, and waiting at the combat-area edge in Rush.
+
+### Rollback
+
+`rollback\AltBotMod-V34` holds the Release V1 DLL.
 
 ## V34: Rush M-COMs, fewer bots standing around, air combat, squad orders, Fun-Bots' objective mesh (2026-10-23)
 

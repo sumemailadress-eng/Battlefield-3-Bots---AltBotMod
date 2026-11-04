@@ -144,9 +144,9 @@ int main(void){
  assert(bm_roster_team("[BOT] Engineer SQ4",BM_MODE_SQDM,0)==4);assert(bm_roster_team("[BOT] Medic US",BM_MODE_CQ,0)==1);
  int h[5]={0},t[5];bm_roster_targets(4,4,1,32,h,t);for(int k=1;k<=4;k++)assert(t[k]==3);h[2]=2;bm_roster_targets(4,4,1,32,h,t);assert(t[2]==1&&t[1]==3);
  int counts[4]={0};for(int n=0;n<4;n++){float best=1e30f;int role=-1;for(int k=0;k<4;k++){float score=bm_dispatch_score(k,counts,k==0?1500:1);if(score<best){best=score;role=k;}}assert(role==n);counts[role]++;}
- assert(sizeof g_modeProfiles/sizeof g_modeProfiles[0]==152);int profiles[5]={0},squadRush=0;for(unsigned k=0;k<152;k++){const BMModeProfile *p=&g_modeProfiles[k];profiles[bm_mode(p->mode)]++;squadRush+=bm_mode_squad_rush(p->mode);for(int j=0;j<3;j++){assert(isfinite(p->low[j])&&isfinite(p->high[j])&&p->high[j]>=p->low[j]);}for(int j=0;j<32;j++)for(int a=0;a<3;a++)assert(isfinite(p->patrol[j][a]));}
- assert(profiles[BM_MODE_RUSH]==38&&squadRush==13&&profiles[BM_MODE_TDM]==29&&profiles[BM_MODE_SQDM]==29);
- puts("PASS: 29 maps, 152 layout profiles including 25 Rush/13 Squad Rush/29 TDM/29 SQDM, correct mode aliases, four-team human reserves, fair full-fleet dispatch");return 0;
+ assert(sizeof g_modeProfiles/sizeof g_modeProfiles[0]==164);int profiles[5]={0},squadRush=0;for(unsigned k=0;k<164;k++){const BMModeProfile *p=&g_modeProfiles[k];profiles[bm_mode(p->mode)]++;squadRush+=bm_mode_squad_rush(p->mode);for(int j=0;j<3;j++){assert(isfinite(p->low[j])&&isfinite(p->high[j])&&p->high[j]>=p->low[j]);}for(int j=0;j<32;j++)for(int a=0;a<3;a++)assert(isfinite(p->patrol[j][a]));}
+ assert(profiles[BM_MODE_RUSH]==50&&squadRush==25&&profiles[BM_MODE_TDM]==29&&profiles[BM_MODE_SQDM]==29);
+ puts("PASS: 29 maps, 164 layout profiles including 25 Rush/25 Squad Rush/29 TDM/29 SQDM, correct mode aliases, four-team human reserves, fair full-fleet dispatch");return 0;
 }
 '''
 def main():

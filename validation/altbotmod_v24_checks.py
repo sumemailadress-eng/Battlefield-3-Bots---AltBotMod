@@ -75,7 +75,7 @@ def main():
     assert 'float attackCap=jet ? c->attackSeconds : c->attackSeconds*3;' in air and '*250;goal[2]=o->target[2]+(ux*sa+uz*ca)*250;' in air
     assert 'atanf((o->targetAir ? 12.0f : 6.0f)/fmaxf(aimRange,1)),o->targetAir ? 0.035f : 0.025f' in air
     assert '(heliTarget && distance<1200?(tp->kind==BM_AIR_ATTACK?-700:-450)' in an
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V24 source - recorded roads trusted by the drive sensors (a vehicle or a wall dead ahead within 4 m still counts), the Fun-Bots route flag, '
           'pure pursuit and road-only bends; helicopter duels (enemy helicopters within 1.2 km first, no 8 s cap, break inside 80 m, 12 m window); version V24')
 

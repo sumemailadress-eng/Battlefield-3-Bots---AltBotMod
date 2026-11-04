@@ -156,7 +156,7 @@ def main():
     assert 'last 20 s: average %.1f m/s, full throttle %.0f%%, braking %.0f%% (bends %u, vehicle in lane %u, hard steering %u, obstacle %u, stop %u frames)' in core   # (V29: the statistics say more)
     assert 'range>300 && range<2500 && diveAngle>0.05f && diveAngle<0.8f && azimuth<0.6f' in air and 'range<200 || height<50 || s->diveTime>12' in air
     assert '{0.05f, 26,  2, 0.050f, 0.45f, 0.015f, 6.0f, 380, 300, 350, 170.00f' in en and '{0.30f, 14,  6, 0.055f, 0.40f, 0.10f, 3.0f, 170, 130, 150' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V26 source - a blocked rear keeps the route (no re-plan loop), every re-plan carries its reason and a storm is logged, 20 s drive statistics, '
           'jets roll in from 34 deg off the nose and dive to 200 m, hard / veteran / elite engage from 130 / 230 / 300 m; version V26')
 

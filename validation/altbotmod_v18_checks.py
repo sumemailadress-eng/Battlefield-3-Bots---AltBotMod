@@ -277,7 +277,7 @@ def main():
     assert 'stairs: %s is held up on the flight at (%.1f, %.1f) - hops' in core and 'if (!fk) { int r = try_break_panel(i, soldier); return r ? r : breach_start(i, soldier); }' in core
     assert 'if (g_breakN && material_breakable(m)) return NAV_HIT_FENCE;' in core and 'make_way_tick(i, *(char **)' in core and 'panel_check_tick(i);' in core
     assert 'if(activity_circling(i,w,b,p))return;' in act
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in (SRC / 'enhanced.h').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
     # V18.1: a landing ends the flight at once (no walk into the landing wall); stuck at stairs never blocks the stairwell's links
     assert 'if (g_stairLevel[i] && ray_cast(eye, ahead, NULL, NULL)) {' in core and 'reroute_from_here(i, soldier, "at a landing");' in core
     assert '!crowded && !stairs && !known ? nav_block_towards(' in core   # (V21: a spot learned passable is never blocked either)

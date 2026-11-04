@@ -81,7 +81,7 @@ def main():
     assert 'if (fabsf(delta) < 0.95f) g_gameTicketsAt[team]' in core
     assert 'if (off > 2.0f) L = fmaxf(8.0f, L - (off - 2.0f) * 3.5f);' in en and 'if (fabsf(t) > 0.3f) break;' in en
     assert 'lock_attempt_report(i, why);' in core and 'int forced = native == 1 && g_lockNativeSince[i] && H->frame - g_lockNativeSince[i] > 3 * 30;' in core
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V28 source - gamertags on (BotNames, in Server Control) with roster identity everywhere it is read; door guns on every aircraft seat, re-searched every 20 s; '
           'bleed held back only by the game\'s own bleed; road-keeping aim; every lock-on attempt reported, fire after 3 s of locking; version V28')
 

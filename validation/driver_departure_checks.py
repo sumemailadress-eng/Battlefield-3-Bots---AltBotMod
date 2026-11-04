@@ -121,6 +121,7 @@ static int nav_mask_nearest(NavGrid*g,const unsigned char*m,float x,float z,floa
 static int nav_snap(NavGrid*g,float x,float y,float z,float*out){(void)g;out[0]=x;out[1]=y;out[2]=z;return 1;}
 static int nav_open_water_near(NavGrid*g,const unsigned char*m,float x,float z,float r,float*out){(void)g;(void)m;(void)x;(void)z;(void)r;(void)out;return 0;}
 static void nav_mask_strip(NavGrid*g,unsigned char*m,float r,float*k,int n,float d){(void)g;(void)m;(void)r;(void)k;(void)n;(void)d;}
+static unsigned g_driveMaskGen;static int nav_mask_patch_disk(NavGrid*g,unsigned char*d,const unsigned char*m,unsigned char c,float x,float z,float r){(void)g;(void)d;(void)m;(void)c;(void)x;(void)z;(void)r;return 0;}   /* AltBotMod V35.1 */
 static int ray_cast(const float*a,const float*b,float*h,float*n){(void)a;(void)b;(void)h;(void)n;return 0;}
 static int drive_nav_ray(const float*a,const float*b,float*h,float*n){return ray_cast(a,b,h,n);}
 static int budgeted_nav_path(int owner,NavGrid*g,int(*ray)(const float*,const float*,float*,float*),float x,float y,float z,float tx,float ty,float tz,float*out,int cap){

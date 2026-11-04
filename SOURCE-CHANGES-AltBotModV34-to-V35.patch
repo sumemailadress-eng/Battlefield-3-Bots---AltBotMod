@@ -1,0 +1,571 @@
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/core.c AltBotMod-V35/files/BotMod/src/core.c
+--- AltBotMod-V34/files/BotMod/src/core.c	2026-10-23 14:35:51.360281000 +0000
++++ AltBotMod-V35/files/BotMod/src/core.c	2026-11-04 15:19:56.878513020 +0000
+@@ -20,7 +20,7 @@
+ #include "learn.h"
+ #include "zone_nav.h"   // AltBotMod V34: Fun-Bots objective mesh
+ static void trace_level_load(void);
+-static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos);
++static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos); static void zone_note_death(int team, const float *pos);
+ static int zone_guard_point(const float *mcom, unsigned seed, float *out); static void zone_stats(void); static unsigned g_zonePathAt[MAX_BOTS];   // AltBotMod V34 (zone_native.inc)
+ static char *g_supplyFailTo[MAX_BOTS]; static unsigned g_supplyFailAt[MAX_BOTS];   // AltBotMod V34: the caller a supply run gave up on
+ static int squad_order_flag(int team, int squad, int *defend); static int squad_order_rush(int i); static int squad_order_chat(const char *who, const char *cmd, const char *arg);
+@@ -2406,7 +2406,7 @@
+ // ty = height of the goal (picks the right storey / pier deck vs. the water or seabed under it)
+ static int plan_path_real(int i, char *soldier, float tx, float ty, float tz);
+ static double perf_now(void);
+-static void perf_add(int k, double ms);
++static void perf_add(int k, double ms); static double g_pathMsTotal;
+ static unsigned g_pathPlans;
+ // Route plans per tick for the optional planners (getting to a vehicle, cover / firing spots): each may try many
+ // targets, and on a slow CPU a burst of them stalled the server (MP_017: 4,100-18,600 plans per 30 s on the AM1).
+@@ -2970,6 +2970,7 @@
+             e->body = g_downLastBody[k];
+             bot_log("revive: %s went down at (%.1f, %.1f)", pl + OFF_PLAYER_ONLINE_NAME, e->pos[0], e->pos[2]);
+             bm_learn(-1, BM_LEARN_DEATH, e->pos, NULL);   // AltBotMod V21: where soldiers die
++            zone_note_death(e->team, e->pos);              // AltBotMod V35: the mesh there costs the team more for a while
+             mode_note_death(pl);   // AltBotMod V16
+             break;
+         }
+@@ -3967,6 +3968,8 @@
+     unsigned spAt;
+     unsigned wantMoveAt, unstickAt, unstickUntil; int unstickCount, unstickStage; float unstickPos[3], unstickFrom[3];   // Caspian V4
+     float exitHeading, exitFrom[3], landTgt[3]; unsigned exitProbeAt, landLogAt, boatPlanSince; unsigned char exitSet, landSet;   // Caspian V5 boats
++    float landCacheFrom[3], landCacheGoal[3]; unsigned landCacheAt; int landCacheFlag;   // AltBotMod V35.1: the landing worked out last
++    float boatTryTgt[3], boatTryFrom[3]; unsigned boatTryAt; int boatTry;   // AltBotMod V35.1: the boat route try in progress (0 clear, 1 shallows, 2 open water first)
+     float vwantS; unsigned vwantAt, vwantHoldUntil; int traceTries, traceContinue;   // AltBotMod V6: smoothed speed target; Fun-Bots vehicle routes tried
+     int straight; unsigned coastUntil, cutAt;   // AltBotMod V8: straight-line legs driven (no map yet); rolling re-plan; corner-cut probe
+     unsigned char straightRoute; unsigned straightLogAt;   // AltBotMod V9: on a straight no-map route now; last log
+@@ -3998,9 +4001,10 @@
+ static struct { unsigned char *mask; float x, z, r; unsigned until; } g_strikes[MAX_DRIVE_STRIKES];
+ static int g_strikeNext;
+ static unsigned char *g_strikeBase[2], *g_strikeBaseOf[2];
++static unsigned g_driveMaskGen;   // AltBotMod V35.1: bumped on every strike / restore (the boats' cached clear mask is rebuilt)
+ static void drive_strikes_reset(void)   // a mask rebuilt (new map): its strikes and copies are gone too
+ {
+-    memset(g_strikes, 0, sizeof g_strikes);
++    memset(g_strikes, 0, sizeof g_strikes); g_driveMaskGen++;
+     for (int s = 0; s < 2; s++) { if (g_strikeBase[s]) HeapFree(GetProcessHeap(), 0, g_strikeBase[s]); g_strikeBase[s] = NULL; g_strikeBaseOf[s] = NULL; }
+ }
+ static int drive_strike(unsigned char *mask, float x, float z, float r)
+@@ -4018,6 +4022,7 @@
+     }
+     int k = g_strikeNext++ % MAX_DRIVE_STRIKES;
+     g_strikes[k].mask = mask; g_strikes[k].x = x; g_strikes[k].z = z; g_strikes[k].r = r; g_strikes[k].until = H->frame + DRIVE_STRIKE_FRAMES;
++    g_driveMaskGen++;
+     return nav_mask_block(g, mask, x, z, r);
+ }
+ static void drive_strikes_tick(void)
+@@ -4028,7 +4033,7 @@
+         if (!g_strikes[k].mask || H->frame < g_strikes[k].until) continue;
+         int slot = g_strikeBaseOf[0] == g_strikes[k].mask ? 0 : g_strikeBaseOf[1] == g_strikes[k].mask ? 1 : -1;
+         if (slot >= 0) {
+-            int n = nav_mask_restore(g, g_strikes[k].mask, g_strikeBase[slot], g_strikes[k].x, g_strikes[k].z, g_strikes[k].r);
++            int n = nav_mask_restore(g, g_strikes[k].mask, g_strikeBase[slot], g_strikes[k].x, g_strikes[k].z, g_strikes[k].r); g_driveMaskGen++;
+             bot_log("drive: (%.0f, %.0f) is back on the drivable map (%d node(s), struck 5 minutes ago)", g_strikes[k].x, g_strikes[k].z, n);
+         }
+         g_strikes[k].mask = NULL;
+@@ -10250,7 +10255,7 @@
+     QueryPerformanceCounter(&t);
+     return (double)t.QuadPart * 1000.0 / (double)f.QuadPart;
+ }
+-static void perf_add(int k, double ms) { g_perfMs[k] += ms; if (ms > g_perfMax[k]) g_perfMax[k] = ms; }
++static void perf_add(int k, double ms) { g_perfMs[k] += ms; if (ms > g_perfMax[k]) g_perfMax[k] = ms; if (k == 7) g_pathMsTotal += ms; }
+ static double g_subMs[4], g_subMax[4];   // AltBotMod V31.1: the input bucket split - driving, aircraft, gunners, the rest of a bot's motion
+ static void perf_report(void)
+ {
+@@ -11747,7 +11752,16 @@
+         int have = 0;
+         if (boat) {   // the landing: the beach of the flag's own landmass that best trades boat time for the walk
+             int goalLab = g_landLabels ? nav_label_at(g, g_landLabels, d->goal[0], isnan(d->goal[1]) ? vp[1] : d->goal[1], d->goal[2]) : 0;
+-            if (goalLab) have = nav_landing_on(g, mask, g_landLabels, goalLab, vp[0], vp[2], d->goal[0], d->goal[2], 0.6f, 60.0f, tgt);
++            // AltBotMod V35.1: the landing is a whole-grid search (several million nodes on Kharg Island) and a plan that
++            // waits for the planning budget comes back here every tick - the last landing is kept while the boat is within
++            // 25 m of where it was worked out, for the same flag, for 30 s (V34: 20-40 ms on every tick a boat planned)
++            if (goalLab && d->landSet && d->landCacheAt && H->frame - d->landCacheAt < 30 * 30 && d->landCacheFlag == d->flag &&
++                hypotf(vp[0] - d->landCacheFrom[0], vp[2] - d->landCacheFrom[2]) < 25.0f &&
++                hypotf(d->goal[0] - d->landCacheGoal[0], d->goal[2] - d->landCacheGoal[2]) < 5.0f) { memcpy(tgt, d->landTgt, 12); have = 1; }
++            else if (goalLab) {
++                have = nav_landing_on(g, mask, g_landLabels, goalLab, vp[0], vp[2], d->goal[0], d->goal[2], 0.6f, 60.0f, tgt);
++                if (have) { d->landCacheAt = H->frame ? H->frame : 1; d->landCacheFlag = d->flag; memcpy(d->landCacheFrom, vp, 12); memcpy(d->landCacheGoal, d->goal, 12); }
++            }
+             if (!have) have = nav_mask_nearest(g, mask, d->goal[0], d->goal[2], 300.0f, tgt);
+         }
+         if (boat && !have) { nav_set_path_mask(NULL); vehicle_mark_bad(d->veh, 120); drive_stop(i, "has no water near its flag", 60); return; }
+@@ -11757,13 +11771,31 @@
+             d->landLogAt = H->frame;
+         }
+         if (boat) { memcpy(d->landTgt, tgt, 12); d->landSet = 1; }
++        // AltBotMod V35.1: the clear mask (no shallows) is made once per mask and kept; each plan only opens the 40 m circles
++        // round its start and landing (they stay open: a queued route is worked on in later ticks, and other boats' circles
++        // only add water near where boats start and land; after 32 the mask is made afresh). V34 copied and stripped the
++        // whole grid on every plan - and every tick a waiting plan came back - which held the server's tick at 20-60 ms
++        // whenever a bot boat left its slip on Kharg Island (the players' rubber-banding, 2026-11-03).
++        static const unsigned char *clearOf; static unsigned clearGen; static int clearOpen; static float clearKeeps[32][2];   // (a new map's mask: drive_strikes_reset bumps the generation)
+         if (boat) {
+             size_t n = (size_t)g->w * g->h * NAV_LAYERS;
+-            if (clearSize != n) { if (clearMask) HeapFree(GetProcessHeap(), 0, clearMask); clearMask = HeapAlloc(GetProcessHeap(), 0, n); clearSize = clearMask ? n : 0; }
++            if (clearSize != n) { if (clearMask) HeapFree(GetProcessHeap(), 0, clearMask); clearMask = HeapAlloc(GetProcessHeap(), 0, n); clearSize = clearMask ? n : 0; clearOf = NULL; }
+             if (clearMask) {
+-                float keep[4] = {vp[0], vp[2], tgt[0], tgt[2]};
+-                memcpy(clearMask, mask, n);
+-                nav_mask_strip(g, clearMask, 4, keep, 2, 40.0f);
++                float want[2][2] = {{vp[0], vp[2]}, {tgt[0], tgt[2]}};
++                if (d->boatTryAt && H->frame - d->boatTryAt < 60 * 30 && hypotf(vp[0] - d->boatTryFrom[0], vp[2] - d->boatTryFrom[2]) < 15.0f) { want[0][0] = d->boatTryFrom[0]; want[0][1] = d->boatTryFrom[2]; }
++                int need = 0;
++                for (int k = 0; k < 2; k++) { int open = 0; for (int j = 0; j < clearOpen && !open; j++) open = clearKeeps[j][0] == want[k][0] && clearKeeps[j][1] == want[k][1]; need += !open; }
++                if (clearOf != mask || clearGen != g_driveMaskGen || clearOpen + need > 32) {
++                    memcpy(clearMask, mask, n);
++                    nav_mask_strip(g, clearMask, 4, NULL, 0, 0.0f);
++                    clearOf = mask; clearGen = g_driveMaskGen; clearOpen = 0;
++                }
++                for (int k = 0; k < 2; k++) {
++                    int open = 0; for (int j = 0; j < clearOpen && !open; j++) open = clearKeeps[j][0] == want[k][0] && clearKeeps[j][1] == want[k][1];
++                    if (open) continue;
++                    nav_mask_patch_disk(g, clearMask, mask, 0, want[k][0], want[k][1], 40.0f);
++                    clearKeeps[clearOpen][0] = want[k][0]; clearKeeps[clearOpen][1] = want[k][1]; clearOpen++;
++                }
+                 nav_set_path_mask(clearMask);
+             }
+         }
+@@ -11782,21 +11814,42 @@
+         nav_set_long_legs(boat);
+         nav_set_vehicle_avoid(H->frame<d->avoidUntil?d->avoidPosition:NULL,d->avoidRadius);
+         double planT0 = perf_now();
+-        d->n = have ? budgeted_nav_path(i+MAX_BOTS,g, boat ? ray_cast : drive_nav_ray, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS) : 0;
++        // AltBotMod V35.1: a boat's three tries (6 m clear of land, then the shallows, then out of a pocket to open water
++        // first) are one queued route each, and a queued route starts again whenever what is asked changes. V34 asked for
++        // the clear one first on every tick, so the shallows route it fell back to was dropped the next tick and never
++        // finished: Kharg Island's boats sat by their slip for two minutes and the crews walked (2026-11-03). Now the try a
++        // boat is on stays until it answers, for the same landing, and the start is held where the boat was while it
++        // drifts a little (a start moved over 4 m also restarts the search).
++        int boatStage = 0; float bs[3] = {vp[0], vp[1], vp[2]};
++        if (boat) {
++            if (d->boatTryAt && H->frame - d->boatTryAt < 60 * 30 && hypotf(tgt[0] - d->boatTryTgt[0], tgt[2] - d->boatTryTgt[2]) < 30.0f &&
++                hypotf(vp[0] - d->boatTryFrom[0], vp[2] - d->boatTryFrom[2]) < 15.0f) { boatStage = d->boatTry; memcpy(bs, d->boatTryFrom, 12); }
++            else { d->boatTry = 0; d->boatTryAt = H->frame ? H->frame : 1; memcpy(d->boatTryTgt, tgt, 12); memcpy(d->boatTryFrom, vp, 12); }
++        }
++        if (!boat || boatStage == 0)
++            d->n = have ? budgeted_nav_path(i+MAX_BOTS,g, boat ? ray_cast : drive_nav_ray, bs[0], bs[1], bs[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS) : 0;
++        else d->n = 0;
+         d->partial=have && (nav_last_partial() || d->stageActive);
+         if (perf_now() - planT0 > 50.0) bot_log("perf: %s's vehicle route took %.0f ms (%d points)", pl + OFF_PLAYER_ONLINE_NAME, perf_now() - planT0, d->n);
+-        if (have && !d->n && !g_lastPlanDeferred && boat) {   // no way round with 6 m to spare: the shallows too
++        if (boat && boatStage == 0 && have && !d->n && !g_lastPlanDeferred) boatStage = d->boatTry = 1;   // no way round with 6 m to spare
++        if (have && !d->n && boat && boatStage == 1) {   // the shallows too
+             if (H->frame - d->sensorLogAt > 15 * 30) { d->sensorLogAt = H->frame; bot_log("drive: %s finds no route 6 m clear of land - allows the shallows", pl + OFF_PLAYER_ONLINE_NAME); }
+             nav_set_path_mask(mask);
+-            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS);
++            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, bs[0], bs[1], bs[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS);
+             d->partial=nav_last_partial();
++            if (!d->n && !g_lastPlanDeferred) boatStage = d->boatTry = 2;
+         }
+         float ow[3];
+-        if (have && !d->n && !g_lastPlanDeferred && boat && nav_open_water_near(g, mask, vp[0], vp[2], 80.0f, ow)) {   // docked in a pocket (pier posts):
+-            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, ow[0], ow[1], ow[2], tgt[0], tgt[1], tgt[2], d->pts + 3, DRIVE_MAX_PTS - 1);   // out to open water first
+-            d->partial=nav_last_partial();
+-            if (d->n) { memcpy(d->pts, ow, 12); d->n++; bot_log("drive: %s backs out to open water at (%.0f, %.0f) first", pl + OFF_PLAYER_ONLINE_NAME, ow[0], ow[2]); }
++        if (have && !d->n && boat && boatStage == 2) {
++            if (nav_open_water_near(g, mask, bs[0], bs[2], 80.0f, ow)) {   // docked in a pocket (pier posts):
++                nav_set_path_mask(mask);
++                d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, ow[0], ow[1], ow[2], tgt[0], tgt[1], tgt[2], d->pts + 3, DRIVE_MAX_PTS - 1);   // out to open water first
++                d->partial=nav_last_partial();
++                if (d->n) { memcpy(d->pts, ow, 12); d->n++; bot_log("drive: %s backs out to open water at (%.0f, %.0f) first", pl + OFF_PLAYER_ONLINE_NAME, ow[0], ow[2]); }
++            } else g_lastPlanDeferred = 0;
++            if (!d->n && !g_lastPlanDeferred) d->boatTryAt = 0;   // all three answered "no": the next plan starts over
+         }
++        if (boat && d->n) d->boatTryAt = 0;
+         nav_set_path_mask(NULL);
+         nav_set_vehicle_width(1.5f);nav_set_vehicle_avoid(NULL,0);
+         nav_set_long_legs(0);
+@@ -13079,18 +13132,26 @@
+         int i=(H->frame+turn)%H->botCount;
+         g_whereBot = i;
+         g_where = "brain_tick";
+-        double a = perf_now();
++        double a = perf_now(), tBrain = 0, tDrive = 0, tPaths0 = g_pathMsTotal;
+         if (((H->frame + i) & 1) == 0 && !g_drive[i].phase) {   // each bot thinks every other frame (15 Hz), alternating halves
+             brain_tick(i);
++            tBrain = perf_now();
+             if (level_ready()) drive_consider(i);
++            tDrive = perf_now();
+             g_where = "say_tick";
+             say_tick(i);
+         }
+         double b = perf_now();
+         if (b - a > 20.0) {
++            // AltBotMod V35.1: the slow think split by part (V34's 22:04 Kharg Island hitches - 560-670 ms each, 8 s long -
++            // could not be traced to one), with the last place the brain was in when it took longest
+             static unsigned slowLogged;
+-            if (slowLogged++ < 60) bot_log("perf: slow think %.0f ms - %s task %s enroute %d waiting %d nav %d", b - a, (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME,
+-                                           kTaskNames[bot_brain(i)->task], bot_brain(i)->enroute, bot_brain(i)->waiting, bot_nav(i)->mode);
++            char *sl = *(char **)(H->bots[i] + OFF_PLAYER_SOLDIER); const float *sp = sl ? (float *)(sl + OFF_SOLDIER_POSITION) : NULL;
++            if (slowLogged++ < 120) bot_log("perf: slow think %.0f ms - %s task %s enroute %d waiting %d nav %d | brain %.0f ms (paths %.0f), vehicle choice %.0f ms, talk %.0f ms; at (%.0f, %.0f, %.0f)%s",
++                                           b - a, (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME,
++                                           kTaskNames[bot_brain(i)->task], bot_brain(i)->enroute, bot_brain(i)->waiting, bot_nav(i)->mode,
++                                           tBrain ? tBrain - a : 0, g_pathMsTotal - tPaths0, tBrain && tDrive ? tDrive - tBrain : 0, tDrive ? b - tDrive : 0,
++                                           sp ? sp[0] : 0, sp ? sp[1] : 0, sp ? sp[2] : 0, player_vehicle(H->bots[i]) ? " in a vehicle" : "");
+         }
+         g_where = "detect_tick";
+         if (!g_air[i].phase) {
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/enhanced.h AltBotMod-V35/files/BotMod/src/enhanced.h
+--- AltBotMod-V34/files/BotMod/src/enhanced.h	2026-10-23 14:35:51.304586000 +0000
++++ AltBotMod-V35/files/BotMod/src/enhanced.h	2026-11-04 15:19:56.885858055 +0000
+@@ -8,7 +8,7 @@
+ #include <stddef.h>
+ #include "air.h"
+ 
+-#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"
++#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"
+ enum BMVehicleKind { BM_UNKNOWN, BM_LIGHT, BM_BOAT, BM_TANK, BM_IFV, BM_AIR, BM_AA, BM_AMTRAC };
+ typedef struct BMVehicleProfile {
+     const char *label;
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/mcom_aim.h AltBotMod-V35/files/BotMod/src/mcom_aim.h
+--- AltBotMod-V34/files/BotMod/src/mcom_aim.h	1970-01-01 00:00:00.000000000 +0000
++++ AltBotMod-V35/files/BotMod/src/mcom_aim.h	2026-11-04 15:19:56.904048174 +0000
+@@ -0,0 +1,27 @@
++// AltBotMod V35 (included by modes_native.inc; needs BMModeProfile and g_modeProfile)
++#pragma once
++#include <math.h>
++// AltBotMod V35: M-COMs whose arming spot and aim were never recorded (present 2: the Squad Rush layouts made from the
++// Fun-Bots V3.6.0-RC2 objective meshes, research/generate_sr_mesh_profiles.py). As Fun-Bots RC2 does without a recorded
++// spot, the operator walks up to 1.3 m from the M-COM, crouches and looks at it (pitch -0.6). A hold the game does not
++// answer with an arm / defuse turns the next try a little further round (0, +-30, +-60, +-90 deg, behind), then lower;
++// the aim that worked is kept for the level.
++static unsigned char g_mcomAimTry[17],g_mcomAimKnown[17];
++static float g_mcomAimYaw[17],g_mcomAimPitch[17],g_mcomAimLastYaw[17],g_mcomAimLastPitch[17];
++#define MCOM_UNRECORDED_REACH 1.3f
++static int mcom_aim_unknown(int k){return g_modeProfile && k>0 && k<=16 && g_modeProfile->mcom[k].present==2;}
++static void mode_mcom_aim(int k,const float *me,float *yaw,float *pitch)
++{
++    if(!mcom_aim_unknown(k)){*yaw=g_modeProfile->mcom[k].yaw;*pitch=g_modeProfile->mcom[k].pitch;return;}
++    if(g_mcomAimKnown[k]){*yaw=g_mcomAimYaw[k];*pitch=g_mcomAimPitch[k];}
++    else{
++        static const float turn[8]={0.0f,0.52f,-0.52f,1.05f,-1.05f,1.57f,-1.57f,3.14159f};
++        const float *c=g_modeProfile->mcom[k].pos;float dx=c[0]-me[0],dz=c[2]-me[2];
++        float base=dx*dx+dz*dz>0.3f*0.3f?atan2f(-dx,dz):0.0f;   // (the recorded aims' convention: facing (-sin yaw, cos yaw))
++        float y=base+turn[g_mcomAimTry[k]%8];
++        while(y<0)y+=6.2831853f;
++        while(y>=6.2831853f)y-=6.2831853f;
++        *yaw=y;*pitch=(g_mcomAimTry[k]/8)%2?-0.95f:-0.6f;
++    }
++    g_mcomAimLastYaw[k]=*yaw;g_mcomAimLastPitch[k]=*pitch;
++}
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/mode_profiles.inc AltBotMod-V35/files/BotMod/src/mode_profiles.inc
+--- AltBotMod-V34/files/BotMod/src/mode_profiles.inc	2026-10-23 14:35:49.733651000 +0000
++++ AltBotMod-V35/files/BotMod/src/mode_profiles.inc	2026-11-04 15:19:56.907018496 +0000
+@@ -151,5 +151,18 @@
+ {"XP4_Quake","SquadRush0",{-231.964813f,169.639908f,-47.290340f},{-62.613766f,186.602188f,124.721550f},{{-174.152176f,170.158386f,63.642040f},{-178.241837f,170.235046f,78.128227f},{-190.244293f,181.017197f,120.741173f},{-211.941315f,182.775864f,110.718414f},{-171.560410f,170.036484f,78.855736f},{-173.718628f,173.930771f,95.813889f},{-213.968201f,182.240768f,74.508614f},{-162.395325f,170.158401f,84.716217f},{-184.373993f,175.680557f,41.932831f},{-211.061722f,177.767136f,24.742250f},{-167.295563f,170.851364f,57.684502f},{-178.613068f,172.861115f,49.316940f},{-175.702499f,181.827911f,109.903366f},{-140.447250f,182.504715f,115.806541f},{-150.439224f,171.959976f,96.364380f},{-169.563583f,178.072845f,85.185059f},{-159.813980f,175.252243f,35.009094f},{-151.702164f,175.639496f,19.553867f},{-113.413147f,174.149582f,18.083220f},{-156.005234f,171.801682f,55.680935f},{-181.171844f,179.115051f,21.146446f},{-177.538055f,180.562683f,19.767906f},{-125.796242f,172.665390f,-9.053741f},{-131.602203f,173.708832f,24.834602f},{-119.126053f,175.313263f,30.872728f},{-120.182289f,182.317825f,82.221695f},{-63.829967f,174.830353f,34.084396f},{-86.676353f,177.510696f,32.069736f},{-93.667336f,174.878754f,6.082910f},{-85.665337f,178.759216f,-39.209656f},{-123.357605f,172.739700f,-14.453692f},{-114.702995f,175.715866f,8.558718f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-223.201187f,182.067261f,104.888687f},{-131.951614f,186.602188f,123.351883f}},{{0.000000f,0.000000f,0.000000f},{-176.824173f,181.494080f,17.592789f},{-62.613766f,175.160156f,40.538429f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-172.497452f,170.093262f,63.635815f},2.413801f,-0.756920f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-115.562622f,173.760925f,10.423809f},5.286359f,-0.638219f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
+ {"XP4_Rubble","SquadRush0",{-52.546909f,62.078876f,-115.822762f},{35.336212f,67.686974f,153.754883f},{{-0.010742f,64.348488f,50.454102f},{-0.212934f,65.661682f,10.577485f},{26.880760f,63.790268f,127.821678f},{2.251415f,64.416733f,90.950455f},{-2.604795f,64.348923f,51.778595f},{17.510555f,65.735092f,-15.624509f},{-12.557902f,65.805061f,15.555684f},{-5.882039f,64.348923f,55.521194f},{-52.461811f,64.551849f,72.648796f},{-38.021572f,64.451508f,28.394238f},{-18.055855f,66.686264f,-9.793643f},{-19.588247f,66.220505f,-115.547157f},{-14.560137f,64.846481f,-82.208984f},{-17.681061f,64.263168f,-39.331959f},{-26.436924f,64.250977f,124.262741f},{-45.046822f,64.257088f,98.755219f},{-15.164761f,64.358505f,68.042473f},{26.133068f,64.604362f,116.704948f},{19.796097f,64.410934f,69.931946f},{-29.068226f,64.123169f,-33.900265f},{-40.870430f,65.501755f,2.457231f},{-22.100906f,64.293564f,34.054565f},{18.933533f,64.268341f,43.629906f},{18.014692f,67.675583f,-1.978007f},{30.288759f,66.404327f,-79.341667f},{15.772235f,65.177620f,-75.548492f},{2.842976f,64.252083f,-31.648207f},{-2.897615f,64.447578f,59.685478f},{-7.866108f,64.251747f,39.350952f},{-10.237347f,65.724411f,-14.343016f},{-0.604557f,65.682480f,-24.035950f},{-16.822973f,65.671379f,-28.575737f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{34.054688f,65.534958f,153.754883f},{32.166992f,65.724411f,-18.359375f}},{{0.000000f,0.000000f,0.000000f},{-35.829102f,64.410934f,101.019531f},{-33.995117f,66.224411f,-115.287109f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-2.604795f,64.348923f,51.778595f},1.681000f,-0.928004f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-20.051144f,65.723648f,-21.859133f},0.031328f,-0.583158f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
+ {"XP5_002","SquadRush0",{-1980.357056f,52.230255f,-119.576042f},{-1820.034180f,66.758270f,48.372444f},{{-1887.984741f,56.897392f,-39.462231f},{-1894.955200f,56.896820f,-26.510139f},{-1872.306641f,56.901455f,-45.666389f},{-1942.775391f,54.697044f,-60.697796f},{-1913.008545f,56.593281f,-118.238197f},{-1885.940674f,56.812401f,-60.046135f},{-1904.750732f,57.330017f,-10.236054f},{-1924.571777f,55.373955f,-86.411079f},{-1862.159424f,57.043209f,38.290672f},{-1883.270264f,57.769951f,-17.854227f},{-1858.488281f,56.900002f,2.181797f},{-1900.282104f,58.950016f,-24.044266f},{-1865.098877f,56.898743f,-19.999739f},{-1855.990112f,56.816185f,-53.876999f},{-1855.426025f,56.896923f,-20.129045f},{-1851.746094f,56.890087f,-12.577419f},{-1859.176636f,56.896923f,8.380084f},{-1859.111450f,57.091183f,-6.307320f},{-1889.419434f,56.813763f,-55.170063f},{-1876.479614f,63.323700f,-26.449354f},{-1911.484741f,57.775578f,-58.713814f},{-1861.856323f,56.900768f,-28.159685f},{-1897.866577f,61.998581f,-20.128836f},{-1903.413208f,56.813366f,-19.127356f},{-1880.622681f,65.745308f,-11.021851f},{-1903.019165f,57.558376f,-2.635123f},{-1852.661255f,56.897152f,7.271462f},{-1848.477051f,56.896923f,7.136187f},{-1850.466309f,56.812157f,12.984985f},{-1857.388062f,56.896923f,11.347391f},{-1873.244629f,57.756943f,14.695829f},{-1872.212036f,59.465210f,-14.408151f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-1978.991333f,52.338161f,-57.609669f},{-1863.753540f,57.186359f,42.228443f}},{{0.000000f,0.000000f,0.000000f},{-1876.688965f,56.813381f,-71.263458f},{-1820.034180f,58.902737f,27.622055f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-1889.338257f,56.897392f,-38.605259f},3.240498f,-0.793426f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-1855.539673f,56.896923f,-5.384172f},1.711040f,-0.690968f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
+-{"XP5_004","SquadRush0",{-1011.705383f,127.243721f,-994.241333f},{-713.365845f,151.420120f,-823.644348f},{{-913.335083f,146.244232f,-906.492065f},{-917.611511f,147.917999f,-904.311401f},{-887.450073f,146.244659f,-907.638306f},{-922.225769f,141.439209f,-842.343323f},{-900.294800f,143.400345f,-897.346252f},{-929.656616f,142.869537f,-886.839050f},{-900.809998f,146.236786f,-900.833618f},{-961.002930f,148.856476f,-905.627563f},{-956.033691f,141.966965f,-938.128723f},{-910.786072f,146.264572f,-921.845520f},{-882.704041f,141.441895f,-927.676392f},{-834.695679f,137.971878f,-917.451111f},{-895.914978f,141.439651f,-905.424744f},{-873.835083f,151.106293f,-839.686462f},{-904.460388f,148.830826f,-880.644165f},{-890.354370f,141.568436f,-877.528198f},{-809.398865f,137.095383f,-917.032959f},{-790.606750f,138.491409f,-913.561707f},{-798.599792f,137.095840f,-899.921997f},{-882.058044f,141.439651f,-902.564941f},{-840.430481f,139.979645f,-907.597107f},{-818.464050f,143.897919f,-976.451111f},{-871.342468f,141.439651f,-921.833801f},{-813.788086f,137.095322f,-918.617554f},{-827.578369f,137.102631f,-902.845154f},{-815.587524f,137.133667f,-869.241272f},{-747.660095f,137.103226f,-958.305298f},{-717.221130f,128.930862f,-906.088745f},{-782.534119f,137.426163f,-916.610229f},{-757.921753f,136.939331f,-909.929810f},{-767.420837f,137.232529f,-851.995972f},{-792.038452f,137.095840f,-901.114136f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-939.168396f,141.435043f,-823.644348f},{-853.780090f,142.609879f,-959.177368f}},{{0.000000f,0.000000f,0.000000f},{-830.263245f,146.498215f,-994.241333f},{-728.559998f,136.008331f,-953.357300f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-911.691040f,146.244232f,-906.624268f},0.576471f,-0.908377f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-792.525330f,138.312927f,-908.614014f},5.676459f,-0.697214f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}}
++{"XP5_004","SquadRush0",{-1011.705383f,127.243721f,-994.241333f},{-713.365845f,151.420120f,-823.644348f},{{-913.335083f,146.244232f,-906.492065f},{-917.611511f,147.917999f,-904.311401f},{-887.450073f,146.244659f,-907.638306f},{-922.225769f,141.439209f,-842.343323f},{-900.294800f,143.400345f,-897.346252f},{-929.656616f,142.869537f,-886.839050f},{-900.809998f,146.236786f,-900.833618f},{-961.002930f,148.856476f,-905.627563f},{-956.033691f,141.966965f,-938.128723f},{-910.786072f,146.264572f,-921.845520f},{-882.704041f,141.441895f,-927.676392f},{-834.695679f,137.971878f,-917.451111f},{-895.914978f,141.439651f,-905.424744f},{-873.835083f,151.106293f,-839.686462f},{-904.460388f,148.830826f,-880.644165f},{-890.354370f,141.568436f,-877.528198f},{-809.398865f,137.095383f,-917.032959f},{-790.606750f,138.491409f,-913.561707f},{-798.599792f,137.095840f,-899.921997f},{-882.058044f,141.439651f,-902.564941f},{-840.430481f,139.979645f,-907.597107f},{-818.464050f,143.897919f,-976.451111f},{-871.342468f,141.439651f,-921.833801f},{-813.788086f,137.095322f,-918.617554f},{-827.578369f,137.102631f,-902.845154f},{-815.587524f,137.133667f,-869.241272f},{-747.660095f,137.103226f,-958.305298f},{-717.221130f,128.930862f,-906.088745f},{-782.534119f,137.426163f,-916.610229f},{-757.921753f,136.939331f,-909.929810f},{-767.420837f,137.232529f,-851.995972f},{-792.038452f,137.095840f,-901.114136f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-939.168396f,141.435043f,-823.644348f},{-853.780090f,142.609879f,-959.177368f}},{{0.000000f,0.000000f,0.000000f},{-830.263245f,146.498215f,-994.241333f},{-728.559998f,136.008331f,-953.357300f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-911.691040f,146.244232f,-906.624268f},0.576471f,-0.908377f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-792.525330f,138.312927f,-908.614014f},5.676459f,-0.697214f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++// AltBotMod V35: Squad Rush from the Fun-Bots V3.6.0-RC2 objective meshes (research/generate_sr_mesh_profiles.py)
++{"MP_012","SquadRush0",{-436.000000f,100.470000f,-262.000000f},{212.500000f,207.120000f,56.000000f},{{-317.000000f,133.430000f,-84.000000f},{-301.000000f,133.860000f,-119.500000f},{-296.500000f,133.830000f,-117.000000f},{-276.000000f,133.730000f,-76.000000f},{-133.500000f,124.950000f,-149.500000f},{-282.500000f,134.050000f,-99.000000f},{-87.500000f,125.000000f,-138.000000f},{-280.500000f,133.840000f,-72.000000f},{-295.500000f,134.050000f,-106.500000f},{-101.000000f,124.690000f,-155.000000f},{-110.500000f,130.120000f,-116.500000f},{-289.000000f,133.920000f,-70.000000f},{-292.500000f,134.050000f,-102.500000f},{-131.500000f,124.960000f,-125.500000f},{-132.000000f,124.920000f,-143.000000f},{-297.500000f,134.050000f,-95.000000f},{-108.000000f,124.740000f,-155.500000f},{-297.500000f,134.050000f,-101.500000f},{-100.500000f,125.000000f,-134.500000f},{-285.500000f,134.050000f,-122.500000f},{-263.000000f,133.870000f,-87.500000f},{-108.500000f,125.000000f,-134.000000f},{-268.000000f,134.050000f,-112.500000f},{-284.000000f,133.940000f,-68.000000f},{-280.500000f,134.050000f,-122.500000f},{-269.500000f,138.610000f,-100.500000f},{-102.500000f,123.470000f,-169.500000f},{-115.000000f,129.540000f,-151.500000f},{-116.500000f,130.160000f,-132.000000f},{-133.000000f,130.420000f,-121.000000f},{-311.000000f,133.840000f,-103.500000f},{-288.000000f,134.050000f,-90.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-69.200000f,124.570000f,-91.140000f},{-155.930000f,124.970000f,-129.110000f}},{{0.000000f,0.000000f,0.000000f},{-96.960000f,124.570000f,-110.240000f},{-322.250000f,133.810000f,-116.400000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-115.100189f,124.999390f,-141.684219f},1.827755f,-0.584138f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-290.047272f,134.050842f,-96.100060f},5.351629f,-0.646965f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"MP_013","SquadRush0",{-114.500000f,199.630000f,-478.500000f},{120.000000f,717.610000f,257.500000f},{{28.000000f,626.510000f,-209.000000f},{37.000000f,626.510000f,-211.000000f},{17.000000f,627.000000f,-253.000000f},{19.500000f,215.000000f,102.500000f},{28.500000f,626.510000f,-214.000000f},{42.000000f,626.510000f,-210.500000f},{12.000000f,627.330000f,-251.500000f},{23.000000f,626.510000f,-208.000000f},{16.500000f,215.000000f,107.000000f},{26.000000f,626.510000f,-204.000000f},{32.000000f,626.510000f,-242.500000f},{-3.500000f,215.000000f,78.000000f},{29.500000f,631.740000f,-235.000000f},{10.000000f,215.000000f,65.500000f},{46.500000f,214.970000f,94.000000f},{36.500000f,626.760000f,-249.000000f},{29.000000f,627.320000f,-235.500000f},{20.500000f,215.000000f,78.500000f},{18.000000f,628.030000f,-258.000000f},{3.500000f,215.000000f,64.500000f},{41.500000f,214.940000f,77.500000f},{3.000000f,626.510000f,-238.000000f},{27.000000f,215.000000f,89.000000f},{21.500000f,630.970000f,-258.000000f},{23.500000f,219.150000f,78.000000f},{3.000000f,220.200000f,85.000000f},{2.500000f,215.000000f,90.000000f},{34.000000f,631.740000f,-237.500000f},{58.500000f,626.480000f,-223.000000f},{3.500000f,215.000000f,59.500000f},{12.500000f,218.920000f,85.000000f},{2.500000f,217.190000f,101.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{7.200000f,651.780000f,-386.560000f},{-0.790000f,619.790000f,-144.940000f}},{{0.000000f,0.000000f,0.000000f},{11.950000f,626.510000f,-204.460000f},{4.100000f,215.200000f,151.570000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{32.085953f,627.329834f,-232.985321f},1.198736f,-0.490424f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{22.630000f,219.950000f,82.010000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"MP_018","SquadRush0",{-612.500000f,74.420000f,-212.000000f},{-157.500000f,164.360000f,503.000000f},{{-462.500000f,89.600000f,171.500000f},{-453.000000f,91.070000f,173.000000f},{-315.000000f,91.160000f,376.500000f},{-460.500000f,89.600000f,184.500000f},{-453.500000f,89.900000f,165.000000f},{-436.000000f,90.720000f,155.500000f},{-303.500000f,96.280000f,375.500000f},{-434.500000f,90.720000f,164.500000f},{-434.000000f,90.720000f,192.500000f},{-280.500000f,91.160000f,383.000000f},{-453.000000f,90.180000f,155.500000f},{-438.500000f,100.320000f,178.000000f},{-290.500000f,91.160000f,354.500000f},{-447.500000f,90.730000f,153.500000f},{-441.500000f,100.320000f,182.000000f},{-440.500000f,91.660000f,203.000000f},{-433.000000f,90.720000f,159.500000f},{-415.000000f,90.720000f,179.500000f},{-444.500000f,90.720000f,207.500000f},{-291.000000f,91.160000f,376.000000f},{-442.000000f,100.360000f,156.500000f},{-462.500000f,89.600000f,201.000000f},{-322.500000f,91.160000f,364.500000f},{-305.500000f,96.280000f,380.500000f},{-440.000000f,104.360000f,163.000000f},{-455.500000f,89.900000f,178.000000f},{-303.500000f,91.160000f,360.500000f},{-295.500000f,95.710000f,382.500000f},{-437.500000f,100.320000f,170.500000f},{-436.000000f,103.050000f,183.000000f},{-297.500000f,94.020000f,373.000000f},{-285.000000f,91.160000f,398.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-413.040000f,94.020000f,48.570000f},{-420.090000f,90.590000f,247.960000f}},{{0.000000f,0.000000f,0.000000f},{-342.770000f,90.720000f,176.490000f},{-297.770000f,91.160000f,421.260000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-441.564423f,96.319977f,180.653748f},5.899283f,-0.738446f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-306.360229f,91.157639f,376.072479f},1.139868f,-0.657858f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP1_001","SquadRush0",{-327.000000f,130.780000f,-332.000000f},{-33.500000f,226.580000f,227.000000f},{{-208.000000f,155.670000f,-19.000000f},{-202.500000f,149.870000f,-192.000000f},{-208.000000f,155.720000f,-24.000000f},{-168.500000f,149.850000f,-173.500000f},{-163.500000f,155.800000f,-8.500000f},{-199.500000f,155.860000f,2.000000f},{-165.000000f,155.870000f,5.500000f},{-200.000000f,149.790000f,-176.000000f},{-206.000000f,155.780000f,-7.000000f},{-192.000000f,149.900000f,-181.500000f},{-166.500000f,155.810000f,-34.000000f},{-188.500000f,155.890000f,4.000000f},{-174.500000f,149.950000f,-191.000000f},{-169.000000f,149.800000f,-159.000000f},{-197.000000f,155.900000f,-10.500000f},{-157.000000f,149.940000f,-185.000000f},{-176.500000f,160.050000f,2.000000f},{-182.000000f,149.950000f,-151.500000f},{-191.000000f,158.250000f,-14.500000f},{-170.000000f,155.900000f,1.000000f},{-186.000000f,156.210000f,10.500000f},{-198.000000f,149.780000f,-163.500000f},{-189.500000f,158.250000f,-24.500000f},{-202.000000f,149.900000f,-201.500000f},{-210.500000f,149.940000f,-172.000000f},{-185.500000f,155.870000f,-32.500000f},{-194.500000f,157.190000f,-25.000000f},{-202.000000f,155.920000f,6.500000f},{-183.000000f,151.000000f,-186.000000f},{-160.500000f,150.050000f,-160.500000f},{-186.500000f,158.250000f,-20.000000f},{-182.000000f,158.250000f,-10.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-157.470000f,162.100000f,133.010000f},{-194.940000f,155.860000f,-64.050000f}},{{0.000000f,0.000000f,0.000000f},{-214.220000f,156.100000f,-24.730000f},{-141.150000f,149.870000f,-221.830000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-182.270264f,158.248123f,-14.244354f},5.233139f,-0.728182f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-183.840000f,150.700000f,-178.430000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP1_002","SquadRush0",{-330.000000f,13.250000f,-190.500000f},{87.500000f,111.390000f,163.000000f},{{-65.500000f,40.480000f,56.500000f},{-68.500000f,40.830000f,52.000000f},{-103.500000f,37.780000f,-25.000000f},{-122.000000f,49.340000f,2.000000f},{-115.500000f,37.780000f,-39.500000f},{-36.500000f,40.480000f,55.500000f},{-97.000000f,39.210000f,-9.000000f},{-125.500000f,39.500000f,-24.000000f},{-23.500000f,48.030000f,48.000000f},{-123.500000f,38.020000f,-45.000000f},{-130.500000f,45.930000f,5.500000f},{-47.500000f,40.950000f,75.500000f},{-108.500000f,38.030000f,-24.500000f},{-119.000000f,49.340000f,-2.000000f},{-61.500000f,41.400000f,39.500000f},{-128.000000f,40.760000f,-14.500000f},{-123.000000f,41.000000f,10.500000f},{-24.000000f,48.030000f,60.500000f},{-133.500000f,48.600000f,-12.000000f},{-60.000000f,40.950000f,33.500000f},{-55.000000f,40.880000f,70.000000f},{-131.000000f,40.710000f,-7.000000f},{-131.500000f,40.800000f,11.500000f},{-30.500000f,40.430000f,49.000000f},{-109.000000f,38.080000f,-30.000000f},{-126.500000f,48.600000f,-19.000000f},{-142.000000f,40.750000f,7.000000f},{-18.000000f,51.390000f,51.500000f},{-143.000000f,38.870000f,-23.000000f},{-112.500000f,45.890000f,-0.500000f},{-36.000000f,41.150000f,32.000000f},{-51.500000f,40.590000f,60.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-142.020000f,37.950000f,-38.500000f},{-81.470000f,40.800000f,11.970000f}},{{0.000000f,0.000000f,0.000000f},{-142.020000f,37.950000f,-38.500000f},{-13.250000f,40.360000f,56.680000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-123.997131f,40.440582f,-16.957422f},0.362225f,-1.092053f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-47.910000f,41.780000f,50.080000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP1_003","SquadRush0",{-22.500000f,64.180000f,-269.500000f},{650.000000f,188.610000f,1.500000f},{{88.500000f,97.100000f,-154.500000f},{83.500000f,97.100000f,-128.000000f},{291.500000f,91.250000f,-134.500000f},{81.000000f,97.100000f,-133.000000f},{110.000000f,97.100000f,-170.000000f},{288.500000f,91.990000f,-90.000000f},{108.500000f,104.500000f,-131.000000f},{98.500000f,97.100000f,-151.000000f},{307.500000f,91.340000f,-119.000000f},{275.000000f,91.340000f,-89.500000f},{78.000000f,97.100000f,-137.000000f},{253.000000f,91.190000f,-118.500000f},{104.000000f,104.500000f,-148.000000f},{106.500000f,104.500000f,-123.000000f},{299.500000f,91.350000f,-112.000000f},{85.000000f,97.110000f,-165.000000f},{298.500000f,91.210000f,-125.000000f},{125.000000f,97.230000f,-145.000000f},{288.000000f,91.210000f,-118.000000f},{95.500000f,97.340000f,-168.500000f},{97.500000f,128.610000f,-130.500000f},{95.000000f,101.100000f,-120.000000f},{287.500000f,102.300000f,-109.500000f},{281.500000f,102.300000f,-107.000000f},{96.500000f,97.100000f,-140.500000f},{268.000000f,94.260000f,-128.500000f},{102.500000f,97.100000f,-123.000000f},{294.000000f,95.640000f,-115.500000f},{265.500000f,95.640000f,-106.500000f},{94.000000f,105.620000f,-148.500000f},{96.000000f,114.930000f,-124.000000f},{301.500000f,91.210000f,-96.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{368.390000f,99.390000f,-83.650000f},{247.610000f,91.510000f,-85.190000f}},{{0.000000f,0.000000f,0.000000f},{368.390000f,99.390000f,-83.650000f},{69.210000f,97.100000f,-122.790000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{281.970000f,103.090000f,-113.960000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{97.550000f,105.300000f,-148.370000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP1_004","SquadRush0",{217.500000f,87.430000f,-100.500000f},{441.500000f,183.960000f,363.000000f},{{323.000000f,113.300000f,128.500000f},{323.000000f,113.260000f,163.000000f},{311.000000f,108.480000f,148.500000f},{353.500000f,115.860000f,223.500000f},{310.000000f,106.990000f,152.500000f},{353.000000f,116.630000f,145.500000f},{328.500000f,115.120000f,130.500000f},{336.500000f,116.620000f,238.000000f},{326.000000f,115.230000f,205.000000f},{345.000000f,116.610000f,147.500000f},{315.000000f,112.530000f,203.000000f},{351.500000f,116.620000f,138.500000f},{332.500000f,116.620000f,209.000000f},{358.000000f,116.750000f,147.500000f},{350.000000f,116.620000f,236.500000f},{348.500000f,116.280000f,208.000000f},{323.000000f,116.620000f,239.000000f},{343.000000f,116.690000f,142.500000f},{334.000000f,115.830000f,172.000000f},{325.500000f,116.620000f,228.500000f},{352.000000f,116.720000f,125.000000f},{305.000000f,102.630000f,152.000000f},{336.500000f,115.770000f,202.500000f},{321.000000f,116.620000f,231.000000f},{351.000000f,116.640000f,132.000000f},{342.000000f,116.620000f,213.000000f},{319.500000f,117.510000f,235.500000f},{333.500000f,117.710000f,141.000000f},{331.500000f,116.620000f,237.000000f},{327.500000f,116.870000f,139.500000f},{339.000000f,116.480000f,173.500000f},{331.500000f,117.550000f,223.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{319.310000f,115.040000f,-10.210000f},{316.260000f,110.460000f,192.930000f}},{{0.000000f,0.000000f,0.000000f},{319.310000f,115.040000f,-10.210000f},{302.970000f,112.360000f,268.950000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{332.357483f,117.614998f,145.025772f},1.391464f,-0.673227f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{333.840000f,117.420000f,224.450000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP3_Alborz","SquadRush0",{-82.000000f,472.820000f,-438.500000f},{245.500000f,665.440000f,89.000000f},{{58.000000f,539.880000f,-305.500000f},{63.500000f,535.780000f,-321.000000f},{90.000000f,587.490000f,-36.000000f},{59.000000f,533.020000f,-334.000000f},{58.500000f,541.000000f,-299.000000f},{56.500000f,535.920000f,-325.000000f},{65.500000f,539.860000f,-306.000000f},{49.500000f,535.180000f,-332.000000f},{56.000000f,537.540000f,-317.000000f},{128.500000f,589.140000f,-50.000000f},{58.000000f,531.940000f,-338.500000f},{111.500000f,588.690000f,-51.500000f},{17.000000f,541.870000f,-312.500000f},{51.500000f,532.210000f,-342.000000f},{49.000000f,538.250000f,-322.000000f},{129.000000f,587.700000f,-67.000000f},{42.000000f,533.450000f,-343.000000f},{31.000000f,538.620000f,-306.500000f},{92.000000f,590.220000f,-64.000000f},{122.000000f,588.310000f,-51.500000f},{24.500000f,537.280000f,-336.500000f},{22.000000f,542.040000f,-314.500000f},{120.000000f,586.490000f,-75.000000f},{126.000000f,588.290000f,-62.500000f},{81.000000f,585.950000f,-48.000000f},{97.500000f,588.650000f,-30.000000f},{71.500000f,534.090000f,-324.500000f},{125.500000f,587.610000f,-72.500000f},{104.500000f,597.170000f,-20.500000f},{85.000000f,587.310000f,-63.000000f},{137.500000f,591.440000f,-46.000000f},{108.500000f,590.090000f,-46.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{157.080000f,494.730000f,-350.670000f},{17.080000f,555.420000f,-234.660000f}},{{0.000000f,0.000000f,0.000000f},{120.410000f,544.950000f,-252.960000f},{87.590000f,594.660000f,-2.500000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{43.970000f,539.080000f,-315.410000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{108.530000f,590.440000f,-49.100000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP4_FD","SquadRush0",{-103.000000f,45.620000f,-312.000000f},{283.500000f,147.410000f,108.500000f},{{151.000000f,64.000000f,-168.000000f},{119.000000f,62.310000f,-162.500000f},{135.500000f,64.000000f,-141.000000f},{110.000000f,68.260000f,-52.500000f},{108.000000f,68.840000f,-69.000000f},{127.500000f,67.360000f,-60.000000f},{108.500000f,68.540000f,-74.000000f},{165.500000f,64.050000f,-156.000000f},{127.500000f,64.190000f,-151.000000f},{154.500000f,64.010000f,-136.500000f},{87.500000f,74.510000f,-52.000000f},{133.000000f,64.140000f,-174.500000f},{100.000000f,67.800000f,-76.500000f},{89.000000f,87.410000f,-52.000000f},{132.500000f,62.310000f,-162.500000f},{159.000000f,64.390000f,-131.000000f},{88.500000f,74.530000f,-63.500000f},{105.000000f,68.400000f,-54.000000f},{128.000000f,68.520000f,-177.500000f},{135.500000f,64.000000f,-146.000000f},{109.500000f,68.680000f,-57.500000f},{100.000000f,68.420000f,-49.500000f},{140.500000f,63.880000f,-158.500000f},{157.000000f,64.200000f,-142.000000f},{98.500000f,87.410000f,-69.500000f},{98.500000f,87.380000f,-49.500000f},{121.000000f,66.930000f,-34.000000f},{129.500000f,65.740000f,-136.000000f},{88.500000f,68.700000f,-69.500000f},{118.000000f,68.710000f,-65.000000f},{99.000000f,76.760000f,-52.000000f},{101.500000f,68.850000f,-58.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{1.360000f,69.940000f,4.140000f},{136.230000f,65.020000f,-118.590000f}},{{0.000000f,0.000000f,0.000000f},{96.260000f,64.270000f,-96.160000f},{184.030000f,64.290000f,-174.140000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{103.434235f,68.231926f,-54.322491f},2.756442f,-0.497297f,1},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{138.970000f,64.990000f,-150.950000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP4_Parl","SquadRush0",{-597.500000f,49.000000f,-74.000000f},{-229.000000f,138.930000f,321.500000f},{{-465.500000f,67.750000f,151.000000f},{-378.000000f,66.210000f,111.500000f},{-440.000000f,67.660000f,153.500000f},{-435.000000f,67.560000f,154.500000f},{-453.000000f,67.690000f,152.500000f},{-353.500000f,64.660000f,88.000000f},{-375.000000f,66.210000f,107.000000f},{-365.000000f,66.210000f,122.500000f},{-462.000000f,67.660000f,146.500000f},{-385.500000f,64.840000f,100.500000f},{-443.500000f,67.670000f,157.500000f},{-449.500000f,76.230000f,185.000000f},{-441.500000f,68.820000f,142.500000f},{-473.500000f,73.110000f,170.500000f},{-454.000000f,67.920000f,188.500000f},{-348.500000f,66.530000f,108.000000f},{-454.000000f,67.850000f,143.500000f},{-438.500000f,67.830000f,158.500000f},{-445.000000f,76.230000f,187.500000f},{-375.000000f,66.970000f,92.000000f},{-346.000000f,66.190000f,120.500000f},{-468.500000f,73.110000f,170.000000f},{-366.500000f,64.640000f,78.500000f},{-355.000000f,66.210000f,110.000000f},{-458.000000f,67.660000f,150.000000f},{-440.000000f,67.910000f,183.000000f},{-369.500000f,65.280000f,88.000000f},{-427.500000f,67.720000f,160.000000f},{-474.500000f,70.330000f,180.000000f},{-459.000000f,67.720000f,192.000000f},{-443.500000f,72.230000f,181.500000f},{-449.500000f,68.000000f,162.500000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{-347.570000f,64.850000f,85.540000f},{-366.680000f,67.760000f,158.510000f}},{{0.000000f,0.000000f,0.000000f},{-417.990000f,65.260000f,87.460000f},{-438.040000f,70.450000f,224.830000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-369.690000f,67.000000f,108.310000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-449.900000f,68.620000f,164.540000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP5_001","SquadRush0",{-322.000000f,89.800000f,-47.500000f},{161.000000f,196.850000f,210.000000f},{{-181.000000f,121.310000f,93.500000f},{-31.500000f,109.580000f,21.000000f},{-184.000000f,121.820000f,97.500000f},{-171.500000f,121.470000f,105.500000f},{-41.500000f,108.700000f,29.500000f},{-186.500000f,121.450000f,93.000000f},{-156.500000f,121.130000f,94.000000f},{-142.500000f,118.850000f,86.500000f},{-172.000000f,121.610000f,110.500000f},{-180.000000f,119.670000f,80.000000f},{-36.500000f,109.400000f,17.000000f},{-187.000000f,124.470000f,106.000000f},{-26.500000f,109.380000f,16.500000f},{-52.000000f,108.820000f,59.000000f},{-23.500000f,108.180000f,50.500000f},{-142.000000f,117.070000f,81.500000f},{-6.000000f,109.700000f,42.000000f},{-157.500000f,121.220000f,99.000000f},{-58.000000f,108.160000f,34.500000f},{-155.500000f,123.250000f,77.000000f},{-12.500000f,111.220000f,21.000000f},{-49.500000f,109.050000f,63.500000f},{-191.000000f,123.980000f,100.500000f},{-28.000000f,108.160000f,42.000000f},{-25.500000f,109.400000f,64.000000f},{-166.500000f,122.800000f,84.500000f},{-50.500000f,112.250000f,20.000000f},{-41.500000f,109.090000f,60.000000f},{-167.000000f,122.820000f,74.500000f},{-149.500000f,121.030000f,97.000000f},{-155.000000f,116.800000f,69.000000f},{-137.000000f,122.160000f,108.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{71.620000f,108.340000f,42.190000f},{-98.160000f,107.670000f,31.510000f}},{{0.000000f,0.000000f,0.000000f},{-15.870000f,109.500000f,76.130000f},{-239.890000f,127.410000f,128.690000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-31.600000f,108.960000f,41.880000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{-163.810000f,122.020000f,97.210000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}},
++{"XP5_003","SquadRush0",{393.500000f,135.900000f,-961.500000f},{649.000000f,234.450000f,-631.000000f},{{522.000000f,155.510000f,-857.500000f},{492.000000f,155.710000f,-845.000000f},{537.000000f,155.000000f,-788.000000f},{489.000000f,155.000000f,-782.000000f},{496.500000f,155.000000f,-785.000000f},{503.500000f,155.710000f,-818.000000f},{531.500000f,155.860000f,-768.000000f},{509.500000f,155.710000f,-831.500000f},{532.500000f,155.000000f,-791.000000f},{495.500000f,155.000000f,-811.500000f},{511.000000f,155.000000f,-799.000000f},{533.000000f,155.000000f,-781.000000f},{523.000000f,155.000000f,-771.000000f},{512.500000f,155.730000f,-812.500000f},{519.000000f,155.000000f,-768.000000f},{538.000000f,155.710000f,-838.000000f},{508.000000f,155.710000f,-826.500000f},{495.500000f,155.000000f,-790.000000f},{502.500000f,157.280000f,-855.500000f},{516.000000f,155.000000f,-805.000000f},{527.000000f,155.000000f,-791.000000f},{527.500000f,154.880000f,-847.000000f},{489.000000f,155.730000f,-818.500000f},{517.500000f,155.000000f,-775.000000f},{513.500000f,155.590000f,-848.000000f},{502.500000f,155.710000f,-826.500000f},{538.500000f,155.710000f,-812.000000f},{485.500000f,155.000000f,-799.000000f},{494.000000f,155.000000f,-780.500000f},{504.500000f,155.710000f,-840.000000f},{542.000000f,155.000000f,-798.000000f},{517.000000f,155.710000f,-826.000000f}},2,{0u,6u,6u,0u,0u,0u,0u,0u,0u},{{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{489.590000f,155.000000f,-769.390000f},{546.300000f,155.710000f,-829.280000f}},{{0.000000f,0.000000f,0.000000f},{541.870000f,155.010000f,-771.900000f},{486.740000f,158.910000f,-860.300000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}},{{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f},{0.000000f,0.000000f,0.000000f}}},{{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{513.330000f,155.790000f,-791.600000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{514.840000f,156.500000f,-828.380000f},0.000000f,-0.600000f,2},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0},{{0.000000f,0.000000f,0.000000f},0.000000f,0.000000f,0}}}
+ };
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/modes_native.inc AltBotMod-V35/files/BotMod/src/modes_native.inc
+--- AltBotMod-V34/files/BotMod/src/modes_native.inc	2026-10-23 14:35:50.619832000 +0000
++++ AltBotMod-V35/files/BotMod/src/modes_native.inc	2026-11-04 15:19:56.910417714 +0000
+@@ -10,9 +10,11 @@
+     if(bm_mode_gun_master(mode))return mode_profile(level,"TeamDeathMatch0");
+     return NULL;
+ }
++#include "mcom_aim.h"   // AltBotMod V35: M-COMs without a recorded arming spot
+ static void mode_reset(void)
+ {
+     g_modeProfile=NULL;g_modeSpawnCount=0;g_rushStage=1;g_rushAdvanceAt=0;g_rushBeforeStage=0;g_rushBadDeaths=0;memset(g_mcomDestroyedBy,0,sizeof g_mcomDestroyedBy);
++    memset(g_mcomAimTry,0,sizeof g_mcomAimTry);memset(g_mcomAimKnown,0,sizeof g_mcomAimKnown);   // AltBotMod V35
+     bm_rush_reset(&g_rush,1,2,H->frame);
+     memset(g_modeSpawns,0,sizeof g_modeSpawns);memset(g_modeTeamSpawn,0,sizeof g_modeTeamSpawn);
+     memset(g_modeFailedSpawn,0,sizeof g_modeFailedSpawn);memset(g_modeSpawnOk,0,sizeof g_modeSpawnOk);memset(g_modeSpawnNo,0,sizeof g_modeSpawnNo);memset(g_rushBlind,0,sizeof g_rushBlind);
+@@ -310,6 +312,14 @@
+     if(!k)k=rush_report_target(kind!=0);
+     bot_log("rush: the game says M-COM %s by %s -> station %d",kind==0?"armed":kind==1?"disarmed":"destroyed",
+         pl && player_exists(pl)?pl+OFF_PLAYER_ONLINE_NAME:"?",k);
++    if(k && kind<2 && mcom_aim_unknown(k) && !g_mcomAimKnown[k] && pl && is_bot(pl)){   // AltBotMod V35: that aim works here
++        int bi=bot_index(pl);
++        if(bi>=0 && g_modeBot[bi].target==k && g_modeBot[bi].interactAt){
++            g_mcomAimKnown[k]=1;g_mcomAimYaw[k]=g_mcomAimLastYaw[k];g_mcomAimPitch[k]=g_mcomAimLastPitch[k];
++            bot_log("rush: M-COM %d (no recorded spot) %s by a bot looking at yaw %.2f pitch %.2f (try %d) - kept for this level",k,
++                    kind==0?"armed":"disarmed",g_mcomAimYaw[k],g_mcomAimPitch[k],g_mcomAimTry[k]+1);
++        }
++    }
+     if(k)rush_mark(k,kind==0?BM_RUSH_ARMED:kind==1?BM_RUSH_IDLE:BM_RUSH_DESTROYED,
+         kind==0?"the game reported it armed":kind==1?"the game reported it disarmed":"the game reported it destroyed");
+ }
+@@ -675,7 +685,8 @@
+         // could not get closer in 4 s. (V16.2.2 started at 2.6 m - the walk there stops 2 m short - and mostly did nothing.)
+         // AltBotMod V34: a window between the operator and its M-COM - knifed (then shot) open
+         if(operator && !g_modeBot[i].interactAt && mcom_pane_tick(i,soldier,goal))return;
+-        float d2=dist2(me,goal),need=H->frame<g_modeBot[i].closerUntil?0.4f:0.6f;int level=fabsf(me[1]-goal[1])<2.5f;
++        float d2=dist2(me,goal),need=mcom_aim_unknown(target)?MCOM_UNRECORDED_REACH:H->frame<g_modeBot[i].closerUntil?0.4f:0.6f;   // (V35: no recorded spot - 1.3 m from the M-COM itself)
++        int level=fabsf(me[1]-goal[1])<2.5f;
+         if(!g_modeBot[i].interactAt){
+             if(operator && level && d2<RUSH_ARM_REACH*RUSH_ARM_REACH){if(!g_modeBot[i].approachAt)g_modeBot[i].approachAt=H->frame?H->frame:1;}
+             else g_modeBot[i].approachAt=0;
+@@ -693,6 +704,10 @@
+                 // panel was not in reach from here - walk up to within 1.2 m of the spot (for 20 s) and hold again.
+                 bot_log("rush: %s held the key 8 s at M-COM %d with no %s - moves onto the spot and tries again",H->bots[i]+OFF_PLAYER_ONLINE_NAME,target,team==1?"arm":"defuse");
+                 g_modeBot[i].interactAt=0;g_modeBot[i].closerUntil=H->frame+20*30;g_modeBot[i].approachAt=H->frame?H->frame:1;bot_stand(i);
++                if(mcom_aim_unknown(target) && !g_mcomAimKnown[target]){   // AltBotMod V35: the next try looks a little further round
++                    g_mcomAimTry[target]++;
++                    bot_log("rush: M-COM %d has no recorded spot - the next try looks another way (try %d)",target,g_mcomAimTry[target]+1);
++                }
+             }else if(H->frame-g_modeBot[i].interactAt>=RUSH_HOLD_FRAMES){
+                 // V16.1: a full hold arms (attacker) / defuses (defender) it as far as the bots know - the game reports
+                 // nothing readable yet. Defenders then come to defuse; an arm that did not take is retried (rush_watch_tick).
+@@ -842,8 +857,9 @@
+         ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_PITCH,0);
+         ((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_FIRE,0);((SetLevel_t)ADDR_ENTRYINPUT_SET_LEVEL)(input,EIA_ZOOM,0);   // (V16.2.3: firing breaks an arm)
+         *(int *)((char *)input+OFF_INPUT_AIM_VALID)=1;
+-        *(float *)((char *)input+OFF_INPUT_AIM_YAW)=g_modeProfile->mcom[target].yaw;
+-        *(float *)((char *)input+OFF_INPUT_AIM_PITCH)=g_modeProfile->mcom[target].pitch;
++        float aimYaw,aimPitch;mode_mcom_aim(target,(float *)(s+OFF_SOLDIER_POSITION),&aimYaw,&aimPitch);   // (V35: or the M-COM itself)
++        *(float *)((char *)input+OFF_INPUT_AIM_YAW)=aimYaw;
++        *(float *)((char *)input+OFF_INPUT_AIM_PITCH)=aimPitch;
+     }
+ }
+ static int rush_command(const char *who,const char *arg)
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/nav.c AltBotMod-V35/files/BotMod/src/nav.c
+--- AltBotMod-V34/files/BotMod/src/nav.c	2026-10-23 14:35:50.397404000 +0000
++++ AltBotMod-V35/files/BotMod/src/nav.c	2026-11-04 15:19:56.911850051 +0000
+@@ -1145,6 +1145,31 @@
+     }
+ }
+ 
++// AltBotMod V35.1: nav_mask_strip's keep disks without the whole-grid pass - every node within r (horizontal, as
++// nav_mask_strip measures it) of (x, z) gets src's value, or 0 where src has class `strip` (strip 0: a plain copy).
++// Returns the nodes written.
++int nav_mask_patch_disk(const NavGrid *g, unsigned char *dst, const unsigned char *src, unsigned char strip, float x, float z, float r)
++{
++    if (!g || !dst || !src || !(r > 0)) return 0;
++    int c = nav_cell_index(g, x, z);
++    int cx, cz, rc = (int)(r / g->cell) + 2, n = 0;
++    if (c >= 0) { cx = c % g->w; cz = c / g->w; }
++    else { cx = (int)floorf((x - g->x0) / g->cell); cz = (int)floorf((z - g->z0) / g->cell); }   // (a keep point just off the grid)
++    for (int dz = -rc; dz <= rc; dz++)
++        for (int dx = -rc; dx <= rc; dx++) {
++            int x2 = cx + dx, z2 = cz + dz;
++            if (x2 < 0 || z2 < 0 || x2 >= g->w || z2 >= g->h) continue;
++            for (int l = 0; l < L; l++) {
++                int node = (z2 * g->w + x2) * L + l;
++                float p[3]; node_pos(g, node, p);
++                float ex = p[0] - x, ez = p[2] - z;
++                if (ex * ex + ez * ez >= r * r) continue;
++                dst[node] = strip && src[node] == strip ? 0 : src[node]; n++;
++            }
++        }
++    return n;
++}
++
+ int nav_open_water_near(const NavGrid *g, const unsigned char *mask, float x, float z, float maxDist, float *out)
+ {
+     int c = nav_cell_index(g, x, z);
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/nav.h AltBotMod-V35/files/BotMod/src/nav.h
+--- AltBotMod-V34/files/BotMod/src/nav.h	2026-10-23 14:35:50.459209000 +0000
++++ AltBotMod-V35/files/BotMod/src/nav.h	2026-11-04 15:19:56.912843034 +0000
+@@ -131,6 +131,7 @@
+ int nav_land_around(const NavGrid *g, const unsigned char *mask, float x, float z, float radius, float *mx, float *mz, float *nearest);
+ // Clears every node of class cls from mask except within keepR of one of the nkeep points (x, z pairs).
+ void nav_mask_strip(const NavGrid *g, unsigned char *mask, unsigned char cls, const float *keep, int nkeep, float keepR);
++int nav_mask_patch_disk(const NavGrid *g, unsigned char *dst, const unsigned char *src, unsigned char strip, float x, float z, float r);   // AltBotMod V35.1
+ int nav_label_at(const NavGrid *g, const int *labels, float x, float y, float z);
+ int nav_landing_on(const NavGrid *g, const unsigned char *mask, const int *labels, int label, float sx, float sz, float gx, float gz,
+                    float walkW, float minStart, float *water);
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/zone_native.inc AltBotMod-V35/files/BotMod/src/zone_native.inc
+--- AltBotMod-V34/files/BotMod/src/zone_native.inc	2026-10-23 14:35:51.256178000 +0000
++++ AltBotMod-V35/files/BotMod/src/zone_native.inc	2026-11-04 15:19:56.928507734 +0000
+@@ -46,6 +46,20 @@
+         }
+     bot_log("zone: no Fun-Bots objective mesh for %s - recorded routes and the grid as before", key);
+ }
++// AltBotMod V35: the bot's seed for this life (its soldier is new each life); never 0 (0: no spread).
++static unsigned zone_seed(int i, const char *soldier)
++{
++    unsigned h = (unsigned)(uintptr_t)soldier * 2654435761u ^ (unsigned)(i + 1) * 40503u;
++    h ^= h >> 15; h *= 2246822519u; h ^= h >> 13;
++    return (h % 99991u) + 1u;
++}
++// AltBotMod V35: a soldier died on foot (core.c, the downed record): the mesh round it costs its team more for a while.
++static unsigned g_zoneDeaths;
++static void zone_note_death(int team, const float *pos)
++{
++    if (!g_zone.np || !g_enhanced.funBotsMesh) return;
++    if (zn_on_killed(&g_zone, team, pos, H->frame / 30.0f) > 0) g_zoneDeaths++;
++}
+ // A route over the mesh when the target lies in an objective's zone and the bot is near it. Returns the route's point
+ // count (0: not here - the caller plans as before).
+ static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
+@@ -66,7 +80,11 @@
+     g_plansThisFrame++;
+     float pts[(PATH_MAX_POINTS - 2) * 3]; unsigned char fl[PATH_MAX_POINTS - 2]; int partial = 0; float length = 0;
+     double t0 = perf_now();
+-    int n = zn_route(&g_zone, a, b, pts, fl, PATH_MAX_POINTS - 2, &partial, &length);
++    // AltBotMod V35 (Fun-Bots V3.6.0-RC2): each life takes its own way among similar ones (seed), and 3 of 4 lives keep
++    // off where their team was killed in the last minutes (the other staircase, the other street).
++    unsigned seed = zone_seed(i, soldier); int team = player_team(H->bots[i]);
++    zn_decay(&g_zone, H->frame / 30.0f);
++    int n = zn_route_ex(&g_zone, a, b, seed, zn_cautious(seed) ? team : 0, pts, fl, PATH_MAX_POINTS - 2, &partial, &length);
+     perf_add(7, perf_now() - t0);   // (PF_PATH)
+     if (!n) { g_zoneNoWay++; return 0; }
+     BotPath *p = &g_paths[i];
+@@ -117,5 +135,5 @@
+ }
+ static void zone_stats(void)
+ {
+-    if (g_zone.np) bot_log("zone: %u mesh routes, %u without a way on the mesh, %u stuck reports, %u connections closed (%s)", g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zone.name);
++    if (g_zone.np) bot_log("zone: %u mesh routes, %u without a way on the mesh, %u stuck reports, %u connections closed, %u deaths weighed (%s)", g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zoneDeaths, g_zone.name);
+ }
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/zone_nav.c AltBotMod-V35/files/BotMod/src/zone_nav.c
+--- AltBotMod-V34/files/BotMod/src/zone_nav.c	2026-10-23 14:35:51.245436000 +0000
++++ AltBotMod-V35/files/BotMod/src/zone_nav.c	2026-11-04 15:19:56.929419206 +0000
+@@ -17,6 +17,7 @@
+     if (!z) return;
+     free(z->pts); free(z->edges); free(z->corners); free(z->zones); free(z->inside);
+     free(z->adjStart); free(z->adj); free(z->g); free(z->from); free(z->heap); free(z->heapPos); free(z->seen);
++    free(z->danger[1]); free(z->danger[2]);
+     memset(z, 0, sizeof *z);
+ }
+ 
+@@ -239,8 +240,67 @@
+     if (cost) *cost = bc;
+     return best;
+ }
++// AltBotMod V35: how much longer the region of (x, z) seems to the bot with this seed: 1 .. 1 + ZN_SPREAD
++// (NavZones.lua _RegionSpread, the same hash).
++static float zn_region_spread(unsigned seed, float x, float zc)
++{
++    if (!seed) return 1.0f;
++    double h = sin((double)(seed % 100000u) * 12.9898 + floor(x / ZN_SPREAD_REGION) * 78.233 + floor(zc / ZN_SPREAD_REGION) * 37.719) * 43758.5453;
++    h -= floor(h);
++    return 1.0f + ZN_SPREAD * (float)h;
++}
++int zn_cautious(unsigned seed)
++{
++    double h = sin((double)(seed % 100000u) * 91.3458 + 17.17) * 47453.5453;
++    return h - floor(h) < 0.75;
++}
++float zn_danger(const ZoneNet *z, int team, int n)
++{
++    if (!z || team < 1 || team > 2 || !z->danger[team] || n < 0 || n >= z->np) return 0;
++    return z->danger[team][n];
++}
++int zn_on_killed(ZoneNet *z, int team, const float *pos, float now)
++{
++    if (!z || !z->np || team < 1 || team > 2 || !pos || !isfinite(pos[0]) || !isfinite(pos[1]) || !isfinite(pos[2])) return 0;
++    zn_decay(z, now);
++    if (!z->danger[team]) { z->danger[team] = (float *)calloc((size_t)z->np, sizeof(float)); if (!z->danger[team]) return 0; }
++    float *d = z->danger[team]; int marked = 0;
++    for (int n = 0; n < z->np; n++) {
++        const float *p = z->pts[n].p;
++        float dx = p[0] - pos[0], dz = p[2] - pos[2];
++        if (dx * dx + dz * dz > ZN_DANGER_RANGE * ZN_DANGER_RANGE || fabsf(p[1] - pos[1]) > ZN_DANGER_FLOOR) continue;
++        if (d[n] < ZN_DANGER_MIN) z->dangerCount[team]++;
++        d[n] = fminf(d[n] + ZN_DANGER_PER_DEATH, ZN_DANGER_MAX);
++        marked++;
++    }
++    return marked;
++}
++void zn_decay(ZoneNet *z, float now)
++{
++    if (!z) return;
++    if (z->dangerTime <= 0 || now < z->dangerTime) { z->dangerTime = now > 0 ? now : 1e-3f; return; }
++    float elapsed = now - z->dangerTime;
++    if (elapsed < ZN_DANGER_STEP) return;
++    z->dangerTime = now;
++    float f = powf(0.5f, elapsed / ZN_DANGER_HALF_LIFE);
++    for (int t = 1; t <= 2; t++) {
++        float *d = z->danger[t];
++        if (!d || !z->dangerCount[t]) continue;
++        int left = 0;
++        for (int n = 0; n < z->np; n++) {
++            if (d[n] <= 0) continue;
++            d[n] *= f;
++            if (d[n] < ZN_DANGER_MIN) d[n] = 0; else left++;
++        }
++        z->dangerCount[t] = left;
++    }
++}
+ int zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int maxPts, int *partial, float *length)
+ {
++    return zn_route_ex(z, a, b, 0, 0, out, flags, maxPts, partial, length);
++}
++int zn_route_ex(ZoneNet *z, int a, int b, unsigned seed, int team, float *out, unsigned char *flags, int maxPts, int *partial, float *length)
++{
+     if (partial) *partial = 0;
+     if (length) *length = 0;
+     if (!z || !z->np || a < 0 || b < 0 || a >= z->np || b >= z->np || maxPts < 1 || !out) return 0;
+@@ -253,6 +313,7 @@
+     unsigned closedTag = 0x80000000u;   // seen[n] == stamp: open / known; seen[n] == (stamp | closed): done
+     unsigned st = z->stamp & 0x7fffffffu; if (!st) st = 1;
+     int n = 0;
++    const float *danger = team >= 1 && team <= 2 && z->dangerCount[team] ? z->danger[team] : NULL;
+     z->seen[a] = st; z->g[a] = 0; z->from[a] = -1; fbuf[a] = zn_h(z, a, b);
+     z->heap[n] = a; z->heapPos[a] = n; n++;
+     int found = 0;
+@@ -267,7 +328,8 @@
+             int v = e->a == u ? e->b : e->a;
+             if ((e->a == u && e->oneway == -1) || (e->b == u && e->oneway == 1)) continue;
+             if (z->seen[v] == (st | closedTag)) continue;
+-            float gv = z->g[u] + e->len + e->penalty;
++            float gv = z->g[u] + (e->len + e->penalty) * zn_region_spread(seed, z->pts[v].p[0], z->pts[v].p[2]);
++            if (danger) gv += danger[v];
+             if (z->seen[v] != st) { z->seen[v] = st; z->g[v] = gv; z->from[v] = u; fbuf[v] = gv + zn_h(z, v, b); z->heap[n] = v; z->heapPos[v] = n; n++; heap_up(z, n - 1); }
+             else if (gv < z->g[v]) { z->g[v] = gv; z->from[v] = u; fbuf[v] = gv + zn_h(z, v, b); heap_up(z, z->heapPos[v]); }
+         }
+diff -ruN '--exclude=*.dll' AltBotMod-V34/files/BotMod/src/zone_nav.h AltBotMod-V35/files/BotMod/src/zone_nav.h
+--- AltBotMod-V34/files/BotMod/src/zone_nav.h	2026-10-23 14:35:51.197259000 +0000
++++ AltBotMod-V35/files/BotMod/src/zone_nav.h	2026-11-04 15:19:56.930433033 +0000
+@@ -34,6 +34,9 @@
+     char name[64];
+     // A* scratch (one search at a time - the game thread)
+     float *g; int *from, *heap, *heapPos; unsigned *seen; unsigned stamp;
++    // AltBotMod V35 (Fun-Bots V3.6.0-RC2): metres added per point for team 1 / 2 where its soldiers died lately
++    // (zn_on_killed), fading by half a minute (zn_decay); NULL until the first death.
++    float *danger[3]; float dangerTime; int dangerCount[3];
+ } ZoneNet;
+ 
+ int  zn_load(ZoneNet *z, const char *file);          // 1 loaded
+@@ -49,6 +52,31 @@
+ // Route from point a to point b: the positions to walk (corners and points, without a), their flags, at most maxPts.
+ // Returns the count (0: no way on the mesh); *partial = 1 when maxPts cut it short; *length its length in metres.
+ int  zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int maxPts, int *partial, float *length);
++// AltBotMod V35 (Fun-Bots V3.6.0-RC2, NavZones.lua): the same with the bot's own way among similar ones and its team's
++// danger. seed (not 0): each 30 m region of the mesh seems 1 .. 1+ZN_SPREAD longer to this bot, so the bots spread over
++// the ways instead of all walking one line. team 1 / 2: the metres where that team was killed lately are added (0: none).
++// *length is always the real length of the way.
++#define ZN_SPREAD          0.25f   // (Registry.BOT.NAV_ROUTE_SPREAD)
++#define ZN_SPREAD_REGION  30.0f
++int  zn_route_ex(ZoneNet *z, int a, int b, unsigned seed, int team, float *out, unsigned char *flags, int maxPts, int *partial, float *length);
++// A soldier of the team died on foot at pos: the points up to 6 m around it on its floor (2.5 m up / down) cost the team
++// 15 m more, at most 50 m a point. now: seconds (any clock that only goes up). Returns the points marked.
++#define ZN_DANGER_RANGE     6.0f
++#define ZN_DANGER_FLOOR     2.5f
++#define ZN_DANGER_PER_DEATH 15.0f
++#define ZN_DANGER_MAX       50.0f
++#define ZN_DANGER_HALF_LIFE 60.0f
++#define ZN_DANGER_STEP       5.0f
++#define ZN_DANGER_MIN        2.0f
++int  zn_on_killed(ZoneNet *z, int team, const float *pos, float now);
++// Lets the danger fade: half of it is gone after ZN_DANGER_HALF_LIFE seconds (in steps of ZN_DANGER_STEP), below
++// ZN_DANGER_MIN a point is clear again.
++void zn_decay(ZoneNet *z, float now);
++// The danger of the team at point n in metres (0: none).
++float zn_danger(const ZoneNet *z, int team, int n);
++// Whether a bot's life (by its seed) weighs the danger: 3 of 4 lives do, the rest take the shortest way so the attack goes
++// on there as well (NavRoutes.lua CAUTIOUS_SHARE).
++int  zn_cautious(unsigned seed);
+ // A bot got stuck near pos: the connection there costs `amount` more from now on (after 3 times it is closed for the
+ // level, as Fun-Bots does). Returns the edge index or -1.
+ int  zn_penalize(ZoneNet *z, const float *pos, float amount);

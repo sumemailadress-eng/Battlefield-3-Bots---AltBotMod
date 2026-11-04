@@ -46,6 +46,20 @@ static void zone_level_load(void)
         }
     bot_log("zone: no Fun-Bots objective mesh for %s - recorded routes and the grid as before", key);
 }
+// AltBotMod V35: the bot's seed for this life (its soldier is new each life); never 0 (0: no spread).
+static unsigned zone_seed(int i, const char *soldier)
+{
+    unsigned h = (unsigned)(uintptr_t)soldier * 2654435761u ^ (unsigned)(i + 1) * 40503u;
+    h ^= h >> 15; h *= 2246822519u; h ^= h >> 13;
+    return (h % 99991u) + 1u;
+}
+// AltBotMod V35: a soldier died on foot (core.c, the downed record): the mesh round it costs its team more for a while.
+static unsigned g_zoneDeaths;
+static void zone_note_death(int team, const float *pos)
+{
+    if (!g_zone.np || !g_enhanced.funBotsMesh) return;
+    if (zn_on_killed(&g_zone, team, pos, H->frame / 30.0f) > 0) g_zoneDeaths++;
+}
 // A route over the mesh when the target lies in an objective's zone and the bot is near it. Returns the route's point
 // count (0: not here - the caller plans as before).
 static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
@@ -66,7 +80,11 @@ static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
     g_plansThisFrame++;
     float pts[(PATH_MAX_POINTS - 2) * 3]; unsigned char fl[PATH_MAX_POINTS - 2]; int partial = 0; float length = 0;
     double t0 = perf_now();
-    int n = zn_route(&g_zone, a, b, pts, fl, PATH_MAX_POINTS - 2, &partial, &length);
+    // AltBotMod V35 (Fun-Bots V3.6.0-RC2): each life takes its own way among similar ones (seed), and 3 of 4 lives keep
+    // off where their team was killed in the last minutes (the other staircase, the other street).
+    unsigned seed = zone_seed(i, soldier); int team = player_team(H->bots[i]);
+    zn_decay(&g_zone, H->frame / 30.0f);
+    int n = zn_route_ex(&g_zone, a, b, seed, zn_cautious(seed) ? team : 0, pts, fl, PATH_MAX_POINTS - 2, &partial, &length);
     perf_add(7, perf_now() - t0);   // (PF_PATH)
     if (!n) { g_zoneNoWay++; return 0; }
     BotPath *p = &g_paths[i];
@@ -117,5 +135,5 @@ static int zone_guard_point(const float *mcom, unsigned seed, float *out)
 }
 static void zone_stats(void)
 {
-    if (g_zone.np) bot_log("zone: %u mesh routes, %u without a way on the mesh, %u stuck reports, %u connections closed (%s)", g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zone.name);
+    if (g_zone.np) bot_log("zone: %u mesh routes, %u without a way on the mesh, %u stuck reports, %u connections closed, %u deaths weighed (%s)", g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zoneDeaths, g_zone.name);
 }

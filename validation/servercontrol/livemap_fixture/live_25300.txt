@@ -1,5 +1,5 @@
-AltBotMod live map	1	AltBotMod V34 - Squad Up
-time	1793039755	1793039755	MP_007	ConquestLarge0	3	1124	3	3
+AltBotMod live map	1	AltBotMod V35.1 - New Ground
+time	1793805479	1793805479	MP_007	ConquestLarge0	3	1124	3	3
 picture	map_MP_007.bmp	-400.0	-300.0	600.0	700.0	500	500
 flag	A	100.0	200.0	1
 flag	B	300.0	-50.0	2

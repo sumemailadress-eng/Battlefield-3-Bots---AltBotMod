@@ -56,7 +56,7 @@ def main():
     # stationaries, difficulty, version
     assert '#define EMPLACEMENT_IDLE    (15 * 30)' in emp and 'dist2(p, at) < 850.0f * 850.0f' in emp and 'H->frame - g_botFiredAt[i] < 3' in emp
     assert '{0.05f, 26,  2, 0.050f, 0.45f, 0.015f, 6.0f, 380, 300, 350' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh and 'vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));' in core
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh and 'vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));' in core
     print('PASS: V22 stationary weapons manned for a target in reach and left after 15 s without a shot; elite sharper; bends by radius; version V22')
 
 if __name__ == '__main__':

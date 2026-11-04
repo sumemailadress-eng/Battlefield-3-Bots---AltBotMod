@@ -350,7 +350,7 @@ static struct { unsigned frame; int botCount; char *bots[MAX_BOTS]; } host, *H =
 static enum BMMode g_mode = BM_MODE_RUSH; static int g_rushStage = 1; static BMRushState g_rush; static char logline[256];
 static unsigned g_mcomArmAt[17], g_mcomNearSince[17][3], g_rushMsgCount[4];
 static int g_crateEvents; static unsigned char g_mcomDestroyedBy[17];
-""" + prof + "\nstatic BMModeProfile prof; static const BMModeProfile *g_modeProfile = &prof;\n" + botst + r"""
+""" + prof + "\nstatic BMModeProfile prof; static const BMModeProfile *g_modeProfile = &prof;\n#include \"mcom_aim.h\"   /* AltBotMod V35 */\n" + botst + r"""
 static char players[4][64] __attribute__((aligned(8))); static float bodies[4][4]; static int teams[4], bots[4], stageCalls;
 static char pm[256] __attribute__((aligned(8))); static void *arr[4];
 static char *player_manager(void) { return pm; }
@@ -358,6 +358,7 @@ static int player_exists(char *p) { for (int k = 0; k < 4; k++) if (p == players
 #define OFF_PLAYER_ONLINE_NAME 0
 static int player_team(char *p) { for (int k = 0; k < 4; k++) if (p == players[k]) return teams[k]; return 0; }
 static int is_bot(char *p) { for (int k = 0; k < 4; k++) if (p == players[k]) return bots[k]; return 0; }
+static int bot_index(char *p) { for (int k = 0; k < 4; k++) if (p == players[k]) return bots[k] ? k : -1; return -1; }   /* AltBotMod V35 */
 static float dist2(const float *a, const float *b) { float x = a[0] - b[0], z = a[2] - b[2]; return x * x + z * z; }
 static void bot_log(const char *f, ...) { snprintf(logline, sizeof logline, "%s", f); }
 static void rush_sync_stage(int stage, const char *why) { (void)why; if (bm_rush_set_stage(&g_rush, stage, H->frame)) { g_rushStage = stage; stageCalls++; } }
@@ -421,7 +422,7 @@ int main(void)
     assert 'if(!grid || grid->phase!=2 ||' in core   # extension for every mode (V15: vehicle modes only)
     assert ': bm_armored(bm_vehicle_profile(vehicle_name(v))) ? 2 : 1;' in core   # jeeps / boats take spawn passengers
     assert 'if (passenger_dropout_tick(i, veh))' in core and 'vehicle_countermeasure_tick(i);   // AltBotMod V16' in core
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in en and 'PilotEvery' not in ec
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in en and 'PilotEvery' not in ec
     chat = (SRC / 'chat.c').read_text()
     assert 'const char *mp[1] = {"vars.maxPlayers"};' in chat and 'if (v > 0 && (m <= 0 || v < m)) m = v;' in chat   # V16.2.1: bots obey vars.maxPlayers
     assert '(fromCmdLine > 0 && fromCmdLine < maxPlayers)) maxPlayers = fromCmdLine;' in core

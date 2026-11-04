@@ -330,7 +330,7 @@ int main(void)
     for key, line in (('LockOnSeconds', 'FLOAT_KEY("LockOnSeconds", lockOnSeconds, 0, 6)'), ('DoorGunMeters', 'FLOAT_KEY("DoorGunMeters", doorGunRange, 150, 1500)')):
         assert line in en and "New-BmSetting '%s'" % key in sc, key
     assert 'c->lockOnSeconds = 0.5f;' in en and 'c->doorGunRange = 600.0f;' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V31 source - door guns keep their gun at the end of its arc; DoorGunMeters; jets turn back 3 s before the edge of a wider area; LockOnSeconds and DoorGunMeters in Server Control; version V31')
 
 if __name__ == '__main__':

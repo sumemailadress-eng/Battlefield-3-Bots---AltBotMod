@@ -21,7 +21,7 @@ $RequiredPackageFiles = @(
     'BotMod\Collect-Diagnostics.bat', 'BotMod\Collect-Diagnostics.ps1',
     'server\BotMod_traces\MP_017_ConquestLarge0.map'
 )
-$Product = 'AltBotMod V34 - Squad Up'
+$Product = 'AltBotMod V35.1 - New Ground'
 $KeepIfPresent = @('BotMod_loadouts.txt', 'BotMod_kitextra.txt', 'BotMod_hq_*.txt',
     'BotMod_nav_*.bin', 'BotMod_pave_*.bin', 'BotMod_trees_*.bin', 'admins.txt',
     'botcount.txt', 'botcount_*.txt', 'kitskip.txt', 'enhanced*.ini')
@@ -567,7 +567,7 @@ function Invoke-BotModSetup {
         "What the bots learned: $(Join-Path $srv 'BotMod_learned') (kept by every new version; Server Control's Learning page).",
         "Objective duties migration: $ObjectivePreset (aircraft/driving on; six pilots, at least sixteen ground drivers per team).",
         'Edit ACTIVE settings, then restart the server.',
-        'In game, type !botdiag in chat to see the loaded build (it should say AltBotMod V34).') -join "`r`n"
+        'In game, type !botdiag in chat to see the loaded build (it should say AltBotMod V35.1).') -join "`r`n"
     [IO.File]::WriteAllText((Join-Path $botModDir 'INSTALLATION.txt'), $note + "`r`n")
     Say ''
     Say 'Installed and verified.' Green
@@ -577,7 +577,7 @@ function Invoke-BotModSetup {
     Say "Add your player name to $(Join-Path $botModDir 'admins.txt') for admin chat commands." Gray
     if ($script:BackedUp) { Say "Backup: $($script:BackupDir)" Cyan }
     Say 'Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)' Green
-    Say 'should show "enhanced: AltBotMod V34 - Squad Up"; in game, !botdiag shows it too.' Green
+    Say 'should show "enhanced: AltBotMod V35.1 - New Ground"; in game, !botdiag shows it too.' Green
     if ($ObjectivePreset) { Say 'Objective duties enabled: aircraft/driving on; six pilots per team. Custom steering, speed and combat tuning preserved.' Yellow }
     elseif ($FleetPreset) { Say 'Full fleet enabled.' Yellow }
     else { Say 'Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.' Yellow }

@@ -41,6 +41,8 @@ static struct BotNav *bot_nav(int i){return &navs[i];}static void rush_mark(int 
 static void bot_log(const char*fmt,...){(void)fmt;}
 static char *player_vehicle(char*p){(void)p;return NULL;}
 static struct {float patrol[32][3];struct {int present;float pos[3];}mcom[17];}profile,*g_modeProfile=&profile;
+#define MCOM_UNRECORDED_REACH 1.3f
+static unsigned char g_mcomAimTry[17],g_mcomAimKnown[17];static int mcom_aim_unknown(int k){return k>0&&k<=16&&g_modeProfile->mcom[k].present==2;}   /* AltBotMod V35 */
 #include "rush_policy.h"
 static BMRushState g_rush;
 #define OFF_PLAYER_SOLDIER 16

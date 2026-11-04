@@ -127,7 +127,7 @@ def main():
     rush = [f for f in TRACES.glob('*Rush*.map')]
     assert rush and all('"Objectives"' in f.read_text(errors='ignore') for f in rush)
     print('PASS: our %d Rush route files keep their objective tags (Fun-Bots 3.6.0-dev7 route files carry none - not taken over)' % len(rush))
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: version (current)')
 
 if __name__ == '__main__':

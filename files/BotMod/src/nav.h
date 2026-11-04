@@ -131,6 +131,7 @@ int nav_open_water_near(const NavGrid *g, const unsigned char *mask, float x, fl
 int nav_land_around(const NavGrid *g, const unsigned char *mask, float x, float z, float radius, float *mx, float *mz, float *nearest);
 // Clears every node of class cls from mask except within keepR of one of the nkeep points (x, z pairs).
 void nav_mask_strip(const NavGrid *g, unsigned char *mask, unsigned char cls, const float *keep, int nkeep, float keepR);
+int nav_mask_patch_disk(const NavGrid *g, unsigned char *dst, const unsigned char *src, unsigned char strip, float x, float z, float r);   // AltBotMod V35.1
 int nav_label_at(const NavGrid *g, const int *labels, float x, float y, float z);
 int nav_landing_on(const NavGrid *g, const unsigned char *mask, const int *labels, int label, float sx, float sz, float gx, float gz,
                    float walkW, float minStart, float *water);

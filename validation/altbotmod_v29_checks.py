@@ -228,7 +228,7 @@ def main():
     assert 'if(o->areaValid && jet_area_tick(s,o,goal,top,floorY,dt,out)) return;' in air and '#define JET_IP_DISTANCE    1700.0f' in air and 'if(o->areaValid){   // (V29: inside the combat area, 400 m from its edge)' in air and '#define JET_EXTEND_MAX     5.0f' in air
     assert 'air_area(i,&o);' in an and 'FLOAT_KEY("JetAreaMarginMeters", air.jetAreaMargin, 0, 3000)' in en and 'c->jetAreaMargin=900;' in air   # (V34: 900 m; V30 600 m)
     assert "New-BmSetting 'JetAreaMarginMeters'" in sc
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
     print('PASS: V29 jets - the area (flags, bases, airfields + JetAreaMarginMeters, in Server Control), strike runs set up inside it, extends of 5 s at most (7); version V29')
 
 if __name__ == '__main__':

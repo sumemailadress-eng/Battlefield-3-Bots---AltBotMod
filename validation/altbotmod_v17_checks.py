@@ -130,7 +130,7 @@ def main():
     assert 'for (int pass = 0; pass < 2 && !best; pass++)' in core and 'if ((veh != NULL) != pass) continue;' in core
     assert 'if(drive_goal_watch(i,d,vp))return;   // AltBotMod V17' in core
     assert 'static int enemy_air_up(int team)' in gv and 'd->weight * 3' in gv
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in (SRC / 'enhanced.h').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
     mn = (SRC / 'modes_native.inc').read_text()
     assert 'H->frame-g_rushAdvanceAt<90*30 && ++g_rushBadDeaths>=6' in mn and 'g_rush=g_rushBefore;' in mn and 'g_mcomDestroyedBy[k]!=1' in mn
     print('PASS: V17 Rush safety net - six bots dying outside the play area within 90 s of a sector change undo it (the station the game '

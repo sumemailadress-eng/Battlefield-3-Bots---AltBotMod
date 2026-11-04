@@ -20,7 +20,7 @@
 #include "learn.h"
 #include "zone_nav.h"   // AltBotMod V34: Fun-Bots objective mesh
 static void trace_level_load(void);
-static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos);
+static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos); static void zone_note_death(int team, const float *pos);
 static int zone_guard_point(const float *mcom, unsigned seed, float *out); static void zone_stats(void); static unsigned g_zonePathAt[MAX_BOTS];   // AltBotMod V34 (zone_native.inc)
 static char *g_supplyFailTo[MAX_BOTS]; static unsigned g_supplyFailAt[MAX_BOTS];   // AltBotMod V34: the caller a supply run gave up on
 static int squad_order_flag(int team, int squad, int *defend); static int squad_order_rush(int i); static int squad_order_chat(const char *who, const char *cmd, const char *arg);
@@ -2406,7 +2406,7 @@ static void nav_tick(void)
 // ty = height of the goal (picks the right storey / pier deck vs. the water or seabed under it)
 static int plan_path_real(int i, char *soldier, float tx, float ty, float tz);
 static double perf_now(void);
-static void perf_add(int k, double ms);
+static void perf_add(int k, double ms); static double g_pathMsTotal;
 static unsigned g_pathPlans;
 // Route plans per tick for the optional planners (getting to a vehicle, cover / firing spots): each may try many
 // targets, and on a slow CPU a burst of them stalled the server (MP_017: 4,100-18,600 plans per 30 s on the AM1).
@@ -2970,6 +2970,7 @@ static void downed_tick(void)
             e->body = g_downLastBody[k];
             bot_log("revive: %s went down at (%.1f, %.1f)", pl + OFF_PLAYER_ONLINE_NAME, e->pos[0], e->pos[2]);
             bm_learn(-1, BM_LEARN_DEATH, e->pos, NULL);   // AltBotMod V21: where soldiers die
+            zone_note_death(e->team, e->pos);              // AltBotMod V35: the mesh there costs the team more for a while
             mode_note_death(pl);   // AltBotMod V16
             break;
         }
@@ -3967,6 +3968,8 @@ typedef struct DriveState {
     unsigned spAt;
     unsigned wantMoveAt, unstickAt, unstickUntil; int unstickCount, unstickStage; float unstickPos[3], unstickFrom[3];   // Caspian V4
     float exitHeading, exitFrom[3], landTgt[3]; unsigned exitProbeAt, landLogAt, boatPlanSince; unsigned char exitSet, landSet;   // Caspian V5 boats
+    float landCacheFrom[3], landCacheGoal[3]; unsigned landCacheAt; int landCacheFlag;   // AltBotMod V35.1: the landing worked out last
+    float boatTryTgt[3], boatTryFrom[3]; unsigned boatTryAt; int boatTry;   // AltBotMod V35.1: the boat route try in progress (0 clear, 1 shallows, 2 open water first)
     float vwantS; unsigned vwantAt, vwantHoldUntil; int traceTries, traceContinue;   // AltBotMod V6: smoothed speed target; Fun-Bots vehicle routes tried
     int straight; unsigned coastUntil, cutAt;   // AltBotMod V8: straight-line legs driven (no map yet); rolling re-plan; corner-cut probe
     unsigned char straightRoute; unsigned straightLogAt;   // AltBotMod V9: on a straight no-map route now; last log
@@ -3998,9 +4001,10 @@ static void tree_apply_drive(void);
 static struct { unsigned char *mask; float x, z, r; unsigned until; } g_strikes[MAX_DRIVE_STRIKES];
 static int g_strikeNext;
 static unsigned char *g_strikeBase[2], *g_strikeBaseOf[2];
+static unsigned g_driveMaskGen;   // AltBotMod V35.1: bumped on every strike / restore (the boats' cached clear mask is rebuilt)
 static void drive_strikes_reset(void)   // a mask rebuilt (new map): its strikes and copies are gone too
 {
-    memset(g_strikes, 0, sizeof g_strikes);
+    memset(g_strikes, 0, sizeof g_strikes); g_driveMaskGen++;
     for (int s = 0; s < 2; s++) { if (g_strikeBase[s]) HeapFree(GetProcessHeap(), 0, g_strikeBase[s]); g_strikeBase[s] = NULL; g_strikeBaseOf[s] = NULL; }
 }
 static int drive_strike(unsigned char *mask, float x, float z, float r)
@@ -4018,6 +4022,7 @@ static int drive_strike(unsigned char *mask, float x, float z, float r)
     }
     int k = g_strikeNext++ % MAX_DRIVE_STRIKES;
     g_strikes[k].mask = mask; g_strikes[k].x = x; g_strikes[k].z = z; g_strikes[k].r = r; g_strikes[k].until = H->frame + DRIVE_STRIKE_FRAMES;
+    g_driveMaskGen++;
     return nav_mask_block(g, mask, x, z, r);
 }
 static void drive_strikes_tick(void)
@@ -4028,7 +4033,7 @@ static void drive_strikes_tick(void)
         if (!g_strikes[k].mask || H->frame < g_strikes[k].until) continue;
         int slot = g_strikeBaseOf[0] == g_strikes[k].mask ? 0 : g_strikeBaseOf[1] == g_strikes[k].mask ? 1 : -1;
         if (slot >= 0) {
-            int n = nav_mask_restore(g, g_strikes[k].mask, g_strikeBase[slot], g_strikes[k].x, g_strikes[k].z, g_strikes[k].r);
+            int n = nav_mask_restore(g, g_strikes[k].mask, g_strikeBase[slot], g_strikes[k].x, g_strikes[k].z, g_strikes[k].r); g_driveMaskGen++;
             bot_log("drive: (%.0f, %.0f) is back on the drivable map (%d node(s), struck 5 minutes ago)", g_strikes[k].x, g_strikes[k].z, n);
         }
         g_strikes[k].mask = NULL;
@@ -10250,7 +10255,7 @@ static double perf_now(void)
     QueryPerformanceCounter(&t);
     return (double)t.QuadPart * 1000.0 / (double)f.QuadPart;
 }
-static void perf_add(int k, double ms) { g_perfMs[k] += ms; if (ms > g_perfMax[k]) g_perfMax[k] = ms; }
+static void perf_add(int k, double ms) { g_perfMs[k] += ms; if (ms > g_perfMax[k]) g_perfMax[k] = ms; if (k == 7) g_pathMsTotal += ms; }
 static double g_subMs[4], g_subMax[4];   // AltBotMod V31.1: the input bucket split - driving, aircraft, gunners, the rest of a bot's motion
 static void perf_report(void)
 {
@@ -11747,7 +11752,16 @@ static void drive_tick(int i)
         int have = 0;
         if (boat) {   // the landing: the beach of the flag's own landmass that best trades boat time for the walk
             int goalLab = g_landLabels ? nav_label_at(g, g_landLabels, d->goal[0], isnan(d->goal[1]) ? vp[1] : d->goal[1], d->goal[2]) : 0;
-            if (goalLab) have = nav_landing_on(g, mask, g_landLabels, goalLab, vp[0], vp[2], d->goal[0], d->goal[2], 0.6f, 60.0f, tgt);
+            // AltBotMod V35.1: the landing is a whole-grid search (several million nodes on Kharg Island) and a plan that
+            // waits for the planning budget comes back here every tick - the last landing is kept while the boat is within
+            // 25 m of where it was worked out, for the same flag, for 30 s (V34: 20-40 ms on every tick a boat planned)
+            if (goalLab && d->landSet && d->landCacheAt && H->frame - d->landCacheAt < 30 * 30 && d->landCacheFlag == d->flag &&
+                hypotf(vp[0] - d->landCacheFrom[0], vp[2] - d->landCacheFrom[2]) < 25.0f &&
+                hypotf(d->goal[0] - d->landCacheGoal[0], d->goal[2] - d->landCacheGoal[2]) < 5.0f) { memcpy(tgt, d->landTgt, 12); have = 1; }
+            else if (goalLab) {
+                have = nav_landing_on(g, mask, g_landLabels, goalLab, vp[0], vp[2], d->goal[0], d->goal[2], 0.6f, 60.0f, tgt);
+                if (have) { d->landCacheAt = H->frame ? H->frame : 1; d->landCacheFlag = d->flag; memcpy(d->landCacheFrom, vp, 12); memcpy(d->landCacheGoal, d->goal, 12); }
+            }
             if (!have) have = nav_mask_nearest(g, mask, d->goal[0], d->goal[2], 300.0f, tgt);
         }
         if (boat && !have) { nav_set_path_mask(NULL); vehicle_mark_bad(d->veh, 120); drive_stop(i, "has no water near its flag", 60); return; }
@@ -11757,13 +11771,31 @@ static void drive_tick(int i)
             d->landLogAt = H->frame;
         }
         if (boat) { memcpy(d->landTgt, tgt, 12); d->landSet = 1; }
+        // AltBotMod V35.1: the clear mask (no shallows) is made once per mask and kept; each plan only opens the 40 m circles
+        // round its start and landing (they stay open: a queued route is worked on in later ticks, and other boats' circles
+        // only add water near where boats start and land; after 32 the mask is made afresh). V34 copied and stripped the
+        // whole grid on every plan - and every tick a waiting plan came back - which held the server's tick at 20-60 ms
+        // whenever a bot boat left its slip on Kharg Island (players were rubber-banded).
+        static const unsigned char *clearOf; static unsigned clearGen; static int clearOpen; static float clearKeeps[32][2];   // (a new map's mask: drive_strikes_reset bumps the generation)
         if (boat) {
             size_t n = (size_t)g->w * g->h * NAV_LAYERS;
-            if (clearSize != n) { if (clearMask) HeapFree(GetProcessHeap(), 0, clearMask); clearMask = HeapAlloc(GetProcessHeap(), 0, n); clearSize = clearMask ? n : 0; }
+            if (clearSize != n) { if (clearMask) HeapFree(GetProcessHeap(), 0, clearMask); clearMask = HeapAlloc(GetProcessHeap(), 0, n); clearSize = clearMask ? n : 0; clearOf = NULL; }
             if (clearMask) {
-                float keep[4] = {vp[0], vp[2], tgt[0], tgt[2]};
-                memcpy(clearMask, mask, n);
-                nav_mask_strip(g, clearMask, 4, keep, 2, 40.0f);
+                float want[2][2] = {{vp[0], vp[2]}, {tgt[0], tgt[2]}};
+                if (d->boatTryAt && H->frame - d->boatTryAt < 60 * 30 && hypotf(vp[0] - d->boatTryFrom[0], vp[2] - d->boatTryFrom[2]) < 15.0f) { want[0][0] = d->boatTryFrom[0]; want[0][1] = d->boatTryFrom[2]; }
+                int need = 0;
+                for (int k = 0; k < 2; k++) { int open = 0; for (int j = 0; j < clearOpen && !open; j++) open = clearKeeps[j][0] == want[k][0] && clearKeeps[j][1] == want[k][1]; need += !open; }
+                if (clearOf != mask || clearGen != g_driveMaskGen || clearOpen + need > 32) {
+                    memcpy(clearMask, mask, n);
+                    nav_mask_strip(g, clearMask, 4, NULL, 0, 0.0f);
+                    clearOf = mask; clearGen = g_driveMaskGen; clearOpen = 0;
+                }
+                for (int k = 0; k < 2; k++) {
+                    int open = 0; for (int j = 0; j < clearOpen && !open; j++) open = clearKeeps[j][0] == want[k][0] && clearKeeps[j][1] == want[k][1];
+                    if (open) continue;
+                    nav_mask_patch_disk(g, clearMask, mask, 0, want[k][0], want[k][1], 40.0f);
+                    clearKeeps[clearOpen][0] = want[k][0]; clearKeeps[clearOpen][1] = want[k][1]; clearOpen++;
+                }
                 nav_set_path_mask(clearMask);
             }
         }
@@ -11782,21 +11814,42 @@ static void drive_tick(int i)
         nav_set_long_legs(boat);
         nav_set_vehicle_avoid(H->frame<d->avoidUntil?d->avoidPosition:NULL,d->avoidRadius);
         double planT0 = perf_now();
-        d->n = have ? budgeted_nav_path(i+MAX_BOTS,g, boat ? ray_cast : drive_nav_ray, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS) : 0;
+        // AltBotMod V35.1: a boat's three tries (6 m clear of land, then the shallows, then out of a pocket to open water
+        // first) are one queued route each, and a queued route starts again whenever what is asked changes. V34 asked for
+        // the clear one first on every tick, so the shallows route it fell back to was dropped the next tick and never
+        // finished: Kharg Island's boats sat by their slip for two minutes and the crews walked. Now the try a
+        // boat is on stays until it answers, for the same landing, and the start is held where the boat was while it
+        // drifts a little (a start moved over 4 m also restarts the search).
+        int boatStage = 0; float bs[3] = {vp[0], vp[1], vp[2]};
+        if (boat) {
+            if (d->boatTryAt && H->frame - d->boatTryAt < 60 * 30 && hypotf(tgt[0] - d->boatTryTgt[0], tgt[2] - d->boatTryTgt[2]) < 30.0f &&
+                hypotf(vp[0] - d->boatTryFrom[0], vp[2] - d->boatTryFrom[2]) < 15.0f) { boatStage = d->boatTry; memcpy(bs, d->boatTryFrom, 12); }
+            else { d->boatTry = 0; d->boatTryAt = H->frame ? H->frame : 1; memcpy(d->boatTryTgt, tgt, 12); memcpy(d->boatTryFrom, vp, 12); }
+        }
+        if (!boat || boatStage == 0)
+            d->n = have ? budgeted_nav_path(i+MAX_BOTS,g, boat ? ray_cast : drive_nav_ray, bs[0], bs[1], bs[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS) : 0;
+        else d->n = 0;
         d->partial=have && (nav_last_partial() || d->stageActive);
         if (perf_now() - planT0 > 50.0) bot_log("perf: %s's vehicle route took %.0f ms (%d points)", pl + OFF_PLAYER_ONLINE_NAME, perf_now() - planT0, d->n);
-        if (have && !d->n && !g_lastPlanDeferred && boat) {   // no way round with 6 m to spare: the shallows too
+        if (boat && boatStage == 0 && have && !d->n && !g_lastPlanDeferred) boatStage = d->boatTry = 1;   // no way round with 6 m to spare
+        if (have && !d->n && boat && boatStage == 1) {   // the shallows too
             if (H->frame - d->sensorLogAt > 15 * 30) { d->sensorLogAt = H->frame; bot_log("drive: %s finds no route 6 m clear of land - allows the shallows", pl + OFF_PLAYER_ONLINE_NAME); }
             nav_set_path_mask(mask);
-            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, vp[0], vp[1], vp[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS);
+            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, bs[0], bs[1], bs[2], tgt[0], tgt[1], tgt[2], d->pts, DRIVE_MAX_PTS);
             d->partial=nav_last_partial();
+            if (!d->n && !g_lastPlanDeferred) boatStage = d->boatTry = 2;
         }
         float ow[3];
-        if (have && !d->n && !g_lastPlanDeferred && boat && nav_open_water_near(g, mask, vp[0], vp[2], 80.0f, ow)) {   // docked in a pocket (pier posts):
-            d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, ow[0], ow[1], ow[2], tgt[0], tgt[1], tgt[2], d->pts + 3, DRIVE_MAX_PTS - 1);   // out to open water first
-            d->partial=nav_last_partial();
-            if (d->n) { memcpy(d->pts, ow, 12); d->n++; bot_log("drive: %s backs out to open water at (%.0f, %.0f) first", pl + OFF_PLAYER_ONLINE_NAME, ow[0], ow[2]); }
+        if (have && !d->n && boat && boatStage == 2) {
+            if (nav_open_water_near(g, mask, bs[0], bs[2], 80.0f, ow)) {   // docked in a pocket (pier posts):
+                nav_set_path_mask(mask);
+                d->n = budgeted_nav_path(i+MAX_BOTS,g, ray_cast, ow[0], ow[1], ow[2], tgt[0], tgt[1], tgt[2], d->pts + 3, DRIVE_MAX_PTS - 1);   // out to open water first
+                d->partial=nav_last_partial();
+                if (d->n) { memcpy(d->pts, ow, 12); d->n++; bot_log("drive: %s backs out to open water at (%.0f, %.0f) first", pl + OFF_PLAYER_ONLINE_NAME, ow[0], ow[2]); }
+            } else g_lastPlanDeferred = 0;
+            if (!d->n && !g_lastPlanDeferred) d->boatTryAt = 0;   // all three answered "no": the next plan starts over
         }
+        if (boat && d->n) d->boatTryAt = 0;
         nav_set_path_mask(NULL);
         nav_set_vehicle_width(1.5f);nav_set_vehicle_avoid(NULL,0);
         nav_set_long_legs(0);
@@ -13079,18 +13132,26 @@ __declspec(dllexport) void botmod_tick(void)
         int i=(H->frame+turn)%H->botCount;
         g_whereBot = i;
         g_where = "brain_tick";
-        double a = perf_now();
+        double a = perf_now(), tBrain = 0, tDrive = 0, tPaths0 = g_pathMsTotal;
         if (((H->frame + i) & 1) == 0 && !g_drive[i].phase) {   // each bot thinks every other frame (15 Hz), alternating halves
             brain_tick(i);
+            tBrain = perf_now();
             if (level_ready()) drive_consider(i);
+            tDrive = perf_now();
             g_where = "say_tick";
             say_tick(i);
         }
         double b = perf_now();
         if (b - a > 20.0) {
+            // AltBotMod V35.1: the slow think split by part (V34 showed Kharg Island hitches of 560-670 ms each, 8 s long, that
+            // could not be traced to one), with the last place the brain was in when it took longest
             static unsigned slowLogged;
-            if (slowLogged++ < 60) bot_log("perf: slow think %.0f ms - %s task %s enroute %d waiting %d nav %d", b - a, (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME,
-                                           kTaskNames[bot_brain(i)->task], bot_brain(i)->enroute, bot_brain(i)->waiting, bot_nav(i)->mode);
+            char *sl = *(char **)(H->bots[i] + OFF_PLAYER_SOLDIER); const float *sp = sl ? (float *)(sl + OFF_SOLDIER_POSITION) : NULL;
+            if (slowLogged++ < 120) bot_log("perf: slow think %.0f ms - %s task %s enroute %d waiting %d nav %d | brain %.0f ms (paths %.0f), vehicle choice %.0f ms, talk %.0f ms; at (%.0f, %.0f, %.0f)%s",
+                                           b - a, (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME,
+                                           kTaskNames[bot_brain(i)->task], bot_brain(i)->enroute, bot_brain(i)->waiting, bot_nav(i)->mode,
+                                           tBrain ? tBrain - a : 0, g_pathMsTotal - tPaths0, tBrain && tDrive ? tDrive - tBrain : 0, tDrive ? b - tDrive : 0,
+                                           sp ? sp[0] : 0, sp ? sp[1] : 0, sp ? sp[2] : 0, player_vehicle(H->bots[i]) ? " in a vehicle" : "");
         }
         g_where = "detect_tick";
         if (!g_air[i].phase) {

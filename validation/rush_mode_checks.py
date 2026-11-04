@@ -72,7 +72,7 @@ static int plan_path(int i,char*s,float x,float y,float z){(void)s;
 }
 '''
 # plan_path uses the actual state declaration, so place it after that declaration.
-a=PRE.index('static float queued');pre=PRE[:a]+PROFILE+'\n#include "mode_profiles.inc"\nstatic const BMModeProfile *g_modeProfile;\n'+BOT+'\n'+PRE[a:]
+a=PRE.index('static float queued');pre=PRE[:a]+PROFILE+'\n#include "mode_profiles.inc"\nstatic const BMModeProfile *g_modeProfile;\n#include "mcom_aim.h"   /* AltBotMod V35 */\n'+BOT+'\n'+PRE[a:]
 body=pre+'\n'+'\n'.join(function(native,n) for n in ['mode_profile','rush_target','mode_goal_clear','mode_brain_tick','mode_reassign_idle','mode_apply'])+r'''
 static void reset(const BMModeProfile*p,int mode){
  memset(&host,0,sizeof host);memset(players,0,sizeof players);memset(bodies,0,sizeof bodies);memset(inputs,0,sizeof inputs);

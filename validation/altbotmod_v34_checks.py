@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AltBotMod V34 - Squad Up: offline checks.
+"""AltBotMod V35.1 - New Ground: offline checks.
 
 1. Fun-Bots' objective walking mesh (zone_nav.c, Fun-Bots 3.6.0-dev navzones): the shipped .zon files are exactly what the
    converter makes from Fun-Bots' JSON; zone_nav.c loads all 97, routes inside every zone (ASan/UBSan), keeps one-way
@@ -24,7 +24,7 @@ SRC = ROOT / 'files/BotMod/src'
 SC = ROOT / 'files/ServerControl'
 ZON = ROOT / 'files/server/BotMod_traces/navzones'
 VAL = ROOT / 'validation'
-FUNBOTS_NAVZONES = Path('/home/claude/joe91/fun-bots/navzones')
+FUNBOTS_NAVZONES = Path('/home/claude/joe91/fun-bots-rc2/navzones')   # V35: Fun-Bots V3.6.0-RC2 (b7f0de1)
 
 def run(cmd, **kw):
     r = subprocess.run(cmd, capture_output=True, text=True, env={'ASAN_OPTIONS': 'detect_leaks=1', 'PATH': '/usr/bin:/bin'}, **kw)
@@ -35,13 +35,13 @@ def san(flag): return ['-g', '-fsanitize=address,undefined', '-fno-sanitize-reco
 
 def check_mesh(sanitize):
     files = sorted(ZON.glob('*.zon'))
-    assert len(files) == 97, len(files)
+    assert len(files) == 110, len(files)   # V35: the 110 meshes of Fun-Bots V3.6.0-RC2
     if FUNBOTS_NAVZONES.is_dir():   # (the Fun-Bots checkout is on the build machine only)
         with tempfile.TemporaryDirectory() as td:
             run([sys.executable, str(VAL / 'tools/navzones_convert.py'), str(FUNBOTS_NAVZONES), td])
             same = [f.name for f in files if filecmp.cmp(f, Path(td) / f.name, shallow=False)]
             assert len(same) == len(files), set(f.name for f in files) - set(same)
-        print('PASS: the 97 shipped mesh files are exactly what the converter makes from Fun-Bots 3.6.0-dev navzones')
+        print('PASS: the 110 shipped mesh files are exactly what the converter makes from Fun-Bots V3.6.0-RC2 navzones')
     with tempfile.TemporaryDirectory() as td:
         exe = Path(td) / 'zt'
         run(['gcc', '-std=gnu11', '-O1', '-Wall', '-Wextra', '-Werror', *san(sanitize), '-I', str(SRC), str(VAL / 'v34_zone_tests.c'), str(SRC / 'zone_nav.c'), '-lm', '-o', str(exe)])
@@ -54,7 +54,7 @@ def check_mesh(sanitize):
         run(['gcc', '-std=gnu11', '-O1', '-Wall', *san(sanitize), '-I', str(SRC), str(Path(td) / 'reach.c'), str(SRC / 'zone_nav.c'), '-lm', '-o', str(Path(td) / 'reach')])
         out = run([str(Path(td) / 'reach'), str(Path(td) / 'mcoms.txt'), str(ZON)])
         m = re.search(r'M-COMs (\d+), in a mesh M-COM zone (\d+), with a mesh point within 10 m (\d+), reachable from most of their zone (\d+)', out)
-        assert m and int(m.group(1)) == 218 and int(m.group(2)) == 218 and int(m.group(3)) == 218 and int(m.group(4)) >= 217, out
+        assert m and int(m.group(1)) == 242 and int(m.group(2)) == 242 and int(m.group(3)) == 242 and int(m.group(4)) >= 233, out   # (V35: + the 24 M-COMs of the 12 Squad Rush layouts made from the RC2 meshes; 218 recorded, 217 of them reachable)
         print('PASS: ' + m.group(0) + ' (all Rush and Squad Rush maps)')
     core = (SRC / 'core.c').read_text(); zn = (SRC / 'zone_native.inc').read_text()
     assert 'int zr = zone_plan(i, soldier, tx, ty, tz);' in core and core.index('int zr = zone_plan(') < core.index('int traced = trace_plan(i, soldier, tx, ty, tz);')
@@ -268,8 +268,8 @@ def check_settings_version():
     sc = (SC / 'ServerControl-Core.ps1').read_text(); eh = (SRC / 'enhanced.h').read_text()
     assert "New-BmSetting 'FunBotsMesh' 'Movement' 'bool' 0 1 1" in sc and "New-BmSetting 'VehicleWalkMeters' 'Vehicles' 'float' 25 6000 250" in sc
     assert "'float' 0 3000 900 'Jet area margin (m)'" in sc
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V34 - Squad Up"' in eh
-    assert 'New-BmBanner "AltBotMod V34"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
+    assert 'New-BmBanner "AltBotMod V35.1"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
     print('PASS: FunBotsMesh / VehicleWalkMeters in Server Control; version V34')
 
 if __name__ == '__main__':
