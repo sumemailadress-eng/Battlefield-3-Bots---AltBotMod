@@ -1,7 +1,7 @@
 """AltBotMod V14 checks.
 1. Side steps: the V9-V13 back-and-forth (a bot in a gunfight strafed left-right without a break - "strutting") is now a
    short step now and then, only under fire / close in. The real step / rest cycle (bm_dodge_next) run for a minute.
-2. Tanks: on Seine Crossing the RU T90 sat at its base all round - two Fun-Bots routes used up for the tank's whole life,
+2. Tanks: on Seine Crossing the RU T90 sat at its base all round - two saved routes used up for the tank's whole life,
    then "no drivable route ... A* exhausted" for every flag. The recorded vehicle routes do reach every flag from where
    it sat (checked on the shipped route file with the real trace_nav.c); V14 tries them again per flag and on a failed
    driving-map search, then checked straight legs.
@@ -229,7 +229,7 @@ int main(void){
     assert 'd->traceTries=0;d->traceAlt=0;' in gj
     assert re.search(r'if\(!boat && drive_route_fallback\(i,d,vp\)\)return;.*?\n\s*if\(!boat && drive_other_objective\(i,d,vp,1\)\)return;', core)
     assert 'int alt = d->traceAlt++;' in core and 'H->frame - d->noRouteSince >= 45 * 30' in core and 'if (alt >= nd) return 0;' in tr
-    print('PASS: tanks - Fun-Bots vehicle routes tried again for every new flag (V13: two per vehicle, for good), and after a failed driving-map search: the nearest route again, then up to three from other roads further out, then checked straight legs after 45 s without a route')
+    print('PASS: tanks - saved vehicle routes tried again for every new flag (V13: two per vehicle, for good), and after a failed driving-map search: the nearest route again, then up to three from other roads further out, then checked straight legs after 45 s without a route')
     assert 'g_jobGuessCq=g_flagCount>0;' in core and 'the server has not reported its game mode over RCON' in core and 'g_modeProfile=mode_auto_profile(level,mode);' in mn
     assert 'if (!whyAt || H->frame - whyAt > 20 * 30)' in core
     print('PASS: no game mode from RCON: the level\'s flags are looked for and, after 8 s, the bots play Conquest; "not ready yet" now says why (no mode / no layout / blueprint), every 20 s')

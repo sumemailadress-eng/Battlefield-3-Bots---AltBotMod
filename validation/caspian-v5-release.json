@@ -274,8 +274,8 @@
     "caspian-v2-results": {
       "exit_code": 0,
       "checks": [
-        "PASS: all 53 Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
-        "PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump",
+        "PASS: all 53 saved Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
+        "PASS: actual trace_plan gives a hand-walked saved route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and SavedRoutes=0; recorded jumps press jump",
         "PASS: a retired bot whose kick does not unspawn it is killed after 5 s and replaced (Test15 left it as a brain-less zombie); round cleanup never kills",
         "PASS: Aggression 0/1/2 parses, keeps the aim window (V3), scales engage range (never past the weapon's maximum), bursts and pauses; the director sends more bots to a flag the team just lost, on both teams",
         "PASS: an abandoned ground vehicle in the field gets the nearest free infantry bot on BOTH teams; busy bots, base vehicles and occupied vehicles are left alone",
@@ -287,8 +287,8 @@
       "exit_code": 0,
       "checks": [
         "PASS: the watchdog no longer ends a fight against a visible enemy within 150 m (V2 cut 160 of 353 fights); far or unseen targets still count as a stall",
-        "PASS: Fun-Bots routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid",
-        "PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a Fun-Bots route before any grid search",
+        "PASS: saved routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid",
+        "PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a saved route before any grid search",
         "PASS: closed-loop aim - each bot fits where its gun points relative to its look pitch (a height offset, an angle and recoil climb per frame of a burst) from its own impacts: untrained it is metres off, trained over fights at 10-90 m every shot is within 0.4 m of the chest at every range; sideways error cancelled; shotgun pellets count once; clamped",
         "PASS: a respawning bot takes a free seat in a teammate bot's attack helicopter (first), transport helicopter or tank right after spawning (the native squad spawn never seated anyone); no double booking, jets/jeeps/enemy/passenger seats skipped, refusals back off; the live US 'Viper' and the 9K22 are known vehicles",
         "PASS: a driver that means to move but has not for 6 s reverses on full lock then pulls away on the other lock (alternating), not while waiting for traffic/riders/a fight or parked; after 4 tries the spot ahead is struck off and re-planned (V3: sat at 0 m/s for 45 s, then got out)"

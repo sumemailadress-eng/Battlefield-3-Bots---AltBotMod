@@ -115,7 +115,7 @@ $form.Font = $Font
 $top = New-Object Windows.Forms.Label
 $top.Text = "Server: $dir"; $top.AutoSize = $true; $top.Location = New-Object Drawing.Point(12, 60); $top.ForeColor = $Grey
 $form.Controls.Add($top)
-$banner = New-BmBanner "AltBotMod V35.1"; $form.Controls.Add($banner)   # AltBotMod V16.2
+$banner = New-BmBanner "AltBotMod V35.2"; $form.Controls.Add($banner)   # AltBotMod V16.2
 $status = New-Object Windows.Forms.StatusStrip
 $statusText = New-Object Windows.Forms.ToolStripStatusLabel
 $statusText.Text = 'Ready'
@@ -558,7 +558,7 @@ foreach ($inst in $Instances) {
     $u.ModeBox.Add_SelectedIndexChanged({
         $x = $this.Tag; $m = Selected-Mode $x
         $x.ModeNote.Text = $(if ($m -eq 'RushLarge0') { 'Rush bots attack / defend M-COMs; works best with 20+ bots.' }
-            elseif ($m -eq 'SquadRush0') { 'Squad Rush: one M-COM a sector, 4 a side. Every level has a layout (12 made from the Fun-Bots RC2 meshes in V35).' }
+            elseif ($m -eq 'SquadRush0') { 'Squad Rush: one M-COM a sector, 4 a side. Every level has a layout (12 made from the newer objective meshes in V35).' }
             elseif ($m -like 'TeamDeathMatch*' -or $m -eq 'SquadDeathMatch0') { 'Deathmatch: bots hunt on the TDM routes.' }
             elseif ($m -eq 'GunMaster0') { 'Gun Master: bots hunt on the TDM routes; the game hands out the weapons.' }
             elseif ($m -eq 'CaptureTheFlag0') { 'Capture the Flag (experimental): a third of the bots raid the enemy base and run home, the rest hunt.' }

@@ -286,7 +286,7 @@
       "checks": [
         "PASS: full native driver cancels stale inputs, resumes completed paths, executes checked reverse before queued planning and rejects blocked rear corridors on both teams",
         "PASS: recovery bypass releases virtual road waits but still yields to real vehicles on both teams",
-        "PASS: jet guidance follows FunBots rudder direction and converts finite world guidance into banked body-axis elevator",
+        "PASS: jet guidance follows the reference rudder direction and converts finite world guidance into banked body-axis elevator",
         "PASS: idle replans reach every bot slot under the actual alternating 15-Hz brain schedule"
       ],
       "output": "test13-regression-results.txt"
@@ -326,8 +326,8 @@
     "caspian-v2-results": {
       "exit_code": 0,
       "checks": [
-        "PASS: all 53 Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
-        "PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump",
+        "PASS: all 53 saved Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
+        "PASS: actual trace_plan gives a hand-walked saved route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and SavedRoutes=0; recorded jumps press jump",
         "PASS: a retired bot whose kick does not unspawn it is killed after 5 s and replaced (Test15 left it as a brain-less zombie); round cleanup never kills",
         "PASS: Aggression 0/1/2 parses, keeps the aim window (V3), scales engage range (never past the weapon's maximum), bursts and pauses; the director sends more bots to a flag the team just lost, on both teams",
         "PASS: an abandoned ground vehicle in the field gets the nearest free infantry bot on BOTH teams; busy bots, base vehicles and occupied vehicles are left alone",
@@ -339,8 +339,8 @@
       "exit_code": 0,
       "checks": [
         "PASS: the watchdog no longer ends a fight against a visible enemy within 150 m (V2 cut 160 of 353 fights); far or unseen targets still count as a stall",
-        "PASS: Fun-Bots routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid",
-        "PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a Fun-Bots route before any grid search",
+        "PASS: saved routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid",
+        "PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a saved route before any grid search",
         "PASS: closed-loop aim - each bot fits where its gun points relative to its look pitch (a height offset, an angle and recoil climb per frame of a burst) from its own impacts: untrained it is metres off, trained over fights at 10-90 m every shot is within 0.4 m of the chest at every range; sideways error cancelled; shotgun pellets count once; clamped",
         "PASS: AltBotMod V6 - a respawning bot picks a parked jet / base vehicle at the spawn screen and is seated as its driver after spawning; crew seats do not override it; refusals back off",
         "PASS: a respawning bot takes a free seat in a teammate bot's attack helicopter (first), transport helicopter, tank or (V16) driven jeep right after spawning (the native squad spawn never seated anyone); no double booking, jets/enemy/passenger seats skipped, refusals back off; the live US 'Viper' and the 9K22 are known vehicles",
@@ -359,7 +359,7 @@
     "altbotmod-v6-results": {
       "exit_code": 0,
       "checks": [
-        "PASS: Fun-Bots vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged",
+        "PASS: saved vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged",
         "PASS: the director sends a free bot to a neutral flag before an equally distant enemy flag (neutral flags were left untaken)",
         "PASS: a bot tank engages an enemy tank / vehicle out to 400 m before nearby infantry (V5 kept shooting soldiers while a player's tank drove up); V7: helicopters after armour and close infantry"
       ],
@@ -394,7 +394,7 @@
         "PASS: a helicopter engages an enemy helicopter from 150-800 m and fires (V8 flew in to under 700 m)",
         "PASS: inside 150 m (or 250 m and closing fast) it breaks off to a 350 m stand-off ring, inside 70 m it climbs out - no ramming",
         "PASS: ground attack runs unchanged",
-        "PASS: 29 Team Deathmatch route files (the dev build's set) load as Fun-Bots routes - 67817 waypoints",
+        "PASS: 29 Team Deathmatch route files (the dev build's set) load as saved routes - 67817 waypoints",
         "PASS: elite fire window 0.5 m (2.5x V8's), at most 0.065 rad close in; snipers keep their precise window",
         "PASS: an elite bot crouches for a far fight (>22 m) about 60% of the time, never when closing in, and stands when it ends",
         "PASS: side steps check the side for walls, drops and water first",
@@ -476,7 +476,7 @@
         "PASS: kits on a level that lacks some items (Markaz Monolith: all 8 kits dropped for 11 missing items, bots spawned with none - invisible): a BotMod_kitextra item / perk falls back to the kit's own, a missing attachment leaves its list, a missing knife / gadget / sidearm empties that slot - the kit stays; only a missing primary (or appearance) drops a kit; each missing item is logged by name",
         "PASS: kits on every level - read from the server's own level data (29 levels): after the per-level swap each of the 60 kit items is one the level has, in every mode set (8700 checks); the 4 Aftermath levels (no stock kits or looks at all - Markaz Monolith's invisible bots) use their _XP4 kits and looks (Gun Master / Scavenger sets too)",
         "PASS: when no kit at all is usable on a level, bots wait (logged once a minute) instead of spawning invisible",
-        "PASS: tanks - Fun-Bots vehicle routes tried again for every new flag (V13: two per vehicle, for good), and after a failed driving-map search: the nearest route again, then up to three from other roads further out, then checked straight legs after 45 s without a route",
+        "PASS: tanks - saved vehicle routes tried again for every new flag (V13: two per vehicle, for good), and after a failed driving-map search: the nearest route again, then up to three from other roads further out, then checked straight legs after 45 s without a route",
         "PASS: no game mode from RCON: the level's flags are looked for and, after 8 s, the bots play Conquest; \"not ready yet\" now says why (no mode / no layout / blueprint), every 20 s"
       ],
       "output": "altbotmod-v14-results.txt"
@@ -485,7 +485,7 @@
       "exit_code": 0,
       "checks": [
         "PASS: route files - 176 files, every recorded action read: 1112 boarding spots, 367 exit points (72 passengers only), 197 beacon spots, 559 M-COM spots; 400 recorded waits (1394 s in all), 30367 crouch waypoints; boarding spots carry their path's team and vehicle kind (\"vehicle tank1 us\"), facing and pitch; waits survive route simplification",
-        "PASS: flag names - Seine Crossing's labelled paths matched to the flags the live map recorded (5 of 5, scrambled order; Fun-Bots' own letters differ from the game's, so they are matched by position); a route to a flag prefers its own labelled paths (a labelled way 8% longer is taken; without labels the shorter one)",
+        "PASS: flag names - Seine Crossing's labelled paths matched to the flags the live map recorded (5 of 5, scrambled order; the own letters differ from the game's, so they are matched by position); a route to a flag prefers its own labelled paths (a labelled way 8% longer is taken; without labels the shorter one)",
         "PASS: route actions in the core - a recorded wait held for its seconds (not under fire, not on an errand, once per point), crouch sections walked crouched and stood up after; exit points: a light vehicle's everyone-out point = arriving there, passengers-only points drop the bot passengers and drive on, armour keeps its crew, not 150+ m from the objective, not boats; the fleet prefers a vehicle on its team's boarding spot; a recon picks the beacon spot nearest the objective (not by an enemy flag), walks there, faces the recorded way, places it, once a life",
         "PASS: route files for every recorded mode - 176 files: Rush 25, Squad Rush 15, Squad DM 29, Domination 4, Gun Master 12, Tank Superiority 3, Scavenger 4 (empty Air Superiority files left out); the core loads the file of the mode being played, uses boarding spots for vehicle routes, exit points while driving, waits in the path follower, beacon runs before overwatch",
         "PASS: defend jobs end - a defend job keeps its own deadline when it resumes after a fight / cover / revive / repair / rocket / supply run (V9-V14: for ever - the 12 s screen beside a tank became a post held all round); a player's \"need backup\" holds 3 minutes; the activity watchdog only spares bots on a player's order (not a bot's)",
@@ -496,7 +496,7 @@
     "altbotmod-v15-mode-results": {
       "exit_code": 0,
       "checks": [
-        "PASS: mode table - 174 level/mode pairs match the server's level data: Squad Rush on 25 levels, Gun Master on 8, Scavenger 4, Tank Superiority 4, Air Superiority 4, Capture the Flag 4; all are recognised (V9-V14: unknown) and sorted as Fun-Bots sorts them",
+        "PASS: mode table - 174 level/mode pairs match the server's level data: Squad Rush on 25 levels, Gun Master on 8, Scavenger 4, Tank Superiority 4, Air Superiority 4, Capture the Flag 4; all are recognised (V9-V14: unknown) and sorted as the reference sorts them",
         "PASS: native - Squad Rush has one objective a sector (slots 1 and 3; bots never aim at the empty slot), Rush keeps two; Gun Master uses the TDM play area; a fallback to team play lasts the round; Capture the Flag (V16): a third raid the enemy stand (sweep 12 s, home, sweep, again), a third guard their own stand, a third hunt; flag stands of all four CTF maps from the level data",
         "PASS: launcher - the map/mode menu offers exactly the 215 map/mode pairs the bot core accepts, the new modes included",
         "PASS: profiles - the rebuilt generator reproduces all 25 shipped Rush sectors/bases/M-COMs/patrol points; 13 Squad Rush profiles (one M-COM a sector) match it; Squad Rush without recorded M-COMs (12 levels: MP_012 MP_013 MP_018 XP1_001 XP1_002 XP1_003 XP1_004 XP3_Alborz XP4_FD XP4_Parl XP5_001 XP5_003) is played as team play",

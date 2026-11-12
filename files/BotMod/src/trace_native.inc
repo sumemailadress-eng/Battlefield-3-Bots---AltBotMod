@@ -1,11 +1,10 @@
-// Caspian V2: Fun-Bots routes for infantry (see trace_nav.h).
-// Files: <server>\BotMod_traces\<Level>_<Mode>.map, copied from Fun-Bots'
-// mapfiles folder. When the exact game mode has no file, another file of the
+// Caspian V2: saved routes for infantry (see trace_nav.h).
+// Files: <server>\BotMod_traces\<Level>_<Mode>.map, copied from the // mapfiles folder. When the exact game mode has no file, another file of the
 // same level is used: the recorded paths are geometry, flags are matched by
 // position, so any mode's paths are valid walking routes on that level.
 #define TRACE_FLAG_RADIUS     22.0f   // waypoints this close to a flag count as "at the flag"
 #define TRACE_TARGET_NEAR     45.0f   // a route target this close to a flag uses that flag's routes
-#define TRACE_MIN_TRIP        8.0f    // shorter trips: a checked straight walk, else the local navigation grid (V2: 60; V22: 15; V23: 8 - Fun-Bots routes at all times)
+#define TRACE_MIN_TRIP        8.0f    // shorter trips: a checked straight walk, else the local navigation grid (V2: 60; V22: 15; V23: 8 - saved routes at all times)
 #define TRACE_JOIN_H          45.0f   // the bot walks at most this far to join a route (AltBotMod V6: 30 -> 45)
 #define TRACE_JOIN_V           6.0f    // (V6: 4 -> 6 - Kharg's hillsides)
 #define TRACE_GRID_JOIN_H     90.0f   // V6: further than a straight walk - the grid walks it to the route
@@ -16,7 +15,7 @@ static TraceNet g_trace;
 static void route_actions_level(void); static void route_actions_reset(void); static void route_actions_stats(void);   // AltBotMod V15
 static int route_board_spot(const float *vp);
 static unsigned g_raBoardRoutes; static unsigned char g_raCrouched[MAX_BOTS];
-static TraceNet g_traceLand, g_traceWater;   // AltBotMod V6: Fun-Bots vehicle paths (land vehicles / boats)
+static TraceNet g_traceLand, g_traceWater;   // AltBotMod V6: saved vehicle paths (land vehicles / boats)
 static unsigned g_traceTried, g_traceNoField, g_traceNoJoin, g_traceGridJoins, g_traceVehRoutes;
 static void trace_points_reset(void);
 static char g_traceKey[64];
@@ -29,7 +28,7 @@ static const char *const g_traceModes[] = {
     "RushLarge0", "SquadRush0", "TeamDeathMatch0", "SquadDeathMatch0", "GunMaster0", "Domination0", "TankSuperiority0",
     "Scavenger0", "CaptureTheFlag0", "AirSuperiority0", NULL   // AltBotMod V18.2
 };
-#define TRACE_MIN_USABLE 50   // AltBotMod V18.2: fewer infantry waypoints = a placeholder (Fun-Bots' Air Superiority files: one point)
+#define TRACE_MIN_USABLE 50   // AltBotMod V18.2: fewer infantry waypoints = a placeholder
 static unsigned g_traceCompanionNodes;
 // key: the file to load; want: the level_mode being played - its companion (BotMod_traces\companions\<want>.map, the
 // level's other recordings within this mode's area) is attached when it was built for this file
@@ -49,10 +48,10 @@ static int trace_try_file(const char *key, const char *want)
         tn_free(&g_trace); return 0;
     }
     g_traceCompanionNodes = (unsigned)g_trace.companionNodes;
-    bot_log("trace: loaded Fun-Bots routes %s: %d waypoints, %d paths, %d links (+%d joins), %d vehicle paths kept apart",
+    bot_log("trace: loaded saved routes %s: %d waypoints, %d paths, %d links (+%d joins), %d vehicle paths kept apart",
             path, g_trace.count, g_trace.pathCount, g_trace.linkCount, g_trace.proximityLinks, g_trace.vehiclePaths);
     if (g_trace.companionNodes)
-        bot_log("trace: + %d waypoint(s) from the level's other Fun-Bots recordings within this mode's area (%s)", g_trace.companionNodes, comp);
+        bot_log("trace: + %d waypoint(s) from the level's other saved recordings within this mode's area (%s)", g_trace.companionNodes, comp);
     if (g_trace.learnedNodes) bot_log("trace: + %d waypoint(s) from routes human players showed (learned)", g_trace.learnedNodes);
     tn_free(&g_traceLand); tn_free(&g_traceWater);
     const char *learnLand = bm_learn_routes ? bm_learn_routes(want, 1, &ll) : NULL, *learnWater = bm_learn_routes ? bm_learn_routes(want, 2, &lw) : NULL;
@@ -83,7 +82,7 @@ static void trace_level_load(void)
     tn_free(&g_trace); tn_free(&g_traceLand); tn_free(&g_traceWater); memset(g_traceUse, 0, sizeof g_traceUse); trace_points_reset();
     route_actions_reset();   // AltBotMod V15
     snprintf(g_traceKey, sizeof g_traceKey, "%s", key);
-    if (!g_enhanced.funBotsRoutes) { bot_log("trace: Fun-Bots routes disabled (FunBotsRoutes=0)"); return; }
+    if (!g_enhanced.savedRoutes) { bot_log("trace: saved routes disabled (SavedRoutes=0)"); return; }
     if (trace_try_file(key, key)) return;
     // AltBotMod V15: the nearest kind of play first - Gun Master / Squad Deathmatch borrow the TDM paths, Squad Rush the
     // Rush ones, the flag modes the Conquest ones - then any other file of the level.
@@ -96,7 +95,7 @@ static void trace_level_load(void)
             char other[64]; snprintf(other, sizeof other, "%s_%s", g_level, (pass ? g_traceModes : first)[k]);
             if (strcmp(other, key) && trace_try_file(other, key)) { bot_log("trace: no file for %s; using %s (same level)", key, other); return; }
         }
-    bot_log("trace: no Fun-Bots routes for %s (BotMod_traces\\%s.map) - navigation grid only", g_level, key);
+    bot_log("trace: no saved routes for %s (BotMod_traces\\%s.map) - navigation grid only", g_level, key);
 }
 
 // Caspian V3: routes to any point near the recorded network, not only to flags: a vehicle, a cover or firing
@@ -139,7 +138,7 @@ static int trace_point_field(const float *goal, float radius)
     return g_tracePointState[lru] > 0 ? TN_FLAG_FIELDS + lru : -1;
 }
 
-// Fill g_paths[i] with a Fun-Bots route towards (tx,ty,tz). Returns the number of points, 0 = use the grid.
+// Fill g_paths[i] with a saved route towards (tx,ty,tz). Returns the number of points, 0 = use the grid.
 static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int mode);
 static unsigned g_traceJoinDeferred, g_traceJoinMemo, g_joinFailAt[MAX_BOTS]; static int g_joinFailId[MAX_BOTS]; static float g_joinFailPos[MAX_BOTS][3];   // AltBotMod V32
 static int trace_plan(int i, char *soldier, float tx, float ty, float tz) { return trace_plan_ex(i, soldier, tx, ty, tz, 1); }
@@ -148,7 +147,7 @@ static int trace_plan(int i, char *soldier, float tx, float ty, float tz) { retu
 #define TRACE_VEHICLE 2
 static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int mode)
 {
-    if (i < 0 || i >= MAX_BOTS || !g_trace.count || !g_enhanced.funBotsRoutes || !isfinite(tx) || !isfinite(ty) || !isfinite(tz)) return 0;
+    if (i < 0 || i >= MAX_BOTS || !g_trace.count || !g_enhanced.savedRoutes || !isfinite(tx) || !isfinite(ty) || !isfinite(tz)) return 0;
     float target[3] = {tx, ty, tz}, *pos = (float *)(soldier + OFF_SOLDIER_POSITION);
     // AltBotMod V15: a vehicle standing on its recorded boarding spot - the route ends exactly there (the recorded path in)
     int board = mode == TRACE_VEHICLE ? route_board_spot(target) : -1;
@@ -169,7 +168,7 @@ static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int
     }
     // A route from (almost) the same spot to the same goal that did not get
     // the bot anywhere: let the grid try this time.
-    // AltBotMod V22: Fun-Bots routes over the grid - the route is tried again from the next waypoint along (another way onto
+    // AltBotMod V22: saved routes over the grid - the route is tried again from the next waypoint along (another way onto
     // the network), twice, before the grid gets one go (V21.1 handed the bot to the grid at once: Office 638 times in 3 min,
     // and the grid walked them into the walls and past the stairs).
     TraceUse *u = &g_traceUse[i];
@@ -206,16 +205,16 @@ static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int
         g_traceRoutes++; if (id >= TN_FLAG_FIELDS) g_tracePointRoutes++;
         if (H->traceInput || g_traceRoutes % 25 == 1) {
             if (id < TN_FLAG_FIELDS)
-                bot_log("trace: %s takes a Fun-Bots route to flag %d (%d points, %.0f m%s)", H->bots[i] + OFF_PLAYER_ONLINE_NAME, flag, count, length, truncated ? ", continues" : "");
+                bot_log("trace: %s takes a saved route to flag %d (%d points, %.0f m%s)", H->bots[i] + OFF_PLAYER_ONLINE_NAME, flag, count, length, truncated ? ", continues" : "");
             else
-                bot_log("trace: %s takes a Fun-Bots route to (%.0f, %.0f) (%d points, %.0f m%s; %u routes, %u to points other than flags)",
+                bot_log("trace: %s takes a saved route to (%.0f, %.0f) (%d points, %.0f m%s; %u routes, %u to points other than flags)",
                         H->bots[i] + OFF_PLAYER_ONLINE_NAME, tx, tz, count, length, truncated ? ", continues" : "", g_traceRoutes, g_tracePointRoutes);
         }
         return count;
     }
-    // AltBotMod V6: Fun-Bots routes first - when no waypoint is a clear straight walk away (inside an HQ building, round a
+    // AltBotMod V6: saved routes first - when no waypoint is a clear straight walk away (inside an HQ building, round a
     // hill), the navigation grid walks the bot to the best waypoint within 90 m and the recorded route takes it from there.
-    // (V5 on Kharg: one Fun-Bots route in four minutes; bots stuck at both HQs re-planned all round.)
+    // (V5 on Kharg: one saved route in four minutes; bots stuck at both HQs re-planned all round.)
     // AltBotMod V32: the grid found no way onto the network from (about) here in the last 10 s: not again yet
     if (g_joinFailAt[i] && H->frame - g_joinFailAt[i] < 10 * 30 && g_joinFailId[i] == id && dist2(g_joinFailPos[i], pos) < 6.0f * 6.0f) { g_traceNoJoin++; g_traceJoinMemo++; return 0; }
     {
@@ -247,7 +246,7 @@ static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int
                     route_wait_reset(i); if (g_raCrouched[i]) { g_raCrouched[i] = 0; bot_stand(i); }   // AltBotMod V15
                     g_traceRoutes++; g_traceGridJoins++;
                     if (H->traceInput || g_traceGridJoins % 20 == 1)
-                        bot_log("trace: %s walks %d grid point(s) to a Fun-Bots route, then follows it (%d points, %.0f m; %u such joins)",
+                        bot_log("trace: %s walks %d grid point(s) to a saved route, then follows it (%d points, %.0f m; %u such joins)",
                                 H->bots[i] + OFF_PLAYER_ONLINE_NAME, lead, tcount, length, g_traceGridJoins);
                     return count;
                 }
@@ -263,13 +262,13 @@ static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int
 // waypoint is within 120 m of `from`, and the flag is at least 300 m away.
 static int boat_lane_to(int f, const float *from)
 {
-    if (!g_traceWater.count || !g_enhanced.funBotsRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
+    if (!g_traceWater.count || !g_enhanced.savedRoutes || f < 0 || f >= TN_FLAG_FIELDS || f >= objective_count() || !from) return 0;
     const float *fp = objective_pos(f);
     if (!fp || dist2(fp, from) < 300.0f * 300.0f || !tn_field(&g_traceWater, f, fp, 150.0f)) return 0;
     int cand[1];
     return tn_candidates(&g_traceWater, f, from, 120.0f, 40.0f, cand, 1) > 0;
 }
-// AltBotMod V6: a driver / boat follows a Fun-Bots VEHICLE route to its flag when one starts within 45 m (land) or
+// AltBotMod V6: a driver / boat follows the saved VEHICLE route to its flag when one starts within 45 m (land) or
 // 60 m (boats) of it. Returns the number of points written into pts (0 = use the drivable grid). Land routes end
 // within 45 m of the flag; boat routes end on the water nearest it (up to 150 m: the beach run is on foot).
 // alt 0: the route from the nearest recorded waypoint (within 45 m). AltBotMod V14: alt 1-3 (the driving map found no
@@ -278,9 +277,9 @@ static int boat_lane_to(int f, const float *from)
 static int trace_vehicle_route(int boat, int flag, const float *flagPos, const float *vp, float *pts, int maxPts, int *partial, float *lengthOut, int alt)
 {
     TraceNet *t = boat ? &g_traceWater : &g_traceLand;
-    if (!t->count || !g_enhanced.funBotsRoutes || flag < 0 || flag >= TN_FLAG_FIELDS || !flagPos) return 0;
+    if (!t->count || !g_enhanced.savedRoutes || flag < 0 || flag >= TN_FLAG_FIELDS || !flagPos) return 0;
     if (!tn_field(t, flag, flagPos, boat ? 150.0f : 45.0f)) return 0;
-    float reach = (boat ? 100.0f : 90.0f) + alt * 30.0f;   // AltBotMod V23: Fun-Bots roads first - joined from 90 m (V6-V22: 45 m, else the driving grid)
+    float reach = (boat ? 100.0f : 90.0f) + alt * 30.0f;   // AltBotMod V23: saved roads first - joined from 90 m (V6-V22: 45 m, else the driving grid)
     int cand[8], n = tn_candidates(t, flag, vp, reach, boat ? 12.0f : 8.0f + alt * 2.0f, cand, 8);
     if (!n) return 0;
     int distinct[8], nd = 0;   // start points at least 15 m apart (neighbouring waypoints of one road give the same route)
@@ -301,14 +300,14 @@ static int trace_vehicle_route(int boat, int flag, const float *flagPos, const f
     g_traceVehRoutes++;
     return count;
 }
-static int trace_loaded(void) { return g_trace.count > 0 && g_enhanced.funBotsRoutes; }
-// Once a minute: how infantry routes were found (to see from the log whether the Fun-Bots routes carry the bots).
+static int trace_loaded(void) { return g_trace.count > 0 && g_enhanced.savedRoutes; }
+// Once a minute: how infantry routes were found (to see from the log whether the saved routes carry the bots).
 static void trace_stats_tick(void)
 {
     static unsigned at;
     if (!g_trace.count || H->frame - at < 60 * 30) return;
     at = H->frame;
-    bot_log("trace: Fun-Bots routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u (%u of them not retried within 10 s), fallbacks %u; %u join(s) waited for the planning budget",
+    bot_log("trace: saved routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u (%u of them not retried within 10 s), fallbacks %u; %u join(s) waited for the planning budget",
             g_traceRoutes, g_traceGridJoins, g_traceVehRoutes, g_traceTried, g_traceNoField, g_traceNoJoin, g_traceJoinMemo, g_traceFallbacks, g_traceJoinDeferred);
     route_actions_stats();   // AltBotMod V15
     zone_stats();   // AltBotMod V34

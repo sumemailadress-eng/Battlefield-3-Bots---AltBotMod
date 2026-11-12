@@ -1,8 +1,8 @@
-// AltBotMod V15 - Route Actions: what the Fun-Bots route files record besides the paths themselves.
+// AltBotMod V15 - Route Actions: what the saved route files record besides the paths themselves.
 //  - Boarding spots ("vehicle" actions, 926 in the shipped files): where to stand to get into a vehicle that spawns there.
 //    A bot going for that vehicle takes the recorded path to the spot (the labelled "vehicle tank1 us" paths), and the
 //    fleet prefers a vehicle standing on its own team's spot.
-//  - Exit points ("exit" actions): where the people in a vehicle get out on the way to an objective. Fun-Bots: with
+//  - Exit points ("exit" actions): where the people in a vehicle get out on the way to an objective. The reference: with
 //    onlyPassengers the passengers get out and the driver drives on; without it everyone gets out. Here: an exit point
 //    within 150 m of the driver's objective; tanks and IFVs keep their crew (only passengers get out), and a light
 //    vehicle does what it does on arriving (cargo out; a gun truck keeps its gunner, a transport is left).
@@ -22,7 +22,7 @@ static unsigned g_raExitsAll, g_raExitsRiders, g_raHolds, g_raCrouchSections, g_
 static int g_raFlagLetter[TN_FLAG_FIELDS];
 static unsigned g_raHoldUntil[MAX_BOTS]; static int g_raHoldIdx[MAX_BOTS];   // (g_raCrouched, g_raBoardRoutes: trace_native.inc)
 
-static int route_actions_on(void) { return g_enhanced.funBotsRoutes && g_enhanced.routeActions && g_trace.count; }
+static int route_actions_on(void) { return g_enhanced.savedRoutes && g_enhanced.routeActions && g_trace.count; }
 
 // After a route file is loaded: which flag each objective letter is, and what the file holds (logged once).
 static void route_actions_level(void)
@@ -90,7 +90,7 @@ static int route_exit_tick(int i, DriveState *d, const float *vp)
     return 0;
 }
 
-// ---- waits and crouch sections (infantry on a Fun-Bots route) ----
+// ---- waits and crouch sections (infantry on a saved route) ----
 static void route_wait_reset(int i) { g_raHoldIdx[i] = -1; g_raHoldUntil[i] = 0; }
 // From follow_path, with the next waypoint known.
 static void route_waypoint_tick(int i, char *soldier, BotPath *p)

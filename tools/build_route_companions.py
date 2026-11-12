@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""AltBotMod V18.2: route companions - every level/mode gets the infantry paths of the level's other Fun-Bots files too.
+"""AltBotMod V18.2: route companions - every level/mode gets the infantry paths of the level's other saved files too.
 
 For each map and game mode the server can run (the Server Control table), the runtime loads <Level>_<Mode>.map (or the
 nearest same-level file, as before) and then companions/<Level>_<Mode>.map when present. This tool writes those companion files:
@@ -15,7 +15,7 @@ import os, re, sys, json, math, collections
 CLIP_H, CLIP_V = 20.0, 8.0     # a companion waypoint must be this close to one of the primary's own waypoints
 COVER_H, COVER_V = 3.0, 1.5     # a waypoint this close to one already in the network is ground already covered
 JOIN_H, JOIN_V = 3.0, 1.5       # a new piece's ends are linked to the nearest network waypoint this close (none: piece dropped)
-MIN_PRIMARY = 50               # fewer infantry waypoints than this: not a usable file (Fun-Bots' dummy Air Superiority files)
+MIN_PRIMARY = 50               # fewer infantry waypoints than this: not a usable file
 MIN_PIECE = 3                  # shorter runs of kept points are dropped
 MODE_ORDER = ["ConquestLarge0", "ConquestSmall0", "ConquestAssaultLarge0", "ConquestAssaultSmall0", "ConquestAssaultSmall1",
               "RushLarge0", "SquadRush0", "TeamDeathMatch0", "SquadDeathMatch0", "GunMaster0", "Domination0", "TankSuperiority0",

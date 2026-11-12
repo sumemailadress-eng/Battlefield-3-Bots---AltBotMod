@@ -266,7 +266,7 @@
       "checks": [
         "PASS: full native driver cancels stale inputs, resumes completed paths, executes checked reverse before queued planning and rejects blocked rear corridors on both teams",
         "PASS: recovery bypass releases virtual road waits but still yields to real vehicles on both teams",
-        "PASS: jet guidance follows FunBots rudder direction and converts finite world guidance into banked body-axis elevator",
+        "PASS: jet guidance follows the reference rudder direction and converts finite world guidance into banked body-axis elevator",
         "PASS: idle replans reach every bot slot under the actual alternating 15-Hz brain schedule"
       ],
       "output": "test13-regression-results.txt"

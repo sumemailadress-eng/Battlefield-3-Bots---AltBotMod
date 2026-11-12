@@ -14,7 +14,7 @@
 //                  Helicopter landing spots: where players set a helicopter down (away from its spawn) and where
 //                  transports landed; transports try those first (a spot found blocked more often than used is dropped).
 //   from players - the routes human players walk, drive and sail (not fly) are recorded; a long enough one over new
-//                  ground joins the Fun-Bots route network at the next map load (BotMod_learned, route lines).
+//                  ground joins the saved route network at the next map load (BotMod_learned, route lines).
 // Settings: Learning=0 switches all of it off (nothing read, nothing written); LearnFromPlayers=0 only the recording.
 static BLStore g_learn;
 static char g_learnKey[96];
@@ -196,7 +196,7 @@ static float learn_danger_at(float x, float z) { return g_learnLoaded && g_enhan
 static int learn_pad_at(const float *center, float radius, int nth, float *out)
 { return g_learnLoaded && g_enhanced.learning && center ? bl_pad_near(&g_learn, center, radius, nth, out) : 0; }
 
-// AltBotMod V21.1: drivers follow the Fun-Bots vehicle routes first (the driving map is only the fallback), so a stall
+// AltBotMod V21.1: drivers follow the saved vehicle routes first (the driving map is only the fallback), so a stall
 // spot nobody drives out of also makes the route links through it 60x as costly: drivers take another road when the
 // network has one. Applied whenever the vehicle routes are (re)loaded and at once when a spot turns bad mid-round.
 static int learn_route_avoid(const BLSpot *sp)

@@ -224,7 +224,7 @@ static int fleet_reserve(int i,const float *origin)
             kind=FLEET_GROUND;dispatch=bm_armored(p)?BM_DISPATCH_ARMOR:BM_DISPATCH_LIGHT;
         }
         float score=bm_dispatch_score(dispatch,classes,distance);
-        score-=ROUTE_BOARD_BONUS(v,team);   // AltBotMod V15: standing on a boarding spot recorded for this team (Fun-Bots "vehicle tank1 us")
+        score-=ROUTE_BOARD_BONUS(v,team);   // AltBotMod V15: standing on a boarding spot recorded for this team
         // Use an unclaimed combat helicopter before another scout/transport.
         if(a && a->kind==BM_AIR_ATTACK)score-=450;
         // Immediate boarding takes priority over a distant reservation.

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """AltBotMod V24 - On the Road: offline checks.
 
-1. v24_drive_sim.c on the longest Fun-Bots land road of eight maps: a car with a 6 m turn radius driven the V6-V23 way
+1. v24_drive_sim.c on the longest saved land road of eight maps: a car with a 6 m turn radius driven the V6-V23 way
    (every waypoint, 1.75 m at any 25-deg "corner", bends judged over +-10 m) and the V24 way (pure pursuit along the road,
    bends judged over +-25 m of the road itself, only radius < 28 m slowed for). It finishes the road, never strays 6 m off
    it, is faster on average, and the pointless slow-down-and-go (no real bend or the end to slow for) drops to a fifth.
 2. Convoys (bm_traffic_contact): a follower matches the leader's pace and only stops when about to touch it - not at 65%
    of the gap (the V9-V23 stop-go behind every leader); a leader on a bend is still a leader; head-on rules unchanged.
-3. Source checks: drive sensors ignore a recorded road's verge (on a Fun-Bots road, within 4 m: only a vehicle or a wall
-   dead ahead within 4 m counts), the Fun-Bots route flag set / cleared on every route kind, pure pursuit in drive_tick,
+3. Source checks: drive sensors ignore a recorded road's verge (on a saved road, within 4 m: only a vehicle or a wall
+   dead ahead within 4 m counts), the saved route flag set / cleared on every route kind, pure pursuit in drive_tick,
    the bend limit from the road's own points; helicopters fight enemy helicopters within 1.2 km first, keep a duel going
    (no 8 s cap, break only inside 80 m / 150 m closing fast, 250 m ring), a 12 m firing window on aircraft; the version.
 """
@@ -66,7 +66,7 @@ def main():
     an = (SRC / 'air_native.inc').read_text(); eh = (SRC / 'enhanced.h').read_text()
     assert 'for (int r = 0; r < 7 && !onRoad; r++)' in core   # (V29: on a recorded road nothing static counts at all - vehicles by geometry, drive_lane_scan)
     assert 'onRoad = hypotf(a[0] + ax * t - vp[0], a[2] + az * t - vp[2]) < 4.0f;' in core
-    assert core.count('d->funRoute = 1;') == 2 and 'd->straightRoute = 1; d->funRoute = 0;' in core and 'd->traceContinue=0;d->funRoute=0;' in core
+    assert core.count('d->savedRoad = 1;') == 2 and 'd->straightRoute = 1; d->savedRoad = 0;' in core and 'd->traceContinue=0;d->savedRoad=0;' in core
     assert 'if (*(void **)(v + 0x30) == body) return 1;' in core
     assert 'd->next = bm_route_progress(d->pts, d->n, d->next, vp,' in core and 'bm_route_aim(d->pts, d->n, d->next, vp, d->speed, aimP);' in core
     assert 'while (kb > 0 && dist2(&d->pts[kb * 3], w) < 25.0f * 25.0f) kb--;' in core and 'const float *pb = kb < k ? &d->pts[kb * 3] : NULL' in core
@@ -75,8 +75,8 @@ def main():
     assert 'float attackCap=jet ? c->attackSeconds : c->attackSeconds*3;' in air and '*250;goal[2]=o->target[2]+(ux*sa+uz*ca)*250;' in air
     assert 'atanf((o->targetAir ? 12.0f : 6.0f)/fmaxf(aimRange,1)),o->targetAir ? 0.035f : 0.025f' in air
     assert '(heliTarget && distance<1200?(tp->kind==BM_AIR_ATTACK?-700:-450)' in an
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
-    print('PASS: V24 source - recorded roads trusted by the drive sensors (a vehicle or a wall dead ahead within 4 m still counts), the Fun-Bots route flag, '
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh
+    print('PASS: V24 source - recorded roads trusted by the drive sensors (a vehicle or a wall dead ahead within 4 m still counts), the saved route flag, '
           'pure pursuit and road-only bends; helicopter duels (enemy helicopters within 1.2 km first, no 8 s cap, break inside 80 m, 12 m window); version V24')
 
 if __name__ == '__main__':

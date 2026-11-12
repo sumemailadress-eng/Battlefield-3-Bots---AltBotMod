@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """AltBotMod V15 - Route Actions: offline checks.
 
-1. The real Fun-Bots route files (all of BotMod_traces): every recorded action parsed (boarding spots, exit points
+1. The real saved route files (all of BotMod_traces): every recorded action parsed (boarding spots, exit points
    with onlyPassengers, beacon spots, M-COM spots), wait lengths decoded, path labels (team / vehicle kind) read.
 2. Flag names: Seine Crossing's labelled paths matched to the flag positions the live map recorded (A-E), and routes
    to a flag preferring its own labelled paths (real file + a synthetic pair of paths).
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     int letter[5];
     int m = tn_match_flags(&t, (const float (*)[3])flags, 5, letter);
     printf("seine: %d matched: %c %c %c %c %c\n", m, 'a'+letter[0], 'a'+letter[1], 'a'+letter[2], 'a'+letter[3], 'a'+letter[4]);
-    // Fun-Bots lettered Seine's flags its own way (from the US base): its "a" is the game's D, "b" E, "c" C, "d" A, "e" B -
+    // The route files letter Seine's flags its own way (from the US base): its "a" is the game's D, "b" E, "c" C, "d" A, "e" B -
     // which is why the letters are matched by where the labelled paths run, not by name
     assert(m == 5 && letter[0] == 2 && letter[1] == 1 && letter[2] == 3 && letter[3] == 0 && letter[4] == 4);
     // routes to D (index 3) from 40 far-off waypoints: with the labels a route runs on D's own paths at least as much
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
     float off = frac(&t, 1, start, 1u);
     assert(on > 0.5f && off == 0);
     tn_free(&t);
-    puts("PASS: flag names - Seine Crossing's labelled paths matched to the flags the live map recorded (5 of 5, scrambled order; Fun-Bots' own letters differ from the game's, so they are matched by position); a route to a flag prefers its own labelled paths (a labelled way 8% longer is taken; without labels the shorter one)");
+    puts("PASS: flag names - Seine Crossing's labelled paths matched to the flags the live map recorded (5 of 5, scrambled order; the own letters differ from the game's, so they are matched by position); a route to a flag prefers its own labelled paths (a labelled way 8% longer is taken; without labels the shorter one)");
     return 0;
 }
 '''
@@ -302,7 +302,7 @@ def main():
         (tmp / 'native.c').write_text(NATIVE)
         subprocess.run(cc + [str(tmp / 'native.c'), str(SRC / 'trace_nav.c'), str(SRC / 'enhanced.c'), str(SRC / 'air.c'), str(SRC / 'modes.c'), '-lm', '-o', str(tmp / 'native')], check=True)
         run([str(tmp / 'native')])
-    # the new route files: every mode BF3 plays on these levels that Fun-Bots recorded
+    # the new route files: every mode BF3 plays on these levels that saved recorded
     names = {p.name for p in TRACES.glob('*.map')}
     modes = {}
     for n in names:

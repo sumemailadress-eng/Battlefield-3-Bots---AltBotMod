@@ -3536,8 +3536,8 @@ diff -ruN pa/ServerControl-Core.ps1 p34/ServerControl-Core.ps1
 -    (New-BmSetting 'WeaponHandling' 'Combat' 'bool' 0 1 1 'Per-weapon handling' 'bursts, ranges and aim per weapon type'),
 -    (New-BmSetting 'ClassSupport' 'Classes' 'bool' 0 1 1 'Medics / support help unasked' 'drop medkits and ammo boxes for themselves and teammates within 10 m'),
 -    (New-BmSetting 'SupplyMeters' 'Classes' 'float' 20 250 60 'Supply call reach (m)' 'how far a medic / support comes when a bot calls (a player''s call: 3x)'),
--    (New-BmSetting 'FunBotsRoutes' 'Movement' 'bool' 0 1 1 'Fun-Bots routes' 'follow the recorded routes in BotMod_traces'),
--    (New-BmSetting 'RouteActions' 'Movement' 'bool' 0 1 1 'Fun-Bots route actions' 'boarding spots, exit points, waits and crouch sections recorded in the routes (V15)'),
+-    (New-BmSetting 'SavedRoutes' 'Movement' 'bool' 0 1 1 'saved routes' 'follow the recorded routes in BotMod_traces'),
+-    (New-BmSetting 'RouteActions' 'Movement' 'bool' 0 1 1 'saved route actions' 'boarding spots, exit points, waits and crouch sections recorded in the routes (V15)'),
 -    (New-BmSetting 'ReconBeacons' 'Classes' 'bool' 0 1 1 'Recon radio beacons' 'recons set a radio beacon at a recorded beacon spot near the objective (V15)'),
 -    (New-BmSetting 'GadgetVariety' 'Classes' 'bool' 0 1 1 'Gadget variety' 'engineers carry SMAW / RPG, Javelin or Stinger / Igla; support claymore or C4; recon T-UGS or SOFLAM, per life (V16)'),
 -    (New-BmSetting 'C4Attacks' 'Classes' 'bool' 0 1 1 'C4 on vehicles' 'a soldier with C4 runs up to a slow enemy vehicle, plants two charges, backs off and sets them off (V16)'),
@@ -3832,7 +3832,7 @@ diff -ruN pa/src/air.c p34/src/air.c
 +    c->waitSeconds=8; c->attackSeconds=8; c->jetAreaMargin=900;   // (V34: 900 m - V30 600 m, V29 350 m)
      c->yawSign=c->pitchSign=c->rollSign=1;
  }
- // Primary weapons and muzzle offsets from supplied VehicleData.lua. VU part
+ // Primary weapons and muzzle offsets from supplied VehicleData. VU part
 @@ -173,11 +173,13 @@
  #define JET_IP_DISTANCE    1700.0f // initial point of a strike run, from the target (V29: clamped into the jet's area)
  #define JET_DIVE_SPEED     112.0f
@@ -3846,7 +3846,7 @@ diff -ruN pa/src/air.c p34/src/air.c
 -    "dives on","pulls out","evades traffic","strafes","turns back into the combat area"};
 +    "dives on","pulls out","evades traffic","strafes","turns back into the combat area","recovers speed (nose down)"};
  const char *bm_air_tactic_name(int t){ return t>=0 && t<BM_TACTIC_COUNT ? tactic_names[t] : "?"; }
- // Time-based PID (Fun-Bots PidController semantics: Ki per error*second, Kd per error/second).
+ // Time-based PID (the reference PidController semantics: Ki per error*second, Kd per error/second).
  static float pid_time(BMAirPid *s,float e,float kp,float ki,float kd,float dt)
 @@ -313,20 +315,21 @@
      out->armSecondary=s->secondaryWait<=0 && s->lockTime>0;
@@ -3989,7 +3989,7 @@ diff -ruN pa/src/core.c p34/src/core.c
  #include "director_policy.h"
  #include "trace_nav.h"
  #include "learn.h"
-+#include "zone_nav.h"   // AltBotMod V34: Fun-Bots objective mesh
++#include "zone_nav.h"   // AltBotMod V34: objective mesh
  static void trace_level_load(void);
 +static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos);
 +static int zone_guard_point(const float *mcom, unsigned seed, float *out); static void zone_stats(void); static unsigned g_zonePathAt[MAX_BOTS];   // AltBotMod V34 (zone_native.inc)
@@ -4235,12 +4235,12 @@ diff -ruN pa/src/core.c p34/src/core.c
  static int plan_path_real(int i, char *soldier, float tx, float ty, float tz)
  {
 +    g_zonePathAt[i] = 0;
-+    {   // AltBotMod V34: at an objective, Fun-Bots' walking mesh of it first
++    {   // AltBotMod V34: at an objective, the walking mesh of it first
 +        int zr = zone_plan(i, soldier, tx, ty, tz);
 +        if (zr > 0) return zr;
 +        if (g_lastPlanDeferred) return 0;
 +    }
-     {   // Caspian V2: a hand-walked Fun-Bots route to a flag when the level has one (works before the grid is ready)
+     {   // Caspian V2: a hand-walked saved route to a flag when the level has one (works before the grid is ready)
          // (V3: to any point near the recorded network)
          int traced = trace_plan(i, soldier, tx, ty, tz);
 @@ -2974,6 +3135,7 @@
@@ -4489,8 +4489,8 @@ diff -ruN pa/src/core.c p34/src/core.c
      float *p = (float *)(ms + OFF_SOLDIER_POSITION), gp[3];
      if (!g || g->phase != 2) return 0;
      if (nav_is_water(g, p[0], p[1], p[2])) return 0;
-+    // AltBotMod V32 (as Fun-Bots 3.6.0-dev7): not on a mate in a fight - one hit in the last 5 s, or a living enemy soldier
-+    // within 30 m of it (Fun-Bots measured 20-30% of squad-rush spawns next to an enemy before, 2% after)
++    // AltBotMod V32 (as the reference): not on a mate in a fight - one hit in the last 5 s, or a living enemy soldier
++    // within 30 m of it (the reference measured 20-30% of squad-rush spawns next to an enemy before, 2% after)
 +    {   int mj = bot_index(mate);
 +        if (mj >= 0 && g_attackedAt[mj] && H->frame - g_attackedAt[mj] < 5 * 30) return 0;
 +        char *pm = player_manager(); void **arr = NULL; unsigned count = 0;
@@ -4669,7 +4669,7 @@ diff -ruN pa/src/core.c p34/src/core.c
  #include "diagnostics_native.inc"
  #include "livemap_native.inc"   // AltBotMod V13
  #include "learn_native.inc"     // AltBotMod V21: learning (BotMod_learned)
-+#include "zone_native.inc"      // AltBotMod V34: Fun-Bots objective mesh
++#include "zone_native.inc"      // AltBotMod V34: objective mesh
 +#include "squad_orders.inc"     // AltBotMod V34: squad orders
  
  // ---- Enhanced native policy / diagnostics (all game actions stay on game thread) ----
@@ -4845,7 +4845,7 @@ diff -ruN pa/src/enhanced.c p34/src/enhanced.c
      c->lockAssist = 1;   // AltBotMod V29: lock-ons lock (LockOnAssist=0: only the game's own lock, which never locks for a bot)
 +    c->lockOnSeconds = 0.5f;   // AltBotMod V30 (V29: the weapon's own lock time, 1.5-2.5 s)
 +    c->doorGunRange = 600.0f;   // AltBotMod V30
-+    c->funBotsMesh = 1; c->vehicleWalkMeters = 250.0f;   // AltBotMod V34
++    c->objectiveMesh = 1; c->vehicleWalkMeters = 250.0f;   // AltBotMod V34
      c->liveMap = 1; c->liveMapSeconds = 1; c->liveMapTrailSeconds = 5; c->liveMapKeepMB = 64;   // AltBotMod V13
      c->learning = c->learnFromPlayers = 1;   // AltBotMod V21
      c->sideSteps = 1;   // AltBotMod V14
@@ -4855,7 +4855,7 @@ diff -ruN pa/src/enhanced.c p34/src/enhanced.c
          BOOL_KEY("LockOnAssist", lockAssist),   // AltBotMod V29
 +        FLOAT_KEY("LockOnSeconds", lockOnSeconds, 0, 6),   // AltBotMod V30
 +        FLOAT_KEY("DoorGunMeters", doorGunRange, 150, 1500),   // AltBotMod V30
-+        BOOL_KEY("FunBotsMesh", funBotsMesh), FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000),   // AltBotMod V34
++        BOOL_KEY("ObjectiveMesh", objectiveMesh), FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000),   // AltBotMod V34
          BOOL_KEY("LiveMap", liveMap), BOOL_KEY("Learning", learning), BOOL_KEY("LearnFromPlayers", learnFromPlayers), FLOAT_KEY("LiveMapSeconds", liveMapSeconds, 0.5f, 10),
          FLOAT_KEY("LiveMapTrailSeconds", liveMapTrailSeconds, 1, 60), INT_KEY("LiveMapKeepMB", liveMapKeepMB, 5, 1000),
          INT_KEY("SideSteps", sideSteps, 0, 2),
@@ -4877,7 +4877,7 @@ diff -ruN pa/src/enhanced.h p34/src/enhanced.h
      int lockAssist;               // AltBotMod V29: put a bot's lock in place after the weapon's lock time on target
 +    float lockOnSeconds;          // AltBotMod V30: the time on target before a bot's lock is put in place (s; the weapon's own lock time if shorter)
 +    float doorGunRange;           // AltBotMod V30: helicopter door guns / bench seats reach (m)
-+    int funBotsMesh;              // AltBotMod V34: walk Fun-Bots' objective mesh (BotMod_traces\navzones) near objectives
++    int objectiveMesh;              // AltBotMod V34: walk the objective mesh (BotMod_traces\navzones) near objectives
 +    float vehicleWalkMeters;      // AltBotMod V34: after the round's opening, infantry walk at most this far to a vehicle
      int liveMap;                  // AltBotMod V13: write BotMod\LiveMap (positions, kills, stuck spots) for Server Control
      int learning, learnFromPlayers;   // AltBotMod V21: learn from stuck spots / losses / deaths (BotMod_learned); record players' routes
@@ -5036,7 +5036,7 @@ diff -ruN pa/src/modes_native.inc p34/src/modes_native.inc
          if(k>16 || !g_modeProfile->mcom[k].present || !bm_rush_active(&g_rush,k))continue;
          int assigned=0;
 @@ -672,6 +673,8 @@
-         // V16.2.3: the game arms from the recorded spot with the recorded aim (as Fun-Bots, which puts the bot on it): the bot
+         // V16.2.3: the game arms from the recorded spot with the recorded aim (as the reference, which puts the bot on it): the bot
          // walks onto it (0.6 m; 0.4 m after a hold that did nothing) and only holds from further (up to 2.6 m) when it
          // could not get closer in 4 s. (V16.2.2 started at 2.6 m - the walk there stops 2 m short - and mostly did nothing.)
 +        // AltBotMod V34: a window between the operator and its M-COM - knifed (then shot) open
@@ -5048,7 +5048,7 @@ diff -ruN pa/src/modes_native.inc p34/src/modes_native.inc
              float angle=(i*2.399963f)+(g_modeBot[i].candidate++%8)*0.785398f;
              int held=team==1 && g_rush.objective[target].status==BM_RUSH_ARMED;   // V16.2.3: guarding an armed station - close, all round it
              float radius=held?4+(i%4)*2.0f:team==2?8+(i%4)*3:12+(i%4)*4;
-+            {   // AltBotMod V34: two posts in three from the M-COM's zone of the Fun-Bots objective mesh
++            {   // AltBotMod V34: two posts in three from the M-COM's zone of the objective mesh
 +                float zp[3];
 +                if((i+g_modeBot[i].candidate)%3!=0 && zone_guard_point(goal,(unsigned)(i*7919u+g_modeBot[i].candidate*104729u),zp) &&
 +                   dist2(zp,goal)<(radius+8)*(radius+8) && dist2(zp,goal)>2.0f*2.0f && fabsf(zp[1]-goal[1])<=4 && mode_goal_clear(i,zp)){
@@ -5137,7 +5137,7 @@ diff -ruN pa/src/squad_orders.inc p34/src/squad_orders.inc
 +static int g_squadAnnounced[3][33]; static unsigned g_squadAnnouncedAt[3][33];
 +static unsigned g_squadOrdersGiven;
 +
-+// The letter players see for flag k: the Fun-Bots mesh names its capture zones a, b, c ...; else A + k.
++// The letter players see for flag k: the mesh names its capture zones a, b, c ...; else A + k.
 +static char flag_letter(int k)
 +{
 +    if (k < 0) return '?';
@@ -5328,16 +5328,16 @@ diff -ruN pa/src/trace_native.inc p34/src/trace_native.inc
 +++ p34/src/trace_native.inc	2026-10-23 14:40:22.743428070 +0000
 @@ -141,6 +141,7 @@
  
- // Fill g_paths[i] with a Fun-Bots route towards (tx,ty,tz). Returns the number of points, 0 = use the grid.
+ // Fill g_paths[i] with a saved route towards (tx,ty,tz). Returns the number of points, 0 = use the grid.
  static int trace_plan_ex(int i, char *soldier, float tx, float ty, float tz, int mode);
 +static unsigned g_traceJoinDeferred, g_traceJoinMemo, g_joinFailAt[MAX_BOTS]; static int g_joinFailId[MAX_BOTS]; static float g_joinFailPos[MAX_BOTS][3];   // AltBotMod V32
  static int trace_plan(int i, char *soldier, float tx, float ty, float tz) { return trace_plan_ex(i, soldier, tx, ty, tz, 1); }
  // mode 1: flags use their own routes. TRACE_VEHICLE: a route to this very point even when it is near a flag
  // (vehicles parked at flags), ending up to 40 m from it.
 @@ -215,6 +216,8 @@
-     // AltBotMod V6: Fun-Bots routes first - when no waypoint is a clear straight walk away (inside an HQ building, round a
+     // AltBotMod V6: saved routes first - when no waypoint is a clear straight walk away (inside an HQ building, round a
      // hill), the navigation grid walks the bot to the best waypoint within 90 m and the recorded route takes it from there.
-     // (V5 on Kharg: one Fun-Bots route in four minutes; bots stuck at both HQs re-planned all round.)
+     // (V5 on Kharg: one saved route in four minutes; bots stuck at both HQs re-planned all round.)
 +    // AltBotMod V32: the grid found no way onto the network from (about) here in the last 10 s: not again yet
 +    if (g_joinFailAt[i] && H->frame - g_joinFailAt[i] < 10 * 30 && g_joinFailId[i] == id && dist2(g_joinFailPos[i], pos) < 6.0f * 6.0f) { g_traceNoJoin++; g_traceJoinMemo++; return 0; }
      {
@@ -5360,9 +5360,9 @@ diff -ruN pa/src/trace_native.inc p34/src/trace_native.inc
      static unsigned at;
      if (!g_trace.count || H->frame - at < 60 * 30) return;
      at = H->frame;
--    bot_log("trace: Fun-Bots routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u, fallbacks %u",
+-    bot_log("trace: saved routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u, fallbacks %u",
 -            g_traceRoutes, g_traceGridJoins, g_traceVehRoutes, g_traceTried, g_traceNoField, g_traceNoJoin, g_traceFallbacks);
-+    bot_log("trace: Fun-Bots routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u (%u of them not retried within 10 s), fallbacks %u; %u join(s) waited for the planning budget",
++    bot_log("trace: saved routes %u (%u via a grid walk to the route), vehicle routes %u; tried %u, no waypoint near the goal %u, no way onto a route %u (%u of them not retried within 10 s), fallbacks %u; %u join(s) waited for the planning budget",
 +            g_traceRoutes, g_traceGridJoins, g_traceVehRoutes, g_traceTried, g_traceNoField, g_traceNoJoin, g_traceJoinMemo, g_traceFallbacks, g_traceJoinDeferred);
      route_actions_stats();   // AltBotMod V15
 +    zone_stats();   // AltBotMod V34
@@ -5373,16 +5373,16 @@ diff -ruN pa/src/zone_native.inc p34/src/zone_native.inc
 --- pa/src/zone_native.inc	1970-01-01 00:00:00.000000000 +0000
 +++ p34/src/zone_native.inc	2026-10-23 14:40:22.744593372 +0000
 @@ -0,0 +1,121 @@
-+// AltBotMod V34: Fun-Bots' objective walking mesh in the game (zone_nav.h). Files: <server>\BotMod_traces\navzones\
-+// <Level>_<Mode>.zon (made from Fun-Bots 3.6.0-dev navzones/*.json by the package). Near a capture point, an M-COM or a
++// AltBotMod V34: the objective walking mesh in the game (zone_nav.h). Files: <server>\BotMod_traces\navzones\
++// <Level>_<Mode>.zon (made from navzones/*.json by the package). Near a capture point, an M-COM or a
 +// base a bot walks the mesh - points every ~5 m that know the level's walls, floors, stairs and doorways, with the
-+// corners to walk round between them, recorded jumps and crouch spots - instead of the grid / recorded paths, as Fun-Bots
++// corners to walk round between them, recorded jumps and crouch spots - instead of the grid / recorded paths, as the reference
 +// dev bots do. Fewer bots stuck at the flag, M-COMs inside buildings reached by the way the mesh knows.
 +#define ZONE_NEAR_EXTRA    15.0f   // a target this far beyond a zone's radius still counts as "in the zone"
 +#define ZONE_BOT_EXTRA     50.0f   // the bot this far beyond the radius: close enough to be on the zone's mesh
 +#define ZONE_JOIN_H         9.0f   // the bot walks at most this far straight to the mesh
 +#define ZONE_GOAL_H        10.0f
-+#define ZONE_STUCK_PENALTY 50.0f   // (Fun-Bots: BLOCKED_PENALTY 50, closed after 3)
++#define ZONE_STUCK_PENALTY 50.0f   //
 +static ZoneNet g_zone;
 +static char g_zoneKey[64];
 +static unsigned g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zoneLogged;
@@ -5397,7 +5397,7 @@ diff -ruN pa/src/zone_native.inc p34/src/zone_native.inc
 +    if (!zn_load(&g_zone, path)) return 0;
 +    int mcom = 0, cap = 0, base = 0;
 +    for (int k = 0; k < g_zone.nz; k++) { if (g_zone.zones[k].kind == ZN_KIND_MCOM) mcom++; else if (g_zone.zones[k].kind == ZN_KIND_CAPTURE) cap++; else base++; }
-+    bot_log("zone: Fun-Bots objective mesh %s: %d points, %d connections, %d zones (%d capture points, %d M-COMs, %d bases) in %.0f ms",
++    bot_log("zone: objective mesh %s: %d points, %d connections, %d zones (%d capture points, %d M-COMs, %d bases) in %.0f ms",
 +            path, g_zone.np, g_zone.ne, g_zone.nz, cap, mcom, base, perf_now() - t);
 +    return 1;
 +}
@@ -5407,7 +5407,7 @@ diff -ruN pa/src/zone_native.inc p34/src/zone_native.inc
 +    if (!strcmp(key, g_zoneKey)) return;
 +    zn_free(&g_zone); memset(g_zonePathAt, 0, sizeof g_zonePathAt);
 +    snprintf(g_zoneKey, sizeof g_zoneKey, "%s", key);
-+    if (!g_enhanced.funBotsMesh) { bot_log("zone: Fun-Bots objective mesh off (FunBotsMesh=0)"); return; }
++    if (!g_enhanced.objectiveMesh) { bot_log("zone: objective mesh off (ObjectiveMesh=0)"); return; }
 +    if (zone_try(key)) return;
 +    // the same kind of play on the level: Squad Rush the Rush mesh, the smaller Conquests the large one (the mesh is the
 +    // level's ground; its zones are matched to the objectives by position)
@@ -5419,13 +5419,13 @@ diff -ruN pa/src/zone_native.inc p34/src/zone_native.inc
 +            char other[64]; snprintf(other, sizeof other, "%s_%s", g_level, alt[k]);
 +            if (strcmp(other, key) && zone_try(other)) { bot_log("zone: no mesh for %s; using %s (same level)", key, other); return; }
 +        }
-+    bot_log("zone: no Fun-Bots objective mesh for %s - recorded routes and the grid as before", key);
++    bot_log("zone: no objective mesh for %s - recorded routes and the grid as before", key);
 +}
 +// A route over the mesh when the target lies in an objective's zone and the bot is near it. Returns the route's point
 +// count (0: not here - the caller plans as before).
 +static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
 +{
-+    if (!g_zone.np || !g_enhanced.funBotsMesh || isnan(ty)) return 0;
++    if (!g_zone.np || !g_enhanced.objectiveMesh || isnan(ty)) return 0;
 +    float *pos = (float *)(soldier + OFF_SOLDIER_POSITION), to[3] = {tx, ty, tz};
 +    int zi = zn_zone_near(&g_zone, to, 0, 400.0f);
 +    if (zi < 0) return 0;
@@ -5481,10 +5481,10 @@ diff -ruN pa/src/zone_native.inc p34/src/zone_native.inc
 +    }
 +}
 +// A guard post round an M-COM from its zone's points (the mesh knows which spots near it are walkable and how far round
-+// the walls they are: Fun-Bots trims an M-COM zone to points whose way to it is short). 0: no zone / no point.
++// the walls they are: the reference trims an M-COM zone to points whose way to it is short). 0: no zone / no point.
 +static int zone_guard_point(const float *mcom, unsigned seed, float *out)
 +{
-+    int zi = g_zone.np && g_enhanced.funBotsMesh ? zn_zone_near(&g_zone, mcom, ZN_KIND_MCOM, 15.0f) : -1;
++    int zi = g_zone.np && g_enhanced.objectiveMesh ? zn_zone_near(&g_zone, mcom, ZN_KIND_MCOM, 15.0f) : -1;
 +    int pt = zi >= 0 ? zn_zone_point(&g_zone, zi, seed) : -1;
 +    if (pt < 0) return 0;
 +    memcpy(out, g_zone.pts[pt].p, 12);
@@ -5498,7 +5498,7 @@ diff -ruN pa/src/zone_nav.c p34/src/zone_nav.c
 --- pa/src/zone_nav.c	1970-01-01 00:00:00.000000000 +0000
 +++ p34/src/zone_nav.c	2026-10-23 14:40:22.744623276 +0000
 @@ -0,0 +1,341 @@
-+// AltBotMod V34: Fun-Bots' objective walking mesh - see zone_nav.h.
++// AltBotMod V34: the objective walking mesh - see zone_nav.h.
 +#include "zone_nav.h"
 +#include <math.h>
 +#include <stdio.h>
@@ -5843,10 +5843,10 @@ diff -ruN pa/src/zone_nav.h p34/src/zone_nav.h
 --- pa/src/zone_nav.h	1970-01-01 00:00:00.000000000 +0000
 +++ p34/src/zone_nav.h	2026-10-23 14:40:22.744565684 +0000
 @@ -0,0 +1,54 @@
-+// AltBotMod V34: Fun-Bots' walking mesh around the objectives ("navzones", Fun-Bots 3.6.0-dev).
++// AltBotMod V34: the walking mesh around the objectives ("navzones", the reference).
 +//
-+// Fun-Bots 3.6 dev bots walk a mesh of points at the capture points, M-COMs and bases instead of following recorded
-+// waypoints there (ext/Server/NavZones.lua). The meshes ship as JSON (navzones/<Level>_<Mode>.json); AltBotMod's
++// The reference dev bots walk a mesh of points at the capture points, M-COMs and bases instead of following recorded
++// waypoints there (ext/Server/NavZones). The meshes ship as JSON (navzones/<Level>_<Mode>.json); AltBotMod's
 +// package converts them to a plain text file per level and mode (BotMod_traces\navzones\<Level>_<Mode>.zon, written
 +// by validation/tools/navzones_convert.py):
 +//   AltBotMod navzones 1 <Level>_<Mode>
@@ -5895,5 +5895,5 @@ diff -ruN pa/src/zone_nav.h p34/src/zone_nav.h
 +// Returns the count (0: no way on the mesh); *partial = 1 when maxPts cut it short; *length its length in metres.
 +int  zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int maxPts, int *partial, float *length);
 +// A bot got stuck near pos: the connection there costs `amount` more from now on (after 3 times it is closed for the
-+// level, as Fun-Bots does). Returns the edge index or -1.
++// level, as the reference does). Returns the edge index or -1.
 +int  zn_penalize(ZoneNet *z, const float *pos, float amount);

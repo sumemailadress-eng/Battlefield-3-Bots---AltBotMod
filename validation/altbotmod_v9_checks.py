@@ -142,7 +142,7 @@ int main(int argc, char **argv)
         maps++; points += t.count; tn_free(&t);
     }
     assert(maps == 29);
-    printf("PASS: 29 Team Deathmatch route files (the dev build's set) load as Fun-Bots routes - %d waypoints\n", points);
+    printf("PASS: 29 Team Deathmatch route files (the dev build's set) load as saved routes - %d waypoints\n", points);
     return 0;
 }
 '''

@@ -1,4 +1,4 @@
-// AltBotMod V34: Fun-Bots' objective walking mesh - see zone_nav.h.
+// AltBotMod V34: the objective walking mesh - see zone_nav.h.
 #include "zone_nav.h"
 #include <math.h>
 #include <stdio.h>
@@ -241,7 +241,7 @@ static int zn_edge_between(const ZoneNet *z, int u, int v, float *cost)
     return best;
 }
 // AltBotMod V35: how much longer the region of (x, z) seems to the bot with this seed: 1 .. 1 + ZN_SPREAD
-// (NavZones.lua _RegionSpread, the same hash).
+// (NavZones _RegionSpread, the same hash).
 static float zn_region_spread(unsigned seed, float x, float zc)
 {
     if (!seed) return 1.0f;

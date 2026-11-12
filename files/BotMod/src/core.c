@@ -18,7 +18,7 @@
 #include "director_policy.h"
 #include "trace_nav.h"
 #include "learn.h"
-#include "zone_nav.h"   // AltBotMod V34: Fun-Bots objective mesh
+#include "zone_nav.h"   // AltBotMod V34: objective mesh
 static void trace_level_load(void);
 static void zone_level_load(void); static int zone_plan(int i, char *soldier, float tx, float ty, float tz); static void zone_stuck(int i, const float *pos); static void zone_note_death(int team, const float *pos);
 static int zone_guard_point(const float *mcom, unsigned seed, float *out); static void zone_stats(void); static unsigned g_zonePathAt[MAX_BOTS];   // AltBotMod V34 (zone_native.inc)
@@ -2417,7 +2417,7 @@ static int g_plansThisFrame;
 static unsigned g_planBudgetHits;
 static double g_planMsThisFrame;
 static int g_lastPlanDeferred;
-static unsigned g_routeJoins;   // AltBotMod V25: grid legs onto a Fun-Bots road
+static unsigned g_routeJoins;   // AltBotMod V25: grid legs onto a saved road
 static unsigned g_replanStorms;   // AltBotMod V26
 static int g_consolePlan;
 #define PLAN_MS_PER_TICK 5.0   // route-planning time per tick before the rest waits (rubber banding: 400 ms thinks)
@@ -2508,7 +2508,7 @@ static int direct_path(int i, char *soldier, const float *to)
 // bots walked nowhere - V7 on XP5_002 left most of both teams standing at their HQs. Now they walk towards the goal in
 // checked straight legs of up to 40 m (walk_clear: body rays and the floor every 2.5 m, no water, no drops), fanning
 // out up to 63 deg either side of the direct line when it is blocked. The leg is a partial route: at its end the bot
-// plans again (a Fun-Bots route first, if it is near one by then). 3 candidates per call, rotating.
+// plans again (a saved route first, if it is near one by then). 3 candidates per call, rotating.
 #define STEP_WALK_MAX 40.0f
 static unsigned char g_stepCandidate[MAX_BOTS];
 static unsigned g_stepWalks, g_gridFallbackWalks;
@@ -2548,12 +2548,12 @@ static int step_walk(int i, char *soldier, const float *goal)
 static int plan_path_real(int i, char *soldier, float tx, float ty, float tz)
 {
     g_zonePathAt[i] = 0;
-    {   // AltBotMod V34: at an objective, Fun-Bots' walking mesh of it first
+    {   // AltBotMod V34: at an objective, the walking mesh of it first
         int zr = zone_plan(i, soldier, tx, ty, tz);
         if (zr > 0) return zr;
         if (g_lastPlanDeferred) return 0;
     }
-    {   // Caspian V2: a hand-walked Fun-Bots route to a flag when the level has one (works before the grid is ready)
+    {   // Caspian V2: a hand-walked saved route to a flag when the level has one (works before the grid is ready)
         // (V3: to any point near the recorded network)
         int traced = trace_plan(i, soldier, tx, ty, tz);
         if (traced) return traced;
@@ -2603,7 +2603,7 @@ static int plan_path_real(int i, char *soldier, float tx, float ty, float tz)
 static unsigned g_wpNearAt[MAX_BOTS];
 static int g_wpNearIdx[MAX_BOTS];
 static void trace_jump_tick(int i, char *soldier);
-// AltBotMod V15 (route_actions_native.inc): recorded waits and crouch sections on Fun-Bots routes
+// AltBotMod V15 (route_actions_native.inc): recorded waits and crouch sections on saved routes
 static void route_waypoint_tick(int i, char *soldier, BotPath *p);
 static int route_crouched(int i);
 static void route_wait_reset(int i);
@@ -3716,7 +3716,7 @@ static void brain_tick(int i)
     }
     b->deadSince = 0;
     // AltBotMod V8: while a new map's grid is still being surveyed the brain runs as usual - objectives, fights,
-    // vehicles - on Fun-Bots routes and checked straight legs (step_walk). V7 only ran the stuck watchdog here, and on a
+    // vehicles - on saved routes and checked straight legs (step_walk). V7 only ran the stuck watchdog here, and on a
     // first-time map most bots stood at their HQ for the whole survey.
     if (!*nav_slot()) {
         if(!activity_grid_tick(i,soldier))memset(H->botMove[i],0,sizeof H->botMove[i]);
@@ -3724,7 +3724,7 @@ static void brain_tick(int i)
     }
     if ((*nav_slot())->phase!=2) {
         static unsigned noted;
-        if (!noted || H->frame - noted > 120 * 30) { noted = H->frame ? H->frame : 1; bot_log("brain: navigation grid still building - bots play on Fun-Bots routes and checked straight walks meanwhile (%u legs so far)", g_stepWalks); }
+        if (!noted || H->frame - noted > 120 * 30) { noted = H->frame ? H->frame : 1; bot_log("brain: navigation grid still building - bots play on saved routes and checked straight walks meanwhile (%u legs so far)", g_stepWalks); }
     }
     // Let a checked escape complete before objective planning replaces its
     // owner slot. The same route is also usable while the grid is surveying.
@@ -3970,10 +3970,10 @@ typedef struct DriveState {
     float exitHeading, exitFrom[3], landTgt[3]; unsigned exitProbeAt, landLogAt, boatPlanSince; unsigned char exitSet, landSet;   // Caspian V5 boats
     float landCacheFrom[3], landCacheGoal[3]; unsigned landCacheAt; int landCacheFlag;   // AltBotMod V35.1: the landing worked out last
     float boatTryTgt[3], boatTryFrom[3]; unsigned boatTryAt; int boatTry;   // AltBotMod V35.1: the boat route try in progress (0 clear, 1 shallows, 2 open water first)
-    float vwantS; unsigned vwantAt, vwantHoldUntil; int traceTries, traceContinue;   // AltBotMod V6: smoothed speed target; Fun-Bots vehicle routes tried
+    float vwantS; unsigned vwantAt, vwantHoldUntil; int traceTries, traceContinue;   // AltBotMod V6: smoothed speed target; saved vehicle routes tried
     int straight; unsigned coastUntil, cutAt;   // AltBotMod V8: straight-line legs driven (no map yet); rolling re-plan; corner-cut probe
     unsigned char straightRoute; unsigned straightLogAt;   // AltBotMod V9: on a straight no-map route now; last log
-    unsigned char funRoute;   // AltBotMod V24: driving a recorded Fun-Bots road now (not the grid / straight legs)
+    unsigned char savedRoad;   // AltBotMod V24: driving a recorded saved road now (not the grid / straight legs)
     int joinN; unsigned drivenAt; float brakeNear, turnHeading;
     const char *why; unsigned planCount, planWindowAt, stormLogAt, rearBlockedUntil, planLogAt;
     unsigned statAt, statFrames, brakeFrames[4]; float statSpeed;   // AltBotMod V26: drive statistics (20 s)
@@ -3984,7 +3984,7 @@ typedef struct DriveState {
     unsigned statFull, statBrakeBy[6], statDrops, statPlans, statOffPhase, dropLogAt, statDropFrame; unsigned char onRoadNow;
     unsigned repairHoldAt;   // AltBotMod V11: holding still for an engineer since
     unsigned narrowSince, narrowSeen, trafficBackUntil; unsigned char trafficBacked;   // AltBotMod V10: in a narrow stretch since; head-on back-off
-    unsigned char traceAlt; unsigned noRouteSince, straightFallbackAt;   // AltBotMod V14: other Fun-Bots routes tried; no route since; last straight-leg fallback
+    unsigned char traceAlt; unsigned noRouteSince, straightFallbackAt;   // AltBotMod V14: other saved routes tried; no route since; last straight-leg fallback
     int routeExit;   // AltBotMod V15: the recorded exit point already used on this drive (action index + 1)
     float watchAnchor[3]; unsigned watchAt; int watchLevel;   // AltBotMod V17: goal-progress watch (35 m in 35 s, escalating)
     float pts[DRIVE_MAX_PTS * 3];
@@ -5719,15 +5719,15 @@ static int lockon_tick(int i, BotBrain *b, char *soldier, char *veh, float *vp, 
         b->step = 1; g_lockSince[i] = 0;
     }
     // AltBotMod V23: HOW the game launches a lock-on missile for a bot is found out live. V22's log (2026-10-18): 80 tries
-    // with the sight held (ADS) and fire pressed after 2.2 s on target - 0 launches. Fun-Bots fires them without the sight:
+    // with the sight held (ADS) and fire pressed after 2.2 s on target - 0 launches. The reference fires them without the sight:
     // the aim held on the target and fire tapped (0.2 s) over and over. Three ways, each try one of them; a launch is
     // counted when the magazine drops or a new missile appears beside the bot, and the way that launches is used from then on.
-    //   0: Fun-Bots - no sight, aim held, fire tapped from the moment the aim is on;
+    //   0: the reference - no sight, aim held, fire tapped from the moment the aim is on;
     //   1: the sight held, fire tapped after 2.2 s on target;
     //   2: the sight held, fire held down from 2.2 s on target.
     if (b->step == 1 && !g_lockFirstAt[i] && !g_lockTry[i]) g_lockStrat[i] = (unsigned char)lock_pick_way(), g_lockTry[i] = 1;
     // AltBotMod V25: the game's own lock (on_lock_update): the bot asks for it while its aim is on the target; once the
-    // game has the bot's controller, it fires when the game says "locked", without the sight (as Fun-Bots).
+    // game has the bot's controller, it fires when the game says "locked", without the sight (as the reference).
     if (b->step == 1 && !hidden) lock_want_ent(i, eye, aim, 4.0f, g_lockSince[i] ? veh : NULL);   // (V29: on it - the lock is put in place after the weapon's lock time)
     float lockProgress = 0; int native = g_lockHooked ? lock_state(i, &lockProgress) : 0;
     if (native) { g_lockStrat[i] = 0; g_lockSeenFrames[i]++; if (lockProgress > g_lockBest[i] && lockProgress <= 1.5f) g_lockBest[i] = lockProgress; }
@@ -5784,7 +5784,7 @@ static int lockon_tick(int i, BotBrain *b, char *soldier, char *veh, float *vp, 
         }
         unsigned e = H->frame - g_lockFirstAt[i];
         if (way == 2) press_button(i, EIA_FIRE, 3);            // held down
-        else if (e % 14 < 6) press_button(i, EIA_FIRE, 2);     // 0.2 s taps, 0.27 s apart (Fun-Bots: fire 0.2 s, pause 0.2 s)
+        else if (e % 14 < 6) press_button(i, EIA_FIRE, 2);     // 0.2 s taps, 0.27 s apart
     }
     return 1;
 }
@@ -7033,7 +7033,7 @@ static void apply_presses(int i, void *input)
         if (g_sched[i][k].at && H->frame >= g_sched[i][k].at) { press_button(i, g_sched[i][k].action, 3); g_sched[i][k].at = 0; }
     // AltBotMod V29: at the controls of a vehicle, a soldier's jump / crouch / prone (stance, stairs, stuck and learned
     // "jump here" presses from the on-foot code) never reach the vehicle - in a vehicle seat they are the handbrake and the
-    // like. Fun-Bots stands its drivers up for the same reason.
+    // like. The reference stands its drivers up for the same reason.
     int driving = g_driving[i] && player_vehicle((char *)H->bots[i]);   // (pilots too)
     for (int k = 0; k < MAX_PRESSES; k++) {
         BotPress *p = &g_press[i][k];
@@ -8010,7 +8010,7 @@ static void tickets_find(void);
 static void tickets_reset(void);
 // AltBotMod V16, Air Superiority: the level data (levels/xp5_00x/air_superiority) has no soldier spawn - each side's
 // spawn points are 12 "dynamicspawn_xp_f18 / su35_spawninair_as" prefabs, a character spawn (Team 1 / 2) bound to a jet
-// spawned in the air. Fun-Bots spawns AS bots on exactly those (a team spawn with a vehicle spawn); air_consider then
+// spawned in the air. The reference spawns AS bots on exactly those (a team spawn with a vehicle spawn); air_consider then
 // flies the jet the bot finds itself in.
 static char *g_asSpawns[64]; static int g_asSpawnCount; static unsigned g_asFailedAt[64], g_asNext[3];
 static int as_find_spawns(void)
@@ -8404,8 +8404,8 @@ static int squadmate_spawnable(char *mate, char *ms)
     float *p = (float *)(ms + OFF_SOLDIER_POSITION), gp[3];
     if (!g || g->phase != 2) return 0;
     if (nav_is_water(g, p[0], p[1], p[2])) return 0;
-    // AltBotMod V32 (as Fun-Bots 3.6.0-dev7): not on a mate in a fight - one hit in the last 5 s, or a living enemy soldier
-    // within 30 m of it (Fun-Bots measured 20-30% of squad-rush spawns next to an enemy before, 2% after)
+    // AltBotMod V32 (as the reference): not on a mate in a fight - one hit in the last 5 s, or a living enemy soldier
+    // within 30 m of it (the reference measured 20-30% of squad-rush spawns next to an enemy before, 2% after)
     {   int mj = bot_index(mate);
         if (mj >= 0 && g_attackedAt[mj] && H->frame - g_attackedAt[mj] < 5 * 30) return 0;
         char *pm = player_manager(); void **arr = NULL; unsigned count = 0;
@@ -9619,7 +9619,7 @@ static void roster_targets(int *target, int *humans)
 static void roster_tick(void)
 {
     // AltBotMod V7: on a map with no navigation grid yet (first time played: the grid is surveyed with rays for a few
-    // minutes) bots play at once when the level has Fun-Bots routes - they follow those; the grid joins in when ready.
+    // minutes) bots play at once when the level has saved routes - they follow those; the grid joins in when ready.
     removal_tick(); if(!g_rosterAuto || g_roundCleanup || !level_ready() || !*nav_slot() || ((*nav_slot())->phase!=2 && !trace_loaded()) || H->frame%30!=7 || !team_capacity())return;
     int target[5]={0},humans[5]={0},have[5]={0},last[5]={-1,-1,-1,-1,-1};roster_targets(target,humans);
     for(int i=0;i<H->botCount;i++){int t=bm_roster_team(BOT_ROSTER(H->bots[i]),g_mode,player_team(H->bots[i]));if(t<1||t>mode_teams()||removal_pending(H->bots[i]))continue;have[t]++;last[t]=i;}
@@ -9871,7 +9871,7 @@ static unsigned char g_gunCandLocal[MAX_BOTS];
 static BMAirMotion g_gunAirMotion[MAX_BOTS];
 static void *g_gunAirWho[MAX_BOTS];
 // AltBotMod V22: the gunner's own platform (its shots carry the vehicle's speed - InheritWeaponSpeedAmount), the target's
-// acceleration (a turning aircraft), and the weapon slot in use (Fun-Bots' VehicleAttacking choice per seat and target)
+// acceleration (a turning aircraft), and the weapon slot in use
 static BMAirMotion g_gunOwnMotion[MAX_BOTS];
 static float g_gunPrevVel[MAX_BOTS][3], g_gunAccel[MAX_BOTS][3];
 static unsigned char g_gunSlot[MAX_BOTS], g_gunSlotWant[MAX_BOTS];
@@ -10130,7 +10130,7 @@ static void gunner_tick_inner(int i)
     float sight[3];memcpy(sight,aim,12);
     int airLeadOk = 1;
     const BMVehicleProfile *vprofile = bm_vehicle_profile(vehicle_name(veh));
-    // AltBotMod V22: the weapon for this seat and target, as Fun-Bots picks it (VehicleAttacking.lua): a tank's coax on
+    // AltBotMod V22: the weapon for this seat and target, as the reference picks it: a tank's coax on
     // soldiers, an IFV's missile on armour (4 s in 12), an attack helicopter gunner's guided missile on vehicles.
     int slot = 1, guided = stationary_weapon(veh) == 1;
     {
@@ -10534,7 +10534,7 @@ static const unsigned char *boat_mask(void)
     }
     return g_boatMask;
 }
-// AltBotMod V16 (after Brian's beta): a boat only when the trip needs one - the objective is on another landmass than
+// AltBotMod V16: a boat only when the trip needs one - The objective is on another landmass than
 // the bot. Unknown (no grid / water table yet) counts as needed, as before.
 static int boat_trip_needed(const float *from,const float *to)
 {
@@ -10989,7 +10989,7 @@ static void squad_vehicle_tick(void)
 // Caspian V3: most vehicles are reached without the grid search. V2 logs: bots "cannot route" to a jet 45 m
 // away or a helicopter 54 m away on the US side (the pads are at the edge of / outside the grid), and abandoned
 // vehicles were lost while the bot waited in the one shared A* queue. First a checked straight walk to a spot
-// beside the hull (6, 9 or 12 m out: wings and rotors), then a Fun-Bots route to the vehicle.
+// beside the hull (6, 9 or 12 m out: wings and rotors), then a saved route to the vehicle.
 static unsigned g_quickVehicleWalks, g_quickVehicleTraces;
 // Floor under a spot beside a vehicle (not water): 1 and p[1] set.
 static int vehicle_side_floor(const float *vp, float *p)
@@ -11028,7 +11028,7 @@ static int vehicle_quick_route(int i, char *soldier, const float *vp)
         if (clear) {
             direct_path(i, soldier, p);
             if (g_quickVehicleWalks++ % 10 == 0)
-                bot_log("fleet: %s walks straight to %s (%.0f m; %u straight walks, %u Fun-Bots routes to vehicles)",
+                bot_log("fleet: %s walks straight to %s (%.0f m; %u straight walks, %u saved routes to vehicles)",
                         H->bots[i] + OFF_PLAYER_ONLINE_NAME, vehicle_name(g_fleet[i].vehicle ? g_fleet[i].vehicle : NULL), d,
                         g_quickVehicleWalks, g_quickVehicleTraces);
             return 1;
@@ -11055,7 +11055,7 @@ static int vehicle_quick_route(int i, char *soldier, const float *vp)
         p->count = p->next = p->partial = 0;
     }
     if (g_quickVehicleFails++ % 10 == 0)
-        bot_log("fleet: %s has no quick way to %s %.0f m away (%d/%d spots beside it have a floor, %d straight walks blocked, Fun-Bots route %s) - grid search",
+        bot_log("fleet: %s has no quick way to %s %.0f m away (%d/%d spots beside it have a floor, %d straight walks blocked, saved route %s) - grid search",
                 H->bots[i] + OFF_PLAYER_ONLINE_NAME, vehicle_name(g_fleet[i].vehicle ? g_fleet[i].vehicle : NULL), d, floors, ns, tried,
                 n ? "ends too far from it" : "none");
     return 0;
@@ -11095,7 +11095,7 @@ static int plan_to_vehicle(int i, char *soldier, const float *vp)
         g_lastPlanDeferred=0;
         int n=vehicle_quick_route(i,soldier,vp);
         if(n){memset(a,0,sizeof *a);return n;}
-        if(g_lastPlanDeferred){a->deferred=1;return 0;}   // Fun-Bots route budget for this tick: next tick
+        if(g_lastPlanDeferred){a->deferred=1;return 0;}   // saved route budget for this tick: next tick
         a->quick=1;
     }
     while(a->candidate<13){
@@ -11350,7 +11350,7 @@ static int boat_landed(int i, DriveState *d, const float *vp)
         return boat_ashore(i, d, vp, "no way on by water - the rest on foot");
     return 0;
 }
-// AltBotMod V8: no driving map yet (a new map: the grid survey takes minutes) and no Fun-Bots vehicle route from here:
+// AltBotMod V8: no driving map yet (a new map: the grid survey takes minutes) and no saved vehicle route from here:
 // drive the straight line towards the objective in 20 m legs, up to 160 m at a time (a partial route - then it looks
 // again, by when it may be on a recorded route). The bumper sensors, the swerve and the unstick handling deal with what
 // is in the way. Every leg end is checked from above: a land vehicle's line ends before water deeper than a ford or a
@@ -11389,7 +11389,7 @@ static int drive_straight_route(int i, DriveState *d, const float *vp, int boat)
     if (cut == 1 && n < 2) return 0;   // water / a cliff right ahead: not this way
     if (boat) { memcpy(d->landTgt, &d->pts[(n - 1) * 3], 12); d->landSet = 1; }
     d->next = 0; d->phase = 3; d->at = d->checkAt = H->frame; d->stuckCount = 0; d->routeFailures = 0; d->boatPlanSince = 0;
-    d->stageCandidate = 0; d->stageActive = 0; d->straight++; d->straightRoute = 1; d->funRoute = 0;
+    d->stageCandidate = 0; d->stageActive = 0; d->straight++; d->straightRoute = 1; d->savedRoad = 0;
     memset(&g_enhancedSteer[i], 0, sizeof g_enhancedSteer[i]);
     memcpy(d->lastPos, vp, 12);
     g_straightRoutes++;
@@ -11400,8 +11400,8 @@ static int drive_straight_route(int i, DriveState *d, const float *vp, int boat)
     return 1;
 }
 // AltBotMod V14: the driving map has no way to the flag (Seine Crossing: the RU tank sat at its base all round, "no
-// drivable route ... A* exhausted", 30+ times, after two Fun-Bots routes were used up for the whole life of the tank).
-// First the Fun-Bots vehicle routes near the vehicle again (the nearest, then up to three starting from other roads,
+// drivable route ... A* exhausted", 30+ times, after two saved routes were used up for the whole life of the tank).
+// First the saved vehicle routes near the vehicle again (the nearest, then up to three starting from other roads,
 // searched further out each time), then - after 45 s without a route -
 // checked straight legs at the flag (at most every 30 s), so a tank always gets going and into the fight.
 static int drive_route_fallback(int i, DriveState *d, const float *vp)
@@ -11414,12 +11414,12 @@ static int drive_route_fallback(int i, DriveState *d, const float *vp)
         int alt = d->traceAlt++;   // 0: the nearest route again (it may only have been blocked), then the others
         int tn = trace_vehicle_route(0, d->flag, fp, vp, d->pts, DRIVE_MAX_PTS, &part, &len, alt);
         if (!tn) continue;
-        d->n = tn; d->partial = part; d->straightRoute = 0; d->funRoute = 1; d->joinN = 0;
+        d->n = tn; d->partial = part; d->straightRoute = 0; d->savedRoad = 1; d->joinN = 0;
         d->next = 0; d->phase = 3; d->at = d->checkAt = H->frame; d->stuckCount = 0; d->routeFailures = 0;
         d->stageCandidate = 0; d->stageActive = 0;
         memset(&g_enhancedSteer[i], 0, sizeof g_enhancedSteer[i]);
         memcpy(d->lastPos, vp, 12);
-        bot_log("drive: %s takes a Fun-Bots vehicle route (try %d) towards flag %d (%d points, %.0f m) - the driving map has no way there",
+        bot_log("drive: %s takes a saved vehicle route (try %d) towards flag %d (%d points, %.0f m) - the driving map has no way there",
                 (char *)H->bots[i] + OFF_PLAYER_ONLINE_NAME, alt, d->flag, tn, len);
         return 1;
     }
@@ -11694,7 +11694,7 @@ static void drive_tick(int i)
             if (boat_landed(i, d, vp)) return;
         }
         if(!plan_budget_left()){drive_coast(i,d);return;}
-        // AltBotMod V6: a Fun-Bots vehicle route first (V7: also before the driving map exists - a new map) (recorded by people driving that road / boat lane), the
+        // AltBotMod V6: a saved vehicle route first (V7: also before the driving map exists - a new map) (recorded by people driving that road / boat lane), the
         // drivable grid when there is none near or it was tried twice this trip.
         // AltBotMod V16: recorded routes are the rule, the grid the exception - up to 6 tries a trip (V6-V15: 2), and a
         // recorded route that was cut short (it goes on beyond 256 points) is always continued on recorded roads.
@@ -11712,8 +11712,8 @@ static void drive_tick(int i)
                 d->traceContinue = part;
                 int joinN = 0;   // AltBotMod V25: onto the road by the driving grid when the straight way to it is blocked (drive_route_join)
                 if (!boat) { int r = drive_route_join(i, d, vp, &tn); if (r < 0) { d->traceContinue = 0; return; } joinN = r; }   // (V25: deferred A* -> next tick)
-                d->n = tn; d->partial = part; d->straightRoute = 0; d->funRoute = 1; d->joinN = joinN;
-                if (joinN) bot_log("drive: %s joins the Fun-Bots road by %d grid point(s) (the straight way to it is blocked)", pl + OFF_PLAYER_ONLINE_NAME, joinN);
+                d->n = tn; d->partial = part; d->straightRoute = 0; d->savedRoad = 1; d->joinN = joinN;
+                if (joinN) bot_log("drive: %s joins the saved road by %d grid point(s) (the straight way to it is blocked)", pl + OFF_PLAYER_ONLINE_NAME, joinN);
                 if (boat) { memcpy(d->landTgt, &d->pts[(tn - 1) * 3], 12); d->landSet = 1; }
                 d->next = 0; d->phase = 3; d->at = d->checkAt = H->frame; d->stuckCount = 0; d->routeFailures = 0; d->boatPlanSince = 0;
                 d->stageCandidate = 0; d->stageActive = 0; d->statPlans++;
@@ -11729,7 +11729,7 @@ static void drive_tick(int i)
                 }
                 if (d->planCount <= 1 || !d->planLogAt || H->frame - d->planLogAt > 5 * 30) {
                     d->planLogAt = H->frame ? H->frame : 1;
-                    bot_log("drive: %s follows a Fun-Bots %s route towards flag %d (%d points, %.0f m)", pl + OFF_PLAYER_ONLINE_NAME,
+                    bot_log("drive: %s follows the saved %s route towards flag %d (%d points, %.0f m)", pl + OFF_PLAYER_ONLINE_NAME,
                             boat ? "boat" : "vehicle", d->flag, tn, len);
                 }
                 d->why = NULL;
@@ -11865,14 +11865,14 @@ static void drive_tick(int i)
             }
             if(armor_route_failed(i))return;
             bot_log("drive: no drivable route from (%.0f, %.0f) to (%.0f, %.0f): %s", vp[0], vp[2], d->goal[0], d->goal[2], nav_last_error());
-            if(!boat && drive_route_fallback(i,d,vp))return;   // AltBotMod V14: another Fun-Bots route, then checked straight legs
+            if(!boat && drive_route_fallback(i,d,vp))return;   // AltBotMod V14: another saved route, then checked straight legs
             if(!boat && drive_other_objective(i,d,vp,1))return;
             if(!boat && !d->manual)drive_wait_route(i,d,"no reachable driving objective yet");
             else drive_stop(i,"found no reachable drivable objective",30);
             return;
         }
         d->next = 0; d->phase = 3; d->at = d->checkAt = H->frame; d->stuckCount = 0;d->routeFailures=0;d->boatPlanSince=0;
-        d->stageCandidate=0;d->straightRoute=0;d->traceContinue=0;d->funRoute=0;d->statPlans++;
+        d->stageCandidate=0;d->straightRoute=0;d->traceContinue=0;d->savedRoad=0;d->statPlans++;
         memset(&g_enhancedSteer[i], 0, sizeof g_enhancedSteer[i]);
         memcpy(d->lastPos, vp, 12);
         d->noRouteSince = 0;
@@ -11893,7 +11893,7 @@ static void drive_tick(int i)
     {
         // AltBotMod V24: progress along the route is the nearest route point within the next 30 m of it (never backwards),
         // and on past one the vehicle is at or has passed. V6-V23 made it reach every waypoint - within 1.75 m at any
-        // "corner" of 25 deg or more, and on a hand-recorded Fun-Bots road nearly every point is one: the vehicle aimed at
+        // "corner" of 25 deg or more, and on a hand-recorded saved road nearly every point is one: the vehicle aimed at
         // a point a few metres off its nose, its heading error jumped and the speed cap for it with it - "slow down and go
         // every few metres". Steering goes for a point further on (pure pursuit, below).
         float *hx = vehicle_xf(d->veh);
@@ -11939,7 +11939,7 @@ static void drive_tick(int i)
     int isBoat = vehicle_is_boat(d->veh);
     const BMVehicleProfile *profile = bm_vehicle_profile(vehicle_name(d->veh));
     float ae = fabsf(err), vwant = bm_speed_limit(&g_enhanced, profile);
-    // AltBotMod V25: as Fun-Bots - full speed unless it has to steer hard (V6-V24 capped at 12 m/s from 31 deg off the aim,
+    // AltBotMod V25: as the reference - full speed unless it has to steer hard (V6-V24 capped at 12 m/s from 31 deg off the aim,
     // which on a winding road with a slow-turning tank was most of the time)
     if (ae > 1.05f) vwant = fminf(vwant, isBoat ? 10.0f : bm_armored(profile) ? 6.0f : 9.0f);
     if (ae > 1.6f) vwant = fminf(vwant, isBoat ? 6.0f : 4.0f);
@@ -11952,14 +11952,14 @@ static void drive_tick(int i)
             if (k == d->n - 1) vt = d->partial ? 99.0f : isBoat ? 6.0f : 4.0f;   // the end: arrive slowly (V16: not the end of a leg - the next one follows)
             else {
                 // AltBotMod V22: the bend is measured over ~10 m either side of the waypoint, and its speed comes from its
-                // radius (v = sqrt(grip x radius)). V8-V21.1 compared each pair of neighbouring segments: a recorded Fun-Bots
+                // radius (v = sqrt(grip x radius)). V8-V21.1 compared each pair of neighbouring segments: a recorded saved
                 // road has a point every few metres with a hand's jitter, so nearly every point read as a 17-degree bend and
                 // vehicles crawled at 13 m/s down straight roads ("convoys are a pain").
                 int kb = k, kf = k + 1;
                 while (kb > 0 && dist2(&d->pts[kb * 3], w) < 25.0f * 25.0f) kb--;   // (V24: +-25 m of the road itself - a road's bend, not a driver's swerve or where the car happens to be)
                 while (kf < d->n - 1 && dist2(&d->pts[kf * 3], w) < 25.0f * 25.0f) kf++;
                 const float *pb = kb < k ? &d->pts[kb * 3] : NULL, *pf = &d->pts[kf * 3];
-                vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));   // (V24: only real bends - Fun-Bots drives flat out)
+                vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));   // (V24: only real bends - The reference drives flat out)
             }
             float lead = fmaxf(0.0f, along - (isBoat ? 12.0f : 6.0f));   // (it turns a little before the waypoint)
             float v = sqrtf(vt * vt + 2.0f * decel * lead);
@@ -11988,13 +11988,13 @@ static void drive_tick(int i)
             }
             rx = lz; rz = -lx;
         }
-        // AltBotMod V24: on a recorded Fun-Bots road (within 4 m of it) the road is the proof that the way is clear - people
+        // AltBotMod V24: on a recorded saved road (within 4 m of it) the road is the proof that the way is clear - people
         // drove it. AltBotMod V29: on it NOTHING static counts any more - no wall dead ahead, no verge, no swerving - only
         // vehicles, and those by geometry (drive_lane_scan). V24-V28 still braked and swerved for whatever the middle rays met
         // within 4 m (live V28: 479 "sees something ahead" at 0 m/s). Off the road (the grid, straight legs, a join, more
         // than 4 m off the line) the sensors count as before.
         int onRoad = 0;
-        if (d->funRoute && d->n >= 2 && d->next < d->n && d->next > d->joinN) {
+        if (d->savedRoad && d->n >= 2 && d->next < d->n && d->next > d->joinN) {
             int k1 = d->next > 0 ? d->next : 1;
             const float *a = &d->pts[(k1 - 1) * 3], *b = &d->pts[k1 * 3];
             float ax = b[0] - a[0], az = b[2] - a[2], l = ax * ax + az * az, t = l > 0 ? ((vp[0] - a[0]) * ax + (vp[2] - a[2]) * az) / l : 0;
@@ -12068,7 +12068,7 @@ static void drive_tick(int i)
     if (!isBoat && d->laneAt && H->frame - d->laneAt < 15 && d->laneLimit < vwant) vwant = d->laneLimit;
     float vAfterLane = vwant;
     if (!d->onRoadNow && d->brakeNear < 99) vwant = fminf(vwant, bm_drive_obstacle_speed(d->brakeNear, d->speed, isBoat));
-    // AltBotMod V29: Fun-Bots driving - the throttle is down (1.0) unless there is a reason not to: a real bend or the end
+    // AltBotMod V29: the reference driving - the throttle is down (1.0) unless there is a reason not to: a real bend or the end
     // of the route ahead (vAfterBends), hard steering (vAfterHeading), a vehicle in the lane, or - off a recorded road - an
     // obstacle. No smoothing of the target and no partial throttle on the way back up: V6-V28 raised the speed target
     // 8 m/s per second after every dip and fed the throttle 0.35 + 0.12 x the error - after each little check the vehicle
@@ -12108,7 +12108,7 @@ static void drive_tick(int i)
                     "%u speed drop(s) with the throttle down, %u re-plan(s), %.1f s re-planning%s",
                     pl + OFF_PLAYER_ONLINE_NAME, vehicle_name(d->veh), d->statSpeed / d->statFrames, 100.0f * d->statFull / d->statFrames, 100.0f * tot / d->statFrames,
                     d->statBrakeBy[1], d->statBrakeBy[2], d->statBrakeBy[3], d->statBrakeBy[4], d->statBrakeBy[5], d->statDrops, d->statPlans, d->statOffPhase / 30.0f,
-                    d->funRoute ? " on a Fun-Bots road" : " on the driving grid");
+                    d->savedRoad ? " on a saved road" : " on the driving grid");
             d->statAt = H->frame ? H->frame : 1; d->statFrames = 0; d->statSpeed = 0; d->statFull = 0; d->statDrops = 0; d->statPlans = 0; d->statOffPhase = 0;
             memset(d->statBrakeBy, 0, sizeof d->statBrakeBy);
         }
@@ -12151,7 +12151,7 @@ static void drive_tick(int i)
     // AltBotMod V25: the road is behind or beside it (a route that starts back the way it faces, a hairpin): it turns round
     // on the spot - full lock forwards while the way ahead is clear (tanks pivot), a three-point turn when it is not. V6-V24
     // reversed, and with the rear blocked dropped the route and re-planned - the same route, the same turn, 40 times in 2 s
-    // (V24 live, a T90 on Firestorm) - and every re-plan counted as a try, so after a few the Fun-Bots road was given up.
+    // (V24 live, a T90 on Firestorm) - and every re-plan counted as a try, so after a few the saved road was given up.
     // AltBotMod V27: a tank pivots on its tracks - full lock, no throttle - until it faces the road (within 20 deg), then
     // drives; V25-V26 gave it throttle as well, so it drove in circles round an aim point inside its own turn ("tanks just
     // turning in place"). Wheeled vehicles keep the forward turn on full lock (they cannot pivot).
@@ -12458,7 +12458,7 @@ static int class_job_working(int i, const float *p)
 }
 #define ROUTE_BOARD_BONUS(v,team) route_board_bonus(v,team)   // AltBotMod V15 (offline harnesses: 0)
 static int boat_lane_to(int f, const float *from);   // AltBotMod V22 (trace_native.inc)
-// AltBotMod V16: a boat only across water. V22: or when a Fun-Bots boat lane runs from near here to within 150 m of the flag and
+// AltBotMod V16: a boat only across water. V22: or when a saved boat lane runs from near here to within 150 m of the flag and
 // the flag is 300 m+ away (a river: Armored Shield had its RHIB and its two recorded lanes, and bots took the road)
 #define FLEET_BOAT_NOT_NEEDED(v,from,f) (vehicle_is_boat(v) && !boat_trip_needed(from,objective_pos(f)) && !boat_lane_to(f,from))   // (offline harnesses: 0)
 #define FLEET_ROUND_RUSH (g_levelReadyAt && H->frame-g_levelReadyAt<120*30)   // AltBotMod V23: the round-start rush to the vehicles
@@ -12478,7 +12478,7 @@ static int boat_lane_to(int f, const float *from);   // AltBotMod V22 (trace_nat
 #include "diagnostics_native.inc"
 #include "livemap_native.inc"   // AltBotMod V13
 #include "learn_native.inc"     // AltBotMod V21: learning (BotMod_learned)
-#include "zone_native.inc"      // AltBotMod V34: Fun-Bots objective mesh
+#include "zone_native.inc"      // AltBotMod V34: objective mesh
 #include "squad_orders.inc"     // AltBotMod V34: squad orders
 
 // ---- Enhanced native policy / diagnostics (all game actions stay on game thread) ----
@@ -12554,7 +12554,7 @@ static void enhanced_status(void)
         g_enhanced.driveStages,g_enhanced.air.landings,g_enhanced.air.deploymentMenu,g_enhanced.weaponHandling,
         g_enhanced.armorTactics,g_enhanced.armorEscort,g_enhanced.traffic,g_enhanced.diagnostics);
     bot_log("enhanced: side-steps=%d (0 none, 1 short steps under fire, 2 constant) live-map=%d", g_enhanced.sideSteps, g_enhanced.liveMap);   // AltBotMod V14
-    bot_log("enhanced: route-actions=%d recon-beacons=%d (Fun-Bots boarding spots, exit points, waits, crouch sections, beacon spots)", g_enhanced.routeActions, g_enhanced.reconBeacons);   // AltBotMod V15
+    bot_log("enhanced: route-actions=%d recon-beacons=%d (saved boarding spots, exit points, waits, crouch sections, beacon spots)", g_enhanced.routeActions, g_enhanced.reconBeacons);   // AltBotMod V15
     bot_log("enhanced: lock-on: the game's own lock for bots - ServerLockingController::update hook %s; locks put in place after the weapon's lock time on target: %s (%u so far)",
             g_lockHooked ? "on" : "NOT installed (lock-ons fall back to button presses)", g_lockFakeOn && g_enhanced.lockAssist ? "on" : "off", g_lockFakes);   // AltBotMod V25, V29
     bot_log("enhanced: mode=%s teams=%d; Rush attack/defend adapter enabled; native objective-state binding pending verification; replication/flight require in-game validation",g_modeName,mode_teams());

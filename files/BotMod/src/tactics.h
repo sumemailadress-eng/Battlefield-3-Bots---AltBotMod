@@ -32,7 +32,7 @@ typedef struct BMLandingObservation {
 typedef struct BMLandingDecision { float height; int unload, board, abort, finished; } BMLandingDecision;
 BMLandingDecision bm_transport_landing(BMLandingState *state, const BMLandingObservation *obs, float dt);
 
-// FunBots-inspired missile timing. The native lock/weapon-slot observation bridge
+// Reference missile timing. The native lock/weapon-slot observation bridge
 // is deliberately unbound until this executable's data layout is verified.
 typedef struct BMMissileState { float lockSeconds, cooldown, counterCooldown; void *target; } BMMissileState;
 typedef struct BMMissileObservation {

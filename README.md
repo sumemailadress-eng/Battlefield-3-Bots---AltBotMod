@@ -1,19 +1,17 @@
-# AltBotMod - Release 1.1
+# AltBotMod - Release 1.2
 
 **AltBotMod** adds AI bots to a Battlefield 3 dedicated server. It is a native mod: no Venice Unleashed, and players need nothing extra. It runs on the ALP, bf4play and BF-Portable builds of `bf3_server_Final.exe`; the installer checks for that file before it changes anything.
 
-> **Version note:** this is public **Release 1.1**. It is built from the internal development line **V35.1 "New Ground"** (Release V1 was internal V34 "Squad Up"). The internal version number appears in the server log (`enhanced: AltBotMod V35.1 - New Ground`). Release notes and the full development history are in [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md).
+> **Version note:** this is public **Release 1.2**. It is built from the internal development line **V35.2 "New Ground"** (Release 1.1 was internal V35.1, Release V1 was internal V34 "Squad Up"). The internal version number appears in the server log (`enhanced: AltBotMod V35.2 - New Ground`). Release notes and the full development history are in [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md).
 
-## What's new in Release 1.1
+## What's new in Release 1.2
 
-- **Server lag fixed on maps with boats.** A bot boat planning its route re-did whole-map work on every server tick, which dropped the server to 18-26 ticks a second on Kharg Island and rubber-banded players. That work is now cached.
-- **Boats leave their slip again.** A boat's route search was restarted every tick and never finished, so bot boats sat at their slip and the crew walked. Each boat now keeps its search until it answers.
-- **Squad Rush on 12 more maps.** Operation Firestorm, Damavand Peak, Kharg Island, Strike at Karkand, Gulf of Oman, Sharqi Peninsula, Wake Island, Alborz Mountains, Markaz Monolith, Azadi Palace, Operation Riverside and Kiasar Railroad now have a Squad Rush layout (before, those rounds were played as team deathmatch).
-- **Updated objective meshes:** 110 map/mode combinations (13 more), all re-cut so corners keep clear of walls and barriers.
-- **Bots spread out** over similar ways instead of all walking one line, and most of them **avoid spots where their team just died**.
-- **Better diagnostics:** slow bot thinks in the log are split by part and show the bot's position.
+- **Capture the Flag on the objective mesh.** Operation Riverside, Nebandan Flats, Kiasar Railroad and Sabalan Pipeline now have an objective mesh around both flag stands, so raiders and guards walk proper paths near the stands. 115 objective meshes ship in total.
+- **No more bots stuck in TOW / Kornet launchers.** Their gunners shot at little and sat out the fight; bots now leave those to players. AA emplacements (C-RAM / Pantsir) are still used.
+- **Clearer setting names:** `SavedRoutes` and `ObjectiveMesh`. The installer renames the old keys in your settings files and keeps their values.
+- **Clearer log lines:** routes are called "saved routes" / "saved roads" and the mesh "objective mesh" everywhere.
 
-Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-11-internal-v351).
+Earlier releases: Release 1.1 fixed server lag and idle boats on maps with boats, added Squad Rush on 12 more maps, bots spreading out and avoiding spots where their team just died. Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-12-internal-v352).
 
 > **Status:** the features below were built from real server logs and tested offline with automated checks and sanitizer builds. Several features have not yet been run in a live round. See [Not yet tested in a live round](#not-yet-tested-in-a-live-round).
 
@@ -45,7 +43,6 @@ Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-11-internal-v35
 | `Uninstall-AltBotMod.bat` | Removes the mod and its shortcuts. |
 | `Collect-Diagnostics.bat` | Gathers logs and settings into one folder for a bug report. |
 | `files\` | The mod itself: `BotModCore.dll`, navigation data, routes, Server Control and AltBotMod Command. |
-| `rollback\` | Earlier DLLs (V29, V32, V33, V34 = Release V1) you can restore if needed. |
 | `tools\` | Helper scripts used to build the navigation and zone data. |
 | `validation\` | Offline test suite, see [Testing](#testing). |
 | `README.txt` | Short quick-start. |
@@ -74,7 +71,7 @@ Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-11-internal-v35
 - Makes sure every BF-Portable server you run is set to 64 players (`vars.maxPlayers 64` in `Startup.txt` and `PLAYERS=64` in `_StartServer*.bat`). Only that value is changed, and the file is backed up first. Restart the server afterwards for it to take effect.
 - Creates the desktop and Start-menu shortcuts for AltBotMod Command.
 
-**Checking that it loaded:** open `BotMod_<port>.log` and look for `enhanced: AltBotMod V35.1 - New Ground`.
+**Checking that it loaded:** open `BotMod_<port>.log` and look for `enhanced: AltBotMod V35.2 - New Ground`.
 
 ---
 
@@ -82,14 +79,7 @@ Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-11-internal-v35
 
 **Upgrading:** run the new installer over the old install. Your settings, learning files and route files are kept.
 
-**Rolling back:** copy one of the DLLs from `rollback\` over `BotModCore.dll` in the server folder:
-
-| Folder | Version |
-|---|---|
-| `rollback\AltBotMod-V34` | V34 (Release V1) |
-| `rollback\AltBotMod-V33` | V33 |
-| `rollback\AltBotMod-V32` | V32 |
-| `rollback\AltBotMod-V29` | V29 |
+**Rolling back:** download an earlier release from the [Releases page](../../releases) and run its installer, or copy its `files\server\BotModCore.dll` over `BotModCore.dll` in the server folder.
 
 ---
 
@@ -101,13 +91,13 @@ The features are grouped by area. Each one lists what the bots do and any settin
 
 **Objective navigation mesh**
 - Around every capture point, M-COM and base, bots walk a navigation mesh that knows the level's walls, floors, stairs, doorways and the places to jump or crouch.
-- The meshes ship for 110 map/mode combinations in `BotMod_traces\navzones` (Release 1.1: 13 more, all re-cut so corners keep clear of wall and barrier ends).
+- The meshes ship for 115 map/mode combinations in `BotMod_traces\navzones` (Release 1.1: 13 more, all re-cut so corners keep clear of wall and barrier ends; Release 1.2: Capture the Flag on the four End Game maps).
 - Priority near an objective: the mesh first, then saved routes, then the navigation grid.
 - Every one of the 242 Rush and Squad Rush M-COMs sits in a mesh M-COM zone. 233 can be walked to over the mesh; the rest (Death Valley M-COM 4 and 8 of the new Squad Rush M-COMs) use the older routing for the last stretch.
 - **Spreading out (Release 1.1):** each bot life takes its own way among similar ones (an area can seem up to 25% longer to one bot than to another), so bots no longer all walk one line.
 - **Avoiding killing spots (Release 1.1):** where a soldier just died on foot, the mesh nearby costs his team more for about a minute. Three of four bot lives take another staircase or street when there is one; the rest keep pushing.
 - A mesh connection that bots keep getting stuck on becomes more expensive. After 3 stuck bots it is closed for the rest of the level. 
-- Setting: `FunBotsMesh` (1 on, 0 off).
+- Setting: `ObjectiveMesh` (1 on, 0 off).
 
 **Saved routes on every map and mode**
 - All 215 level/mode combinations (Team Deathmatch, Close Quarters, Squad DM, Gun Master, Domination, Conquest, Rush, Squad Rush, CTF, Air Superiority and more) have saved routes of their own or borrowed from the same level.
@@ -169,7 +159,7 @@ The features are grouped by area. Each one lists what the bots do and any settin
 - Bots take the objective routes from the mesh and the recorded routes.
 
 **Capture the Flag**
-- A third of the bots raid the enemy flag stand, a third guard their own, and a third hunt. Flag-stand positions for the four maps come from the level data.
+- A third of the bots raid the enemy flag stand, a third guard their own, and a third hunt. Flag-stand positions for the four maps come from the level data, and since Release 1.2 bots walk the objective mesh around both stands.
 
 **Air Superiority**
 - Bots spawn into jets at each team's air spawns.
@@ -220,7 +210,7 @@ The features are grouped by area. Each one lists what the bots do and any settin
 - Target order: whoever just shot the tank is engaged first (for 5 s), then soldiers within 25 m of the hull (C4, mines, knives) ahead of distant targets.
 
 **Stationary weapons**
-- A gunner on a TOW, Kornet, C-RAM or Pantsir leaves the seat when an enemy soldier comes within 18 m and fights him.
+- Bots do not man TOW / Kornet launchers (Release 1.2). A gunner on a C-RAM or Pantsir leaves the seat when an enemy soldier comes within 18 m and fights him.
 - Door gunners (helicopters, Little Bird bench seats) engage at up to `DoorGunMeters` (default 600 m). If the gun turns for the bot and then stops at the end of its arc, the gunner keeps the gun and picks another target for 4 s.
 - Gunner target selection is cheap: candidates are scored first and only the best 6 are traced for line of sight.
 
@@ -303,7 +293,8 @@ Settings are in `enhanced.ini`, section `[AltBotMod]`. They are also editable in
 
 | Setting | Default | What it does |
 |---|---|---|
-| `FunBotsMesh` | 1 | Objective navigation mesh near capture points, M-COMs and bases. 0 turns it off. |
+| `SavedRoutes` | 1 | Follow the saved routes in `BotMod_traces`. 0 = navigation grid only. |
+| `ObjectiveMesh` | 1 | Objective navigation mesh near capture points, M-COMs and bases. 0 turns it off. |
 | `VehicleWalkMeters` | 250 | Furthest a bot on foot walks to a vehicle after the opening minutes. |
 | `JetAreaMarginMeters` | 900 | Extra width of the jets' patrol area. |
 | `DoorGunMeters` | 600 | Range for helicopter door gunners and Little Bird bench seats. |
@@ -336,7 +327,7 @@ To start learning from scratch on a map, delete its `.learn` file while the serv
 
 Each server writes `BotMod_<port>.log`. Useful lines:
 
-- `enhanced: AltBotMod V35.1 - New Ground` (version loaded)
+- `enhanced: AltBotMod V35.2 - New Ground` (version loaded)
 - `zone: ... walks the objective mesh` (mesh routes in use)
 - `zone: the mesh connection ... closed` (a stuck mesh link was closed)
 - `zone: ... deaths weighed` (in the mesh summary: deaths the routes avoided)

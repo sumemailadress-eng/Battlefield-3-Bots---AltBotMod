@@ -261,7 +261,7 @@
       "checks": [
         "PASS: full native driver cancels stale inputs, resumes completed paths, executes checked reverse before queued planning and rejects blocked rear corridors on both teams",
         "PASS: recovery bypass releases virtual road waits but still yields to real vehicles on both teams",
-        "PASS: jet guidance follows FunBots rudder direction and converts finite world guidance into banked body-axis elevator",
+        "PASS: jet guidance follows the reference rudder direction and converts finite world guidance into banked body-axis elevator",
         "PASS: idle replans reach every bot slot under the actual alternating 15-Hz brain schedule"
       ],
       "output": "test13-regression-results.txt"
@@ -293,8 +293,8 @@
     "caspian-v2-results": {
       "exit_code": 1,
       "checks": [
-        "PASS: all 53 Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
-        "PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump",
+        "PASS: all 53 saved Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected",
+        "PASS: actual trace_plan gives a hand-walked saved route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and SavedRoutes=0; recorded jumps press jump",
         "PASS: a retired bot whose kick does not unspawn it is killed after 5 s and replaced (Test15 left it as a brain-less zombie); round cleanup never kills",
         "PASS: Aggression 0/1/2 parses, keeps the aim window (V3), scales engage range (never past the weapon's maximum), bursts and pauses; the director sends more bots to a flag the team just lost, on both teams",
         "PASS: an abandoned ground vehicle in the field gets the nearest free infantry bot on BOTH teams; busy bots, base vehicles and occupied vehicles are left alone"
@@ -316,7 +316,7 @@
     "altbotmod-v6-results": {
       "exit_code": 0,
       "checks": [
-        "PASS: Fun-Bots vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged",
+        "PASS: saved vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged",
         "PASS: the director sends a free bot to a neutral flag before an equally distant enemy flag (neutral flags were left untaken)",
         "PASS: a bot tank engages an enemy tank / vehicle out to 400 m before nearby infantry (V5 kept shooting soldiers while a player's tank drove up); V7: helicopters after armour and close infantry"
       ],
@@ -351,7 +351,7 @@
         "PASS: a helicopter engages an enemy helicopter from 150-800 m and fires (V8 flew in to under 700 m)",
         "PASS: inside 150 m (or 250 m and closing fast) it breaks off to a 350 m stand-off ring, inside 70 m it climbs out - no ramming",
         "PASS: ground attack runs unchanged",
-        "PASS: 29 Team Deathmatch route files (the dev build's set) load as Fun-Bots routes - 67817 waypoints",
+        "PASS: 29 Team Deathmatch route files (the dev build's set) load as saved routes - 67817 waypoints",
         "PASS: elite fire window 0.5 m (2.5x V8's), at most 0.065 rad close in; snipers keep their precise window",
         "PASS: an elite bot crouches for a far fight (>22 m) about 60% of the time, never when closing in, and stands when it ends",
         "PASS: side steps check the side for walls, drops and water first",

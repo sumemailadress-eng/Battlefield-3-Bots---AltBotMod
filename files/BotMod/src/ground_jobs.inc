@@ -37,7 +37,7 @@ static int drive_other_objective(int i,DriveState *d,const float *vp,int failed)
     if(best<0)return 0;
     if(failed){bot_brain(i)->avoidFlag=d->flag;bot_brain(i)->avoidUntil=H->frame+30*30;}
     d->flag=best;memcpy(d->goal,objective_pos(best),12);
-    d->traceTries=0;d->traceAlt=0;   // AltBotMod V14: a new flag - its Fun-Bots vehicle routes are tried first again
+    d->traceTries=0;d->traceAlt=0;   // AltBotMod V14: a new flag - its saved vehicle routes are tried first again
     d->phase=2;d->why="next objective";d->at=H->frame;d->jobAt=0;d->n=d->next=d->partial=0;
     d->stageCandidate=d->stageActive=0;
     nav_cancel_path(i+MAX_BOTS);

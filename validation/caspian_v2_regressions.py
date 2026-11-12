@@ -1,8 +1,8 @@
-"""Caspian V2: Fun-Bots routes, zombie removal, aggression, flag retaking and
+"""Caspian V2: saved routes, zombie removal, aggression, flag retaking and
 abandoned vehicles. Compiles the ACTUAL production sources (trace_nav.c,
 trace_native.inc, removal_tick, director_policy.h, abandoned_dispatch.inc,
 enhanced.c/tactics_policy.inc) against mocked engine state, and loads the real
-Fun-Bots map files shipped in files/server/BotMod_traces. Not a live BF3 test."""
+The reference map files shipped in files/server/BotMod_traces. Not a live BF3 test."""
 from pathlib import Path
 import argparse, os, re, subprocess, tempfile
 from test4_checks import function
@@ -59,7 +59,7 @@ int main(int argc,char**argv){
  TraceNet bad;const char *junk="pathIndex;pointIndex\nxx;yy;zz\n1;2;3\n";assert(!tn_load_text(&bad,junk,strlen(junk)));
  const char *tiny="h\n1;1;0;0;0;3;\n1;2;3;0;0;3;{\"Links\":[[1,1]]}\n2;1;0;0;3;3;{\"Vehicles\":[\"land\"]}\n2;2;0;0;6;3;\n";
  assert(tn_load_text(&bad,tiny,strlen(tiny)) && bad.count==2 && bad.vehiclePaths==1);tn_free(&bad);
- printf("PASS: all %d Fun-Bots Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95%% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected\n",maps);
+ printf("PASS: all %d saved Conquest route files load (Caspian Border, Firestorm, Kharg, Metro >=95%% one network); per-flag route fields give continuous recorded-waypoint routes that end at the flag; vehicle-only paths excluded; malformed files rejected\n",maps);
  return 0;
 }
 '''
@@ -97,7 +97,7 @@ static int cancels;static void nav_cancel_path(int i){(void)i;cancels++;}
 static void bot_log(const char *f,...){(void)f;}
 static const char *g_exe;
 static unsigned GetModuleFileNameA(void *m,char *out,unsigned n){(void)m;snprintf(out,n,"%s",g_exe);return 1;}
-/* AltBotMod V6: the grid walk onto a Fun-Bots route - no grid in this harness */
+/* AltBotMod V6: the grid walk onto a saved route - no grid in this harness */
 typedef struct { int phase; } NavGrid; static NavGrid *g_noGrid; static NavGrid **nav_slot(void){return &g_noGrid;}
 static int budgeted_nav_path(int o,const NavGrid *g,int(*r)(const float*,const float*,float*,float*),float a,float b,float c,float d,float e,float f,float *out,int m){(void)o;(void)g;(void)r;(void)a;(void)b;(void)c;(void)d;(void)e;(void)f;(void)out;(void)m;return 0;}
 static int nav_last_partial(void){return 0;} static int nav_path_link(int k){(void)k;return -1;}
@@ -124,7 +124,7 @@ int main(int argc,char **argv){
  for(int k=0;k<n;k++)assert(g_paths[0].link[k]==-1);
  // The route heads for the flag (its last point is much closer than the start).
  assert(dist2(&g_paths[0].pts[(n-1)*3],flagP[0])<dist2(body,flagP[0])*0.5f);
- // Same spot, same flag, soon after: AltBotMod V22 - Fun-Bots routes first: the route is taken again (from another way
+ // Same spot, same flag, soon after: AltBotMod V22 - saved routes first: the route is taken again (from another way
  // onto the network) twice, then the grid gets one turn (no loop on a bad join).
  assert(trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2])>=2 && g_traceFallbacks==0);
  assert(trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2])>=2 && g_traceFallbacks==0);
@@ -137,7 +137,7 @@ int main(int argc,char **argv){
  assert(rays<=5 && (!n || dist2(g_paths[0].pts,body)<=1.5f*1.5f));
  body[0]+=40;body[2]+=40;H->frame+=30*30;rays=0;n=trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2]);
  assert(rays<=5 && (!n || dist2(g_paths[0].pts,body)<=1.5f*1.5f));body[0]-=40;body[2]-=40;blocked=0;
- g_enhanced.funBotsRoutes=0;assert(!trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2]));g_enhanced.funBotsRoutes=1;
+ g_enhanced.savedRoutes=0;assert(!trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2]));g_enhanced.savedRoutes=1;
  // Recorded jumps press jump only near a higher jump point.
  navs[0].mode=3;g_paths[0].next=0;g_paths[0].count=2;g_paths[0].wpFlags[0]=TN_FLAG_JUMP;
  memcpy(g_paths[0].pts,body,12);g_paths[0].pts[1]+=1;g_paths[0].pts[0]+=1;H->frame=1000-0;presses=0;
@@ -145,7 +145,7 @@ int main(int argc,char **argv){
  g_paths[0].pts[1]=body[1];presses=0;for(int k=0;k<10;k++){H->frame++;trace_jump_tick(0,(char*)body);}assert(!presses);
  // A level with no file: grid only, no crash.
  strcpy(g_level,"MP_999");trace_level_load();assert(!g_trace.count && !trace_plan(0,(char*)body,flagP[0][0],flagP[0][1],flagP[0][2]));
- puts("PASS: actual trace_plan gives a hand-walked Fun-Bots route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and FunBotsRoutes=0; recorded jumps press jump");
+ puts("PASS: actual trace_plan gives a hand-walked saved route to a far flag (any mode of the level), falls back to the grid for short trips, blocked joins, repeats and SavedRoutes=0; recorded jumps press jump");
  return 0;
 }
 '''
@@ -174,9 +174,9 @@ POLICY = r'''
 #include "enhanced.h"
 #include "director_policy.h"
 int main(void){
- BMConfig c;bm_defaults(&c);assert(c.aggression==1 && c.funBotsRoutes==1);
+ BMConfig c;bm_defaults(&c);assert(c.aggression==1 && c.savedRoutes==1);
  assert(bm_set(&c,"Aggression","2")==1 && c.aggression==2 && bm_set(&c,"Aggression","3")==-1 && c.aggression==2);
- assert(bm_set(&c,"FunBotsRoutes","0")==1 && !c.funBotsRoutes);
+ assert(bm_set(&c,"SavedRoutes","0")==1 && !c.savedRoutes);
  BMConfig legacy;bm_defaults(&legacy);legacy.aggression=0;BMConfig aggro;bm_defaults(&aggro);
  BMConfig brutal;bm_defaults(&brutal);brutal.aggression=2;
  const BMWeaponProfile *rifle=bm_weapon_profile("M16A4",0,0);
@@ -265,7 +265,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument('--sanitize', action='store_true'); a = ap.parse_args()
     env = dict(os.environ, ASAN_OPTIONS='detect_leaks=0')
     maps = sorted(TRACES.glob('*.map'))
-    assert maps, 'no Fun-Bots map files in files/server/BotMod_traces'
+    assert maps, 'no route map files in files/server/BotMod_traces'
     core = (SRC/'core.c').read_text()
     botpath = re.search(r'typedef struct BotPath \{[^\n]+', core)[0]
     zombie = t4.ROUND.split('int main(void){')[0] + ZOMBIE

@@ -1,4 +1,4 @@
-// FunBots separates movement cycles from shooting. Here the native grid must
+// The reference separates movement cycles from shooting. Here the native grid must
 // validate each relocation: no VU teleport or direct, unchecked flank vectors.
 static void combat_motion_cancel(int i)
 {

@@ -11,7 +11,7 @@
    free for a human on the team, the other team's gunship and an old spawn are left alone, a refused entry rests a minute.
 5. Source checks: lock-on launchers' three ways (harness: altbotmod_v16_checks.py), aircraft targets include the
    gunship, jets prefer the ground and the gunship, the gunship's guns reach 1.6 km and its gunners stay, the drive sensors
-   look down the route, no armour combat hold, quicker speed recovery, Fun-Bots roads joined from 90 m, routes from 8 m,
+   look down the route, no armour combat hold, quicker speed recovery, saved roads joined from 90 m, routes from 8 m,
    the round-start vehicle rush, the missile worker started and stopped, short bursts at range, the version.
 """
 from pathlib import Path
@@ -202,8 +202,8 @@ int main(void)
     assert 'float reach = (boat ? 100.0f : 90.0f) + alt * 30.0f;' in trace and '#define TRACE_MIN_TRIP        8.0f' in trace
     assert 'int rush=FLEET_ROUND_RUSH;' in fleet and '#define FLEET_ROUND_RUSH (g_levelReadyAt && H->frame-g_levelReadyAt<120*30)' in core and 'g_levelReadyAt = H->frame ? H->frame : 1;' in core
     assert 'float kc = distance > 20 ? fminf(k, 1.25f) : k;' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
-    print('PASS: V23 driving - sensors look down the route, no armour slow-down for targets, speed back at 8 m/s per second, Fun-Bots roads joined from 90 m, routes on foot from 8 m, '
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh
+    print('PASS: V23 driving - sensors look down the route, no armour slow-down for targets, speed back at 8 m/s per second, saved roads joined from 90 m, routes on foot from 8 m, '
           'a round-start rush to every vehicle; short bursts at range; version V23')
 
 if __name__ == '__main__':

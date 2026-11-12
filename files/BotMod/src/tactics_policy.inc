@@ -1,4 +1,4 @@
-// Firing cycle families follow FunBots WeaponClass.lua. Range/ADS disciplines
+// Firing cycle families follow the reference WeaponClass. Range/ADS disciplines
 // are conservative BotMod policies, not claimed EBX statistics. Bullet speed
 // remains the beta's 600 m/s fallback until native projectile data is bound.
 static const BMWeaponProfile bm_weaponFamilies[] = {

@@ -1,4 +1,4 @@
-// AltBotMod V35: the mesh routing taken over from Fun-Bots V3.6.0-RC2 (zone_nav.c zn_route_ex / zn_on_killed / zn_decay),
+// AltBotMod V35: the mesh routing (zone_nav.c zn_route_ex / zn_on_killed / zn_decay),
 // run on the shipped meshes. usage: v35_zone_spread_tests <navzones folder>
 #include "zone_nav.h"
 #include <assert.h>

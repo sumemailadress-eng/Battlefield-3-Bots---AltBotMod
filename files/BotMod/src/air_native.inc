@@ -47,7 +47,7 @@ static AirNativeState g_air[MAX_BOTS];
 #define EIA_SELECT_WEAPON1 16
 #endif
 #ifndef EIA_SELECT_WEAPON2
-#define EIA_SELECT_WEAPON2 17   // EIASelectWeapon2 (VU EntryInputActionEnum; Fun-Bots selects vehicle weapon slot 2 with it)
+#define EIA_SELECT_WEAPON2 17   // EIASelectWeapon2 (VU EntryInputActionEnum; the reference selects vehicle weapon slot 2 with it)
 #endif
 // AltBotMod V20: every occupied aircraft on the map with a velocity estimate, refreshed once a frame. Jets see
 // friends and foes in it (collision evasion) and the dogfight reads its target's real velocity from it.
@@ -230,7 +230,7 @@ static int air_enemy(char *veh,int team,float **position,int *isAir)
 {
     if (!vehicle_ok(veh) || !vehicle_occupied(veh)) return 0;
     int vt=0;float *p=vehicle_pos(veh,&vt);
-    // FunBots AirTargets keys targets by their pilot's current team. A
+    // The reference AirTargets keys targets by their pilot's current team. A
     // capturable jeep's old owner field is not authoritative for its crew.
     char *crew=vehicle_occupant(veh);
     if(crew && player_exists(crew))vt=player_team(crew);
@@ -253,7 +253,7 @@ static void air_target(int i,BMAirObservation *o)
         a->control.phase==BM_FLIGHT_RECOVER) { a->targetVeh=a->targetPl=NULL;memset(&a->targetMotion,0,sizeof a->targetMotion);return; }
     // Empty scans also wait half a second; six pilots must not each rescan
     // every vehicle and player on every tick when no enemy is nearby.
-    // V20: an attack in progress keeps its target while it lasts (Fun-Bots: a new target just as the jet lined up
+    // V20: an attack in progress keeps its target while it lasts (the reference: a new target just as the jet lined up
     // spoiled the attack); a fresh choice after the pass.
     // V20.1: a strike run being set up keeps its ground target too (live: it switched targets mid-setup and flew to
     // the old target's initial point, so it never rolled in).
@@ -287,7 +287,7 @@ static void air_target(int i,BMAirObservation *o)
             // beyond - soldiers on the ground nearly always won: "choppers almost never attack each other")
             float score=distance+(a->profile->kind==BM_AIR_JET?jetScore:
                 (heliTarget && distance<1200?(tp->kind==BM_AIR_ATTACK?-700:-450):air?(gunshipTarget?-150:400):0));
-            // V20 (Fun-Bots AirTargets): 400 per radian off the nose - a target ahead beats one behind
+            // V20: 400 per radian off the nose - a target ahead beats one behind
             if(distance>1)score+=400*acosf(fmaxf(-1,fminf(1,(o->forward[0]*(p[0]-o->position[0])+o->forward[1]*(p[1]-o->position[1])+o->forward[2]*(p[2]-o->position[2]))/distance)));
             if(v==a->targetVeh)score-=150;
             for(int j=0;j<H->botCount;j++)if(j!=i && g_air[j].pilot && player_team(H->bots[j])==team && g_air[j].targetVeh==v)score+=350;
@@ -639,7 +639,7 @@ static void air_tick(int i)
     if (a->phase==AIR_WAIT) {
         if (!a->takeover && human_near(xf+12,g_enhanced.humanRadius)) { air_stop(i,"hands aircraft to nearby player",1); return; }
         if (H->frame-a->at<(unsigned)(g_enhanced.air.waitSeconds*30)) return;
-        // FunBots runway guard is for jets. A helicopter can lift vertically
+        // The reference runway guard is for jets. A helicopter can lift vertically
         // beside a parked vehicle; a runway queue must not cancel its takeoff.
         char **vehicles; int n=vehicle_list(&vehicles), blocked=0;
         for (int k=0;a->profile->kind==BM_AIR_JET && k<n;k++) {

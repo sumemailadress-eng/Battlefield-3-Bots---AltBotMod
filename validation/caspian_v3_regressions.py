@@ -1,6 +1,6 @@
 """Caspian V3: lethal aim, fast routes, vehicles actually boarded.
 Compiles the ACTUAL production code (activity_tick, trace_plan + trace_nav.c on the real
-MP_007 Fun-Bots file, walk_clear / direct_path / direct_retry / vehicle_quick_route and
+MP_007 route file, walk_clear / direct_path / direct_retry / vehicle_quick_route and
 on_process_hit extracted from core.c) against mocked engine state. Not a live BF3 test."""
 from pathlib import Path
 import argparse, os, re, subprocess, tempfile
@@ -35,7 +35,7 @@ int main(void){
 }
 '''
 
-# --- 2. Fun-Bots routes to points that are not flags (vehicles, cover...), cached and budgeted.
+# --- 2. saved routes to points that are not flags (vehicles, cover...), cached and budgeted.
 POINTS = r'''
 int main(int argc,char **argv){
  g_exe=argv[1];bm_defaults(&g_enhanced);
@@ -57,8 +57,8 @@ int main(int argc,char **argv){
  // A goal within 8 m reuses the cached route field: no new Dijkstra.
  int built=g_tracePointBuilt;H->frame+=30*30;
  assert(trace_plan(0,(char*)body,T[0]-4,T[1],T[2]+4) && g_tracePointBuilt==built);
- // Budget: 2 new goals per tick; AltBotMod V6: the 3rd and 4th WAIT a tick for their Fun-Bots route (deferred)
- // instead of falling back to the grid (Fun-Bots routes first).
+ // Budget: 2 new goals per tick; AltBotMod V6: the 3rd and 4th WAIT a tick for their saved route (deferred)
+ // instead of falling back to the grid.
  H->frame+=30*30;int deferred=0,c0=cancels;
  for(int k=0;k<4;k++){float *G=g_trace.nodes[(goal+400*(k+1))%g_trace.count].p;g_lastPlanDeferred=0;
   trace_plan(0,(char*)body,G[0],G[1],G[2]);deferred+=g_lastPlanDeferred;}
@@ -79,7 +79,7 @@ int main(int argc,char **argv){
  memcpy(flagP[0],T,12);H->frame+=30*30;n=trace_plan(0,(char*)body,T[0],T[1],T[2]);assert(n>=2);
  assert(g_traceUse[0].flag==0);
  tn_free(&g_trace);
- puts("PASS: Fun-Bots routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid");
+ puts("PASS: saved routes reach any point near the recorded network (not only flags), cached per goal (8 m reuse, 32 slots, recycled), at most 2 new route fields a tick (the rest use the grid that tick, never a stall; a found route cancels the queued grid request); vehicles at flags get a route to the vehicle itself; goals far from waypoints fall back to the grid");
  return 0;
 }
 '''
@@ -137,11 +137,11 @@ int main(void){
  // direct_path: one waypoint, and the same walk from the same spot within 25 s is not offered again.
  H->frame=300;assert(direct_path(0,(char*)me,to)==1 && g_paths[0].count==1 && g_paths[0].pts[0]==40 && !g_paths[0].partial);
  assert(direct_retry(0,me,to));H->frame+=26*30;assert(!direct_retry(0,me,to));
- // Vehicle 100 m away on open ground: a straight walk to a spot 6 m short of the hull, no Fun-Bots/grid route.
+ // Vehicle 100 m away on open ground: a straight walk to a spot 6 m short of the hull, no saved/grid route.
  H->frame=2000;float jet[3]={0,0,100};traceCalls=0;g_vehicleApproach[0].spot=0;
  assert(vehicle_quick_route(0,(char*)me,jet)==1 && g_paths[0].count==1 && !traceCalls);
  assert(fabsf(g_paths[0].pts[2]-94)<0.01f && fabsf(g_paths[0].pts[1])<0.01f && cancelled);
- // Blocked straight line: the Fun-Bots route to the vehicle; ending beside the hull counts as arrival.
+ // Blocked straight line: the saved route to the vehicle; ending beside the hull counts as arrival.
  H->frame=3000;wall=1;traceResult=5;traceCalls=0;g_vehicleApproach[0].spot=0;
  assert(quick((char*)me,jet)==5 && traceCalls==1 && !g_paths[0].partial);   // (6 walk checks a tick: resumes next tick)
  // A route that ends 30 m short is no use (the hull centre is no goal): rejected, the grid ring handles it.
@@ -153,7 +153,7 @@ int main(void){
  H->frame=4000;traceResult=0;g_vehicleApproach[0].spot=0;assert(!quick((char*)me,jet));wall=0;
  // Farther than 150 m: no straight walk attempted, only the route.
  H->frame=5000;g_vehicleApproach[0].spot=0;float far[3]={0,0,400};rays=0;traceCalls=0;assert(!vehicle_quick_route(0,(char*)me,far) && traceCalls==1 && !rays);
- puts("PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a Fun-Bots route before any grid search");
+ puts("PASS: straight walks are checked with live rays (body, floor every 2.5 m, drops, water, end floor; 8 a tick, no repeat of a failed walk for 25 s); a vehicle is reached (a route ending 30 m short is rejected) by a straight walk beside the hull or a saved route before any grid search");
  return 0;
 }
 '''

@@ -145,7 +145,7 @@ int main(void)
     int gs = bl_find(&g_learn, BL_GROUND, stall, NULL, 8);
     CHECK(gs >= 0 && bl_spot_bad(&g_learn.spots[gs]));
     g_masksReady = 1; g_strikes = 0; tick(1); CHECK(g_strikes == 1);
-    // V21.1: ... and the Fun-Bots vehicle routes (what drivers follow first) go round it when another road exists:
+    // V21.1: ... and the saved vehicle routes (what drivers follow first) go round it when another road exists:
     // a straight road through the stall spot and a detour; before the map's route reload the straight one is taken.
     {
         char net[8000]; int o = snprintf(net, sizeof net, "pathIndex;pointIndex;transX;transY;transZ;inputVar;data\n");
@@ -234,7 +234,7 @@ int main(void)
     text = slurp(path); CHECK(strstr(text, "map\tmap_MP_001.bmp\t-500.0 -400.0 2500.0 2600.0\t1024 1024")); free(text);
     snprintf(g_modeName, sizeof g_modeName, "ConquestLarge0"); tick(1);
     CHECK(!strcmp(g_learnKey, "MP_001_ConquestLarge0") && g_learn.nPads == 1 && g_learn.nRoutes >= 2 && bl_find(&g_learn, BL_FOOT, at, east, 3) >= 0);
-    // the routes players showed, as Fun-Bots lines for the route loader (foot: no vehicle label; driving: "land")
+    // the routes players showed, as saved lines for the route loader (foot: no vehicle label; driving: "land")
     size_t len = 0; const char *foot = learn_routes_for("MP_001_ConquestLarge0", BL_FOOT, &len);
     CHECK(foot && len > 100 && !strncmp(foot, "pathIndex;", 10) && !strstr(foot, "Vehicles"));
     const char *land = learn_routes_for("MP_001_ConquestLarge0", BL_GROUND, &len);

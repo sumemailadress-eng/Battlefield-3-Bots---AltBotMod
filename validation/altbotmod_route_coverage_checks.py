@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""AltBotMod V18.2 - Fun-Bots routes on every map and mode.
+"""AltBotMod V18.2 - saved routes on every map and mode.
 
 Every map / game mode the server can run (the Server Control table: 29 maps, 215 combinations) is loaded through the
 ACTUAL production trace_level_load / trace_try_file / tn_load_with_companion with the shipped files:
- - the file it picks is the mode's own Fun-Bots file, or the nearest same-level one (Squad Rush -> Rush, Gun Master /
-   Scavenger / CTF / TDM Close Quarters -> TDM ...), never a placeholder (Fun-Bots' one-point Air Superiority files);
+ - the file it picks is the mode's own route file, or the nearest same-level one (Squad Rush -> Rush, Gun Master /
+   Scavenger / CTF / TDM Close Quarters -> TDM ...), never a placeholder;
  - the mode's companion (the level's other recordings within the mode's area, tools/build_route_companions.py) is
    attached, and only to the file it was built for;
  - the network is walkable: the main connected network holds most of the waypoints, the companion waypoints join it,
@@ -79,7 +79,7 @@ int main(int argc, char **argv)
     }
     /* a placeholder (one point) is skipped and the level's Conquest routes are used */
     assert(combos == 215);
-    printf("PASS: all %d map/mode combinations load Fun-Bots routes through the real trace_level_load: %d with their own file, %d borrowing the nearest same-level one; "
+    printf("PASS: all %d map/mode combinations load saved routes through the real trace_level_load: %d with their own file, %d borrowing the nearest same-level one; "
            "%d with a companion (+%ld waypoints of the level's other recordings within the mode's area); worst share in networks of 100+ waypoints %.0f%% (%s), worst companion join %.0f%% (%s); routes reach >=95%% of each network\n",
            combos, own, borrowed, withComp, addedTotal, worstMain * 100, worstMainKey, worstJoin * 100, worstJoinKey);
     return 0;
@@ -90,7 +90,7 @@ PLACEHOLDER = r'''
 int main(int argc, char **argv)
 {
     g_exe = argv[1]; bm_defaults(&g_enhanced);
-    /* Fun-Bots' Air Superiority file is a one-point placeholder: skipped, the Conquest routes are used */
+    /* the Air Superiority file is a one-point placeholder: skipped, the Conquest routes are used */
     strcpy(g_level, "XP5_001"); strcpy(g_modeName, "AirSuperiority0"); g_traceKey[0] = 0; trace_level_load();
     assert(g_trace.count > 1000 && strstr(g_trace.name, "XP5_001_ConquestLarge0") && g_trace.primaryNodes >= TRACE_MIN_USABLE);
     /* a companion built for another file (here: the primary changed size) is not attached */
@@ -114,7 +114,7 @@ int main(int argc, char **argv)
     int floorTried = g_traceTried;
     float flat[3] = {t[0], body[1], t[2]};
     H->frame += 30 * 30; trace_plan(0, (char *)body, flat[0], flat[1], flat[2]);
-    assert(floorTried == 1 && g_traceTried == 2);   /* V23: Fun-Bots routes at all times - the one-floor trip of the same length is tried too (V18.2-V22: grid) */
+    assert(floorTried == 1 && g_traceTried == 2);   /* V23: saved routes at all times - the one-floor trip of the same length is tried too (V18.2-V22: grid) */
     printf("PASS: a one-point placeholder file is skipped for the level's Conquest routes; a companion built for another file is not attached; "
            "Squad Rush borrows Rush, CTF / Scavenger the team-play routes; a %s route to another floor 9-14 m away is tried, and (V23) the same trip on one floor too\n",
            n ? "recorded" : "(no join here)");
@@ -132,7 +132,7 @@ def combos():
     for code, cq, assault in brc.MAPS:
         for mode in brc.map_modes(code, cq, assault):
             prim = brc.primary_for(files, code, mode)
-            assert prim, f'{code}_{mode}: no Fun-Bots routes at all'
+            assert prim, f'{code}_{mode}: no saved routes at all'
             out.append((code, mode, files[code][prim]['fn'], int((TRACES / 'companions' / f'{code}_{mode}.map').exists())))
     return out
 

@@ -84,7 +84,7 @@ static int drive_goal_watch(int i,DriveState *d,const float *vp)
         return 0;
     }
     if(d->watchLevel==2){
-        d->traceTries+=2;d->traceAlt++;d->backOutUntil=H->frame+75;   // (V25: another recorded road - V17-V24 set 99: no Fun-Bots road for the rest of the trip)
+        d->traceTries+=2;d->traceAlt++;d->backOutUntil=H->frame+75;   // (V25: another recorded road - V17-V24 set 99: no saved road for the rest of the trip)
         bot_log("drive: %s is still stuck at (%.0f, %.0f) - another objective, on the driving map",pl+OFF_PLAYER_ONLINE_NAME,vp[0],vp[2]);
         if(drive_recover_job(i,d,vp))return 1;
         d->phase=2;d->why="35 s without 35 m (level 2)";return 0;

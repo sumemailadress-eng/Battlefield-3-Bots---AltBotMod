@@ -80,6 +80,7 @@ static void emplacement_tick(int i)
     char **list; int n = vehicle_list(&list);
     for (int k = 0; k < n && k < 256; k++) {
         char *e = list[k]; int kind = stationary_weapon(e);
+        if (kind == 1) continue;   // AltBotMod V35.2: no TOW / Kornet - their gunners shot little and sat out the fight
         if (!kind || !vehicle_ok(e) || vehicle_occupied(e) || !driver_seat_free(e)) continue;
         float *p = vehicle_pos(e, NULL);
         if (!p || dist2(p, me) > EMPLACEMENT_REACH * EMPLACEMENT_REACH || fabsf(p[1] - me[1]) > 4) continue;

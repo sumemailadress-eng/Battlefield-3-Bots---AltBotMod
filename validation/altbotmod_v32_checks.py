@@ -4,11 +4,11 @@
 1. Shooting a way open (core.c breach_start / breach_tick): a bot stuck at a shut door on its route (blocked at 0.5, 1.2 and
    1.8 m within 2.5 m, the route's next point beyond) holds still and fires across the door and low on both sides of it
    (Epicenter's red gas tanks), then looks again; not for a hillside or an open way; twice per spot every 30 s at most.
-2. Infantry onto the Fun-Bots routes: a grid join that runs out of the tick's planning budget waits for the next tick
+2. Infantry onto the saved routes: a grid join that runs out of the tick's planning budget waits for the next tick
    instead of counting as "no way onto a route" and walking the grid; a failed join is not retried from the same spot
    for 10 s.
-3. Squad spawns (as Fun-Bots 3.6.0-dev7): not on a mate hit in the last 5 s or with a living enemy within 30 m.
-4. Fun-Bots dev branch (3.6.0-dev7, checked 2026-10-23): its route files no longer carry objectives (bots walk a nav mesh
+3. Squad spawns (as the reference): not on a mate hit in the last 5 s or with a living enemy within 30 m.
+4. Newer route files no longer carry objectives (bots walk a nav mesh
    at the objectives), so they are not taken over; ours keep every objective tag (the Rush check in altbotmod_v31_checks).
 5. Version.
 """
@@ -118,16 +118,16 @@ def main():
     assert 'if (!plan_budget_left()) { g_lastPlanDeferred = 1; g_traceJoinDeferred++; return 0; }' in tr
     assert 'if (g_joinFailAt[i] && H->frame - g_joinFailAt[i] < 10 * 30 && g_joinFailId[i] == id && dist2(g_joinFailPos[i], pos) < 6.0f * 6.0f)' in tr
     assert 'g_joinFailAt[i] = H->frame ? H->frame : 1; g_joinFailId[i] = id;' in tr
-    print('PASS: infantry onto the Fun-Bots routes - a join out of planning budget waits for the next tick; a failed join is not retried from the same spot for 10 s')
+    print('PASS: infantry onto the saved routes - a join out of planning budget waits for the next tick; a failed join is not retried from the same spot for 10 s')
     # 3. squad spawns
     sp = core[core.index('static int squadmate_spawnable(char *mate, char *ms)\n{'):]; sp = sp[:sp.index('\n}\n')]
     assert 'g_attackedAt[mj] && H->frame - g_attackedAt[mj] < 5 * 30) return 0;' in sp and 'dist2((float *)(ts + OFF_SOLDIER_POSITION), p) < 30.0f * 30.0f) return 0;' in sp
     print('PASS: squad spawns - not on a mate hit in the last 5 s or with a living enemy within 30 m')
-    # 4. our route files keep their objective tags (Fun-Bots dev dropped them)
+    # 4. our route files keep their objective tags
     rush = [f for f in TRACES.glob('*Rush*.map')]
     assert rush and all('"Objectives"' in f.read_text(errors='ignore') for f in rush)
-    print('PASS: our %d Rush route files keep their objective tags (Fun-Bots 3.6.0-dev7 route files carry none - not taken over)' % len(rush))
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
+    print('PASS: our %d Rush route files keep their objective tags' % len(rush))
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh
     print('PASS: version (current)')
 
 if __name__ == '__main__':

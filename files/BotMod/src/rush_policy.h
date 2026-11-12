@@ -3,7 +3,7 @@
 
 // AltBotMod V16.1: how long a bot holds the interact key at an M-COM to arm / defuse it
 #define RUSH_HOLD_FRAMES (8 * 30)
-// V16.2: within this of the recorded spot a bot starts / keeps arming or defusing (Fun-Bots: 4 m from the MCOM)
+// V16.2: within this of the recorded spot a bot starts / keeps arming or defusing
 #define RUSH_ARM_REACH 2.6f
 #define RUSH_ARM_KEEP 3.2f
 

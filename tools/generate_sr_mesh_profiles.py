@@ -1,5 +1,5 @@
-"""AltBotMod V35: Squad Rush layouts for the 12 levels the Fun-Bots route files never recorded one for, from the objective
-meshes of Fun-Bots V3.6.0-RC2 (navzones/<Level>_SquadRush0.json).
+"""AltBotMod V35: Squad Rush layouts for the 12 levels the saved route files never recorded one for, from the objective
+objective meshes (navzones/<Level>_SquadRush0.json).
 
     mcom     the mesh's "mcom 1" / "mcom 2" zones (stage 1 / 2; checked on the 13 recorded levels: every one lines up
              1.2-2.0 m from the recorded arming spot). Where a Rush M-COM of the same level was recorded within 2.5 m,
@@ -13,14 +13,14 @@ meshes of Fun-Bots V3.6.0-RC2 (navzones/<Level>_SquadRush0.json).
     low/high the mesh's points and the bases, 60 m round them, 15 m down, 60 m up.
     patrol   32 mesh points evenly over the M-COM zones.
 
-Usage: python3 research/generate_sr_mesh_profiles.py <fun-bots navzones folder> [--write]
+Usage: python3 research/generate_sr_mesh_profiles.py <navzones folder> [--write]
 """
 import json, math, re, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 INC = ROOT / 'files/BotMod/src/mode_profiles.inc'
 LEVELS = ['MP_012', 'MP_013', 'MP_018', 'XP1_001', 'XP1_002', 'XP1_003', 'XP1_004', 'XP3_Alborz', 'XP4_FD', 'XP4_Parl', 'XP5_001', 'XP5_003']
-MARK = '// AltBotMod V35: Squad Rush from the Fun-Bots V3.6.0-RC2 objective meshes (research/generate_sr_mesh_profiles.py)'
+MARK = '// AltBotMod V35: Squad Rush from the objective meshes (research/generate_sr_mesh_profiles.py)'
 
 def h(a, b): return math.hypot(a[0] - b[0], a[2] - b[2])
 

@@ -1,4 +1,4 @@
-// Caspian V2: Fun-Bots waypoint networks as a native route graph (see trace_nav.h).
+// Caspian V2: the saved waypoint networks as a native route graph (see trace_nav.h).
 #include "trace_nav.h"
 #include <math.h>
 #include <stdio.h>
@@ -161,7 +161,7 @@ static int find_node(const TraceNet *t, int path, int point)
 }
 
 // AltBotMod V6: kind 0 = the infantry graph (vehicle paths left out), TN_KIND_LAND / TN_KIND_WATER = only the
-// Fun-Bots vehicle paths recorded for land vehicles / boats ("Vehicles":["land"] / ["water"] on a path's point).
+// saved vehicle paths recorded for land vehicles / boats ("Vehicles":["land"] / ["water"] on a path's point).
 // Vehicle recordings are sparser and rarely touch exactly, so their crossings join within 6 m.
 int tn_load_text_kind(TraceNet *t, const char *text, size_t length, int kind)
 {
@@ -241,7 +241,7 @@ int tn_load_text_kind(TraceNet *t, const char *text, size_t length, int kind)
         TNNode *n = &t->nodes[t->count++];
         memcpy(n->p, raw[k].p, 12); n->path = raw[k].path; n->point = raw[k].point;
         unsigned speed = raw[k].input & 0xF, extra = (raw[k].input >> 4) & 0xF;
-        unsigned wait = speed == 0 ? (raw[k].input >> 8) & 0xFF : 0;   // V15: Fun-Bots OptValue - the wait in seconds
+        unsigned wait = speed == 0 ? (raw[k].input >> 8) & 0xFF : 0;   // V15: the reference OptValue - the wait in seconds
         if (wait > 15) wait = 15;
         n->flags = (unsigned char)((extra == 1 ? TN_FLAG_JUMP : 0) | (speed == 1 || speed == 2 ? TN_FLAG_CROUCH : 0) | (speed == 0 ? TN_FLAG_WAIT : 0) |
                                    (wait << TN_WAIT_SHIFT));
@@ -561,7 +561,7 @@ int tn_route(const TraceNet *t, int id, int start, float spacing, float *pts, un
     return n;
 }
 
-// AltBotMod V15: Fun-Bots objective letters -> this level's flags (see trace_nav.h).
+// AltBotMod V15: the route files' objective letters -> this level's flags (see trace_nav.h).
 int tn_match_flags(TraceNet *t, const float (*flags)[3], int count, int *letterOut)
 {
     if (!t || count <= 0) return 0;

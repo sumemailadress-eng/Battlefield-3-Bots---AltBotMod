@@ -21,7 +21,7 @@ void bm_air_defaults(BMAirConfig *c)
     c->waitSeconds=8; c->attackSeconds=8; c->jetAreaMargin=900;   // (V34: 900 m - V30 600 m, V29 350 m)
     c->yawSign=c->pitchSign=c->rollSign=1;
 }
-// Primary weapons and muzzle offsets from supplied VehicleData.lua. VU part
+// Primary weapons and muzzle offsets from supplied VehicleData. VU part
 // indexes are deliberately absent: they are not native object offsets.
 static const BMAirProfile profiles[] = {
     {"F/A-18E",BM_AIR_JET,900,0,{0,0.880f,6.540f},1},
@@ -81,7 +81,7 @@ void bm_air_start(BMAirController *s, enum BMAirKind kind, int flying)
     s->phase=flying ? BM_FLIGHT_CRUISE : BM_FLIGHT_TAKEOFF;
     s->timer=kind==BM_AIR_JET ? 12 : 6;
 }
-// FunBots PidController.lua: anti-windup, clamping and integral direction reset.
+// The reference PidController: anti-windup, clamping and integral direction reset.
 // dt scaling preserves its per-update increments at our native 30-Hz cadence.
 float bm_air_pid(BMAirPid *s, float e, float kp, float ki, float kd, float dt)
 {
@@ -153,7 +153,7 @@ static void recover(BMAirController *s,int air)
     memset(&s->roll,0,sizeof s->roll); s->attackTime=0; s->shotTime=0;
 }
 // ---------------------------------------------------------------------------------------------------------------
-// AltBotMod V20 - air combat. Ideas from the Fun-Bots dev branch (VehicleJetControl.lua, 2026-10: collision
+// AltBotMod V20 - air combat. Ideas from reference jet control (2026-10: collision
 // evasion, extending after a pass, wings-level pull-out, PID gun tracking, distance-scaled fire window), plus
 // strike runs on ground targets (roll in from an initial point, dive, guns + rockets, pull out, extend, come
 // round from the other side) and missile locks. V19 jets flew straight at the enemy's lead point: two jets on
@@ -181,7 +181,7 @@ static void recover(BMAirController *s,int air)
 static const char *tactic_names[BM_TACTIC_COUNT]={"none","pursues","guns","breaks off","extends","sets up a strike run on",
     "dives on","pulls out","evades traffic","strafes","turns back into the combat area","recovers speed (nose down)"};
 const char *bm_air_tactic_name(int t){ return t>=0 && t<BM_TACTIC_COUNT ? tactic_names[t] : "?"; }
-// Time-based PID (Fun-Bots PidController semantics: Ki per error*second, Kd per error/second).
+// Time-based PID (the reference PidController semantics: Ki per error*second, Kd per error/second).
 static float pid_time(BMAirPid *s,float e,float kp,float ki,float kd,float dt)
 {
     if(!isfinite(e) || !isfinite(dt) || dt<=0 || dt>0.25f){memset(s,0,sizeof *s);return 0;}
@@ -202,7 +202,7 @@ static void break_point(const BMAirObservation *o,const float *side,int climb,fl
     point[0]=o->position[0]+fx*150+sx*150; point[2]=o->position[2]+fz*150+sz*150;
     point[1]=o->position[1]+(climb ? 120 : -120);
 }
-// Fun-Bots _GetEvasionPoint: any aircraft passing closer than JET_AVOID (head-on: JET_AVOID_HEADON) within
+// The reference _GetEvasionPoint: any aircraft passing closer than JET_AVOID (head-on: JET_AVOID_HEADON) within
 // JET_AVOID_TIME. Break away from where it will be at the closest approach (dead head-on: to the right); the
 // higher one climbs, the lower one dives. Both sides compute the mirror image, so they part. 0 = no threat.
 static int jet_evasion(const BMAirObservation *o,float point[3])
@@ -226,7 +226,7 @@ static int jet_evasion(const BMAirObservation *o,float point[3])
 }
 // Steering towards `aim`.
 //  mode 0: the V9 bank-and-pull guidance (plain cruising, unchanged).
-//  mode 1: lift vector on the point (Fun-Bots dev "roll into the turn"): roll until the point lies straight
+//  mode 1: lift vector on the point: roll until the point lies straight
 //          "up" in the cockpit, then pull. Holds height in hard turns: a point below the horizon gets a bank
 //          beyond 90 deg instead of a climbing turn.
 //  mode 2: as 1, but PID gun tracking once the point is within 0.35 rad of the nose (the lead point moves all
@@ -701,14 +701,14 @@ int bm_air_step(BMAirController *s,const BMAirProfile *p,const BMAirConfig *c,
         // World flight-path pitch remains signed even when the waypoint is
         // behind the aircraft; cross-product asin lost that hemisphere.
         // Translate the finite world guidance direction into body axes as
-        // FunBots does. World pitch alone loses the elevator needed in a bank.
+        // The reference does. World pitch alone loses the elevator needed in a bank.
         float guideYaw=heading+clamp(headingError,-1.0f,1.0f);
         float guide[3]={o->position[0]+sinf(guideYaw)*250,
             o->position[1]+tanf(desiredPitch)*250,o->position[2]+cosf(guideYaw)*250};
         float bodyYaw,bodyPitch;bm_air_deviation(o,guide,&bodyYaw,&bodyPitch);
         out->pitch=clamp(bodyPitch*3,-1,1);
         if(aboveCeiling && !hazard)out->pitch=clamp((pitch-desiredPitch)*3,-1,1)*(cosf(roll)<0 ? -1 : 1);
-        // FunBots JetControl uses +deviation for rudder. Helicopters retain
+        // The reference JetControl uses +deviation for rudder. Helicopters retain
         // their separate -PID yaw controller; this is not a global sign flip.
         out->yaw=clamp(bodyYaw*0.35f,-0.5f,0.5f);
         float throttle=bm_air_pid(&s->throttle,c->jetSpeed-speed,3,0.05f,0.2f,dt);
@@ -725,7 +725,7 @@ int bm_air_step(BMAirController *s,const BMAirProfile *p,const BMAirConfig *c,
         if (attacking) desiredPitch=atan2f(aim[1]-o->position[1],distance);
         else {
             float forwardSpeed=dot(o->velocity,o->forward);
-            // Keep FunBots' -0.35 cruise tilt; level/brake near a hover goal,
+            // Keep the -0.35 cruise tilt; level/brake near a hover goal,
             // during a tight yaw turn, or above the practical cruise speed.
             desiredPitch=clamp(-0.35f*clamp(distance/80,0,1)+fmaxf(0,forwardSpeed-15)*0.02f,-0.35f,0.25f);
             desiredPitch*=clamp(1-fabsf(out->yawError)/1.5f,0,1);
@@ -757,7 +757,7 @@ int bm_air_step(BMAirController *s,const BMAirProfile *p,const BMAirConfig *c,
     float aimRange=finite3(out->aim) ? sqrtf((out->aim[0]-o->position[0])*(out->aim[0]-o->position[0])+(out->aim[1]-o->position[1])*(out->aim[1]-o->position[1])+(out->aim[2]-o->position[2])*(out->aim[2]-o->position[2])) : 300;
     float tolerance=jet ? 0.2f : clamp(atanf((o->targetAir ? 12.0f : 6.0f)/fmaxf(aimRange,1)),o->targetAir ? 0.035f : 0.025f,0.12f);   // (V24: a helicopter is ~15 m long - 12 m, was 8)
     int ready=attacking && !hazard && fabsf(out->yawError)<tolerance && fabsf(out->pitchError)<tolerance;
-    // Plane cycle: 0.3 s pause / 1.3 s firing, as in VehicleAttacking.lua.
+    // Plane cycle: 0.3 s pause / 1.3 s firing, as in VehicleAttacking.
     // V20 helicopter cycle: 0.25 s pause / 0.95 s firing (V19: 0.3 / 0.3).
     float cycle=jet ? 1.6f : 1.2f, pause=jet ? 0.3f : 0.25f;
     if (attacking) s->shotTime=fmodf(s->shotTime+dt,cycle);

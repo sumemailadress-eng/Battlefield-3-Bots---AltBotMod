@@ -1,0 +1,34 @@
+diff -ruN '--exclude=*.dll' AltBotMod-V35/files/BotMod/src/emplacement_native.inc AltBotMod-V35.2/files/BotMod/src/emplacement_native.inc
+--- AltBotMod-V35/files/BotMod/src/emplacement_native.inc	2026-11-04 15:26:50.044242000 +0000
++++ AltBotMod-V35.2/files/BotMod/src/emplacement_native.inc	2026-11-12 19:39:39.559308000 +0000
+@@ -80,6 +80,7 @@
+     char **list; int n = vehicle_list(&list);
+     for (int k = 0; k < n && k < 256; k++) {
+         char *e = list[k]; int kind = stationary_weapon(e);
++        if (kind == 1) continue;   // AltBotMod V35.2: no TOW / Kornet - their gunners shot little and sat out the fight
+         if (!kind || !vehicle_ok(e) || vehicle_occupied(e) || !driver_seat_free(e)) continue;
+         float *p = vehicle_pos(e, NULL);
+         if (!p || dist2(p, me) > EMPLACEMENT_REACH * EMPLACEMENT_REACH || fabsf(p[1] - me[1]) > 4) continue;
+diff -ruN '--exclude=*.dll' AltBotMod-V35/files/BotMod/src/enhanced.h AltBotMod-V35.2/files/BotMod/src/enhanced.h
+--- AltBotMod-V35/files/BotMod/src/enhanced.h	2026-11-04 15:26:50.163244000 +0000
++++ AltBotMod-V35.2/files/BotMod/src/enhanced.h	2026-11-12 19:39:39.686352000 +0000
+@@ -8,7 +8,7 @@
+ #include <stddef.h>
+ #include "air.h"
+ 
+-#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"
++#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"
+ enum BMVehicleKind { BM_UNKNOWN, BM_LIGHT, BM_BOAT, BM_TANK, BM_IFV, BM_AIR, BM_AA, BM_AMTRAC };
+ typedef struct BMVehicleProfile {
+     const char *label;
+diff -ruN '--exclude=*.dll' AltBotMod-V35/files/BotMod/src/spawn_vehicle.inc AltBotMod-V35.2/files/BotMod/src/spawn_vehicle.inc
+--- AltBotMod-V35/files/BotMod/src/spawn_vehicle.inc	2026-11-04 15:26:52.149250000 +0000
++++ AltBotMod-V35.2/files/BotMod/src/spawn_vehicle.inc	2026-11-12 19:39:41.471058000 +0000
+@@ -36,6 +36,7 @@
+         if (!vehicle_ok(v) || (!emp && strcmp(fleet_reason(v, team), "available"))) continue;   // (an emplacement has no driving class)
+         int vt = 0; float *p = vehicle_pos(v, &vt);
+         if (!p) continue;
++        if (emp == 1) continue;   // AltBotMod V35.2: no spawning into a TOW / Kornet (an AA emplacement still)
+         if (emp) {
+             if (human_near(p, g_enhanced.humanRadius) || vehicle_bad(v)) continue;   // AltBotMod V7: a free AA (Pantsir / C-RAM) or TOW / Kornet emplacement on our side with something to
+                      // shoot - an enemy aircraft in the air / an enemy vehicle within 450 m - is taken at the spawn screen too

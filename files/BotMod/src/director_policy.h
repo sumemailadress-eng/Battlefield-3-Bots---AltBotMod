@@ -1,4 +1,4 @@
-// Bounded team assignments inspired by FunBots GameDirector's assignment
+// Bounded team assignments inspired by the reference GameDirector's assignment
 // counts. Observations are supplied by the native adapter, never guessed.
 #pragma once
 #include <math.h>

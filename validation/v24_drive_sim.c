@@ -1,4 +1,4 @@
-// AltBotMod V24: driving a real Fun-Bots land route (the longest "land" path of a route file) with a simple car - turn
+// AltBotMod V24: driving a real saved land route (the longest "land" path of a route file) with a simple car - turn
 // radius 6 m, 5 m/s^2 up, 8 m/s^2 down, speed limit 34 m/s (a jeep) - steered the V6-V23 way (reach every waypoint;
 // within 1.75 m at any 25-deg "corner") and the V24 way (pure pursuit: bm_route_progress / bm_route_aim). The speed target
 // is the driver's own: the bend speeds ahead (bm_bend_speed) and its heading-error caps. Measured: average speed, how
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
     printf("V24:    avg %.1f m/s, %d slow-down-and-go of 3+ m/s, %d of them pointless (no real bend / the end to slow for); strays up to %.1f m\n", now.avg, now.drops, now.pointless, now.worstOff);
     assert(now.finished && now.worstOff < 6.0f && now.avg > old.avg);
     assert(now.pointless * 5 <= old.pointless + 2);   /* the pointless ones (the stop-go) go */
-    printf("PASS: V24 driving a real Fun-Bots road (%s, %.0f m): pointless slow-downs (no real bend or the end to slow for) %d -> %d, average %.1f -> %.1f m/s, never more than %.1f m off the road\n",
+    printf("PASS: V24 driving a real saved road (%s, %.0f m): pointless slow-downs (no real bend or the end to slow for) %d -> %d, average %.1f -> %.1f m/s, never more than %.1f m off the road\n",
            strrchr(file, '/') ? strrchr(file, '/') + 1 : file, len, old.pointless, now.pointless, old.avg, now.avg, now.worstOff);
     return 0;
 }

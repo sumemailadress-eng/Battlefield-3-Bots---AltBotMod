@@ -54,7 +54,7 @@ int main(void)
     for (int k = 0; k < 40; k++) { drive[k][0] = 0; drive[k][1] = 5; drive[k][2] = k * 10.0f; }
     CHECK(bl_add_route(&A, BL_GROUND, (const float (*)[3])drive, 40, 1023) == 1);
     CHECK(bl_add_route(&A, BL_AIR, (const float (*)[3])drive, 40, 1023) < 0);   // no air routes
-    // routes as Fun-Bots lines: foot paths plain, vehicle paths tagged for the land / water graphs
+    // routes as saved lines: foot paths plain, vehicle paths tagged for the land / water graphs
     char mt[20000];
     size_t mn = bl_routes_map_text(&A, BL_FOOT, mt, sizeof mt);
     CHECK(mn > 0 && strstr(mt, "0;29;87.000;10.000;0.000;3;") && !strstr(mt, "Vehicles"));

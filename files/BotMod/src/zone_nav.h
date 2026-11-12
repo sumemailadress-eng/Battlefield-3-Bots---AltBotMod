@@ -1,7 +1,7 @@
-// AltBotMod V34: Fun-Bots' walking mesh around the objectives ("navzones", Fun-Bots 3.6.0-dev).
+// AltBotMod V34: the walking mesh around the objectives ("navzones").
 //
-// Fun-Bots 3.6 dev bots walk a mesh of points at the capture points, M-COMs and bases instead of following recorded
-// waypoints there (ext/Server/NavZones.lua). The meshes ship as JSON (navzones/<Level>_<Mode>.json); AltBotMod's
+// Bots walk a mesh of points at the capture points, M-COMs and bases instead of following recorded
+// waypoints there (ext/Server/NavZones). The meshes ship as JSON (navzones/<Level>_<Mode>.json); AltBotMod's
 // package converts them to a plain text file per level and mode (BotMod_traces\navzones\<Level>_<Mode>.zon, written
 // by validation/tools/navzones_convert.py):
 //   AltBotMod navzones 1 <Level>_<Mode>
@@ -34,7 +34,7 @@ typedef struct ZoneNet {
     char name[64];
     // A* scratch (one search at a time - the game thread)
     float *g; int *from, *heap, *heapPos; unsigned *seen; unsigned stamp;
-    // AltBotMod V35 (Fun-Bots V3.6.0-RC2): metres added per point for team 1 / 2 where its soldiers died lately
+    // AltBotMod V35: metres added per point for team 1 / 2 where its soldiers died lately
     // (zn_on_killed), fading by half a minute (zn_decay); NULL until the first death.
     float *danger[3]; float dangerTime; int dangerCount[3];
 } ZoneNet;
@@ -52,7 +52,7 @@ int  zn_zone_point(const ZoneNet *z, int zone, unsigned seed);
 // Route from point a to point b: the positions to walk (corners and points, without a), their flags, at most maxPts.
 // Returns the count (0: no way on the mesh); *partial = 1 when maxPts cut it short; *length its length in metres.
 int  zn_route(ZoneNet *z, int a, int b, float *out, unsigned char *flags, int maxPts, int *partial, float *length);
-// AltBotMod V35 (Fun-Bots V3.6.0-RC2, NavZones.lua): the same with the bot's own way among similar ones and its team's
+// AltBotMod V35: the same with the bot's own way among similar ones and its team's
 // danger. seed (not 0): each 30 m region of the mesh seems 1 .. 1+ZN_SPREAD longer to this bot, so the bots spread over
 // the ways instead of all walking one line. team 1 / 2: the metres where that team was killed lately are added (0: none).
 // *length is always the real length of the way.
@@ -75,8 +75,8 @@ void zn_decay(ZoneNet *z, float now);
 // The danger of the team at point n in metres (0: none).
 float zn_danger(const ZoneNet *z, int team, int n);
 // Whether a bot's life (by its seed) weighs the danger: 3 of 4 lives do, the rest take the shortest way so the attack goes
-// on there as well (NavRoutes.lua CAUTIOUS_SHARE).
+// on there as well (NavRoutes CAUTIOUS_SHARE).
 int  zn_cautious(unsigned seed);
 // A bot got stuck near pos: the connection there costs `amount` more from now on (after 3 times it is closed for the
-// level, as Fun-Bots does). Returns the edge index or -1.
+// level, as the reference does). Returns the edge index or -1.
 int  zn_penalize(ZoneNet *z, const float *pos, float amount);

@@ -1,4 +1,4 @@
-// AltBotMod V23: the AC-130 gunship ("GUNSHIP"). It flies its own orbit; its seats are guns. As Fun-Bots does
+// AltBotMod V23: the AC-130 gunship ("GUNSHIP"). It flies its own orbit; its seats are guns. As the reference does
 // (BotSpawner "SpawnInGunship"), a bot that has just spawned on the team that owns it takes a free gun seat straight away
 // - seats 1 and up; one stays free for a human on the team. The gunner code aims and fires from there (its guns reach
 // 1.6 km, its own speed is in the lead), and nothing pulls a gunner out of it.

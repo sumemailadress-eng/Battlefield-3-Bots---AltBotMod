@@ -3,7 +3,7 @@
 // that gives ServerVehicleEntity 0x025bf8e8). A worker thread finds them twice a second; the game thread reads where each
 // one is and where it points, every tick. Uses:
 //  1. a bot's own launch is confirmed (a new missile beside the launcher) - next to the magazine check;
-//  2. a bot whose vehicle or aircraft a missile is heading for pops flares / smoke before it hits (Fun-Bots
+//  2. a bot whose vehicle or aircraft a missile is heading for pops flares / smoke before it hits (the reference
 //     CheckForFlareOrSmoke: within 350 m, its nose pointing at the vehicle); V16-V22 only did that after the hit.
 // The missile's transform (right / up / forward / position, 16 floats like a vehicle's) is found the first time missiles
 // fly: the offset whose basis is orthonormal and whose position moves like a missile between two reads.

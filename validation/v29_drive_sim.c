@@ -1,5 +1,5 @@
-// AltBotMod V29: Fun-Bots driving, simulated. A tank (+3 m/s^2 falling to 0 at 17.5 m/s, brakes 8 m/s^2, turns 0.7 rad/s,
-// pivots) and a jeep (+4.5 m/s^2 to 30 m/s, turns on a 7 m radius) on the longest Fun-Bots land road of a map, driven as
+// AltBotMod V29: the reference driving, simulated. A tank (+3 m/s^2 falling to 0 at 17.5 m/s, brakes 8 m/s^2, turns 0.7 rad/s,
+// pivots) and a jeep (+4.5 m/s^2 to 30 m/s, turns on a 7 m radius) on the longest saved land road of a map, driven as
 // drive_tick does in V29: pure pursuit (bm_route_progress / bm_route_aim), the heading caps, the road's real bends
 // (bm_route_bend_limit), bm_drive_throttle on the speed measured every 1/3 s - and, for comparison, the V28 way (the speed
 // target raised 8 m/s per second after a dip, throttle 0.35 + 0.12 x the error).

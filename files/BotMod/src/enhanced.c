@@ -35,7 +35,7 @@ void bm_defaults(BMConfig *c)
     c->botTicketCost = 0.5f; c->vehicleCountermeasures = 1;
     c->weaponHandling = c->armorTactics = c->armorEscort = c->traffic = c->diagnostics = 1;
     c->driveStages=1;
-    c->aggression = 1; c->funBotsRoutes = 1; c->botDamage = 1.0f; c->vehicleDamageTaken = c->vehicleDamageDealt = 1.0f;
+    c->aggression = 1; c->savedRoutes = 1; c->botDamage = 1.0f; c->vehicleDamageTaken = c->vehicleDamageDealt = 1.0f;
     c->armorRepairHealth = 0.35f; c->armorTacticMeters = 70; c->trafficSpacing = 14;
     c->difficulty = 5; c->randomDifficulty = 0;   // AltBotMod V9: elite
     c->sniperRange = 550; c->sniperOverwatch = 1;   // AltBotMod V10
@@ -44,7 +44,7 @@ void bm_defaults(BMConfig *c)
     c->lockAssist = 1;   // AltBotMod V29: lock-ons lock (LockOnAssist=0: only the game's own lock, which never locks for a bot)
     c->lockOnSeconds = 0.5f;   // AltBotMod V30 (V29: the weapon's own lock time, 1.5-2.5 s)
     c->doorGunRange = 600.0f;   // AltBotMod V30
-    c->funBotsMesh = 1; c->vehicleWalkMeters = 250.0f;   // AltBotMod V34
+    c->objectiveMesh = 1; c->vehicleWalkMeters = 250.0f;   // AltBotMod V34
     c->liveMap = 1; c->liveMapSeconds = 1; c->liveMapTrailSeconds = 5; c->liveMapKeepMB = 64;   // AltBotMod V13
     c->learning = c->learnFromPlayers = 1;   // AltBotMod V21
     c->sideSteps = 1;   // AltBotMod V14
@@ -85,7 +85,7 @@ int bm_set(BMConfig *c, const char *key, const char *value)
         BOOL_KEY("LockOnAssist", lockAssist),   // AltBotMod V29
         FLOAT_KEY("LockOnSeconds", lockOnSeconds, 0, 6),   // AltBotMod V30
         FLOAT_KEY("DoorGunMeters", doorGunRange, 150, 1500),   // AltBotMod V30
-        BOOL_KEY("FunBotsMesh", funBotsMesh), FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000),   // AltBotMod V34
+        BOOL_KEY("ObjectiveMesh", objectiveMesh), FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000),   // AltBotMod V34
         BOOL_KEY("LiveMap", liveMap), BOOL_KEY("Learning", learning), BOOL_KEY("LearnFromPlayers", learnFromPlayers), FLOAT_KEY("LiveMapSeconds", liveMapSeconds, 0.5f, 10),
         FLOAT_KEY("LiveMapTrailSeconds", liveMapTrailSeconds, 1, 60), INT_KEY("LiveMapKeepMB", liveMapKeepMB, 5, 1000),
         INT_KEY("SideSteps", sideSteps, 0, 2),
@@ -99,7 +99,7 @@ int bm_set(BMConfig *c, const char *key, const char *value)
         FLOAT_KEY("BotTicketCost", botTicketCost, 0, 2), BOOL_KEY("VehicleCountermeasures", vehicleCountermeasures),
         BOOL_KEY("WeaponHandling", weaponHandling), BOOL_KEY("ArmorTactics", armorTactics),
         BOOL_KEY("DriveInStages",driveStages),
-        INT_KEY("Aggression", aggression, 0, 2), BOOL_KEY("FunBotsRoutes", funBotsRoutes),
+        INT_KEY("Aggression", aggression, 0, 2), BOOL_KEY("SavedRoutes", savedRoutes),
         FLOAT_KEY("BotDamage", botDamage, 0.25f, 4.0f),
         FLOAT_KEY("VehicleDamageTaken", vehicleDamageTaken, 0.25f, 4.0f), FLOAT_KEY("VehicleDamageDealt", vehicleDamageDealt, 0.25f, 4.0f),
         BOOL_KEY("ArmorInfantrySupport", armorEscort), BOOL_KEY("TrafficManagement", traffic),
@@ -333,7 +333,7 @@ float bm_drive_throttle(float vwant, float speed, int armored, float headingErro
 {
     if (!isfinite(vwant) || !isfinite(speed)) return 0.0f;
     if (vwant <= 0.0f) return speed > 0.5f ? -0.6f : 0.0f;
-    if (speed < vwant - 1.0f) return (!armored && fabsf(headingError) > 1.0f) ? 0.6f : 1.0f;   // (Fun-Bots: half throttle on full steering)
+    if (speed < vwant - 1.0f) return (!armored && fabsf(headingError) > 1.0f) ? 0.6f : 1.0f;   //
     if (speed < vwant + 1.0f) return 0.3f;                                                      // at the target: hold
     if (speed < vwant + 3.0f) return 0.0f;                                                      // a little over: off the throttle
     return -fmaxf(0.15f, fminf(0.8f, (speed - vwant - 1.0f) / 6.0f));                          // well over: brake, harder the further over
@@ -386,7 +386,7 @@ float bm_bend_speed(const float pb[3], const float w[3], const float pf[3], int 
 static float d2h(const float *a, const float *b) { float x = a[0] - b[0], z = a[2] - b[2]; return x * x + z * z; }
 float bm_route_bend_limit(const float pb[3], const float w[3], const float pf[3], int boat, int armored)
 {
-    // AltBotMod V24: as Fun-Bots drives - flat out along the road; only a real bend (radius under 28 m: a junction, a
+    // AltBotMod V24: as the reference drives - flat out along the road; only a real bend (radius under 28 m: a junction, a
     // hairpin, a tight corner) is slowed for. Gentle curves and a recording's wobble are the vehicle's physics' business.
     // Both arms are the road itself (+-25 m of recorded points, never the car's own position): an arm under 12 m cannot
     // tell a bend from a wobble, so it is not slowed for.

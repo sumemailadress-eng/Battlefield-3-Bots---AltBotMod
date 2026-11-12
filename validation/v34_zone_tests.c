@@ -1,4 +1,4 @@
-// AltBotMod V34: zone_nav.c against every converted Fun-Bots mesh (BotMod_traces/navzones/*.zon).
+// AltBotMod V34: zone_nav.c against every converted the mesh (BotMod_traces/navzones/*.zon).
 #include "zone_nav.h"
 #include <assert.h>
 #include <dirent.h>

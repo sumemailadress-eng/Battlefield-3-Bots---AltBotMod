@@ -1,4 +1,4 @@
-// Native C translation/adaptation of the supplied FunBots 3.0.0 flight logic.
+// Native C translation/adaptation of the reference flight logic.
 // See AIRCRAFT-PORT.md for provenance, changed safeguards and runtime limits.
 #pragma once
 

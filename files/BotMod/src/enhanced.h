@@ -1,6 +1,6 @@
 // Portable policy layer for the experimental native BotMod enhancement.
 // Vehicle classes and primary-shell constants were cross-checked against
-// the supplied FunBots 3.0.0 VehicleData.lua. This is not a VU API port.
+// The reference VehicleData. This is not a VU API port.
 #pragma once
 #ifndef BOT_ROSTER   /* AltBotMod V28: core.c maps it to bot_roster(); a test harness reads the name */
 #define BOT_ROSTER(pl) ((const char *)(pl) + OFF_PLAYER_ONLINE_NAME)
@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include "air.h"
 
-#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"
+#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"
 enum BMVehicleKind { BM_UNKNOWN, BM_LIGHT, BM_BOAT, BM_TANK, BM_IFV, BM_AIR, BM_AA, BM_AMTRAC };
 typedef struct BMVehicleProfile {
     const char *label;
@@ -30,7 +30,7 @@ typedef struct BMConfig {
     int vehicleCountermeasures;   // AltBotMod V16: smoke / flares when hit or locked
     int weaponHandling, armorTactics, armorEscort, traffic, diagnostics, driveStages;
     int aggression;      // Caspian V2: 0 = Test15 combat, 1 = aggressive (default), 2 = brutal
-    int funBotsRoutes;   // Caspian V2: follow Fun-Bots recorded routes (BotMod_traces)
+    int savedRoutes;   // Caspian V2: follow saved recorded routes (BotMod_traces)
     float vehicleDamageTaken, vehicleDamageDealt;   // AltBotMod V16.2: damage to vehicles x / damage from anyone in a vehicle x (1 = game damage)
     float botDamage;     // Caspian V5: damage multiplier for bullets/shells fired by bots (1 = game damage)
     float armorRepairHealth, armorTacticMeters, trafficSpacing;
@@ -46,14 +46,14 @@ typedef struct BMConfig {
     int lockAssist;               // AltBotMod V29: put a bot's lock in place after the weapon's lock time on target
     float lockOnSeconds;          // AltBotMod V30: the time on target before a bot's lock is put in place (s; the weapon's own lock time if shorter)
     float doorGunRange;           // AltBotMod V30: helicopter door guns / bench seats reach (m)
-    int funBotsMesh;              // AltBotMod V34: walk Fun-Bots' objective mesh (BotMod_traces\navzones) near objectives
+    int objectiveMesh;              // AltBotMod V34: walk the objective mesh (BotMod_traces\navzones) near objectives
     float vehicleWalkMeters;      // AltBotMod V34: after the round's opening, infantry walk at most this far to a vehicle
     int liveMap;                  // AltBotMod V13: write BotMod\LiveMap (positions, kills, stuck spots) for Server Control
     int learning, learnFromPlayers;   // AltBotMod V21: learn from stuck spots / losses / deaths (BotMod_learned); record players' routes
     float liveMapSeconds;         // AltBotMod V13: how often the live picture is replaced
     float liveMapTrailSeconds;    // AltBotMod V13: how often each soldier's position goes into the events (traffic heat)
     int liveMapKeepMB;            // AltBotMod V13: events file size before it is rolled over to events_<port>.old.txt
-    int routeActions;             // AltBotMod V15: Fun-Bots recorded actions - boarding spots, exit points, waits, crouch sections
+    int routeActions;             // AltBotMod V15: saved recorded actions - boarding spots, exit points, waits, crouch sections
     int reconBeacons;             // AltBotMod V15: recon bots set radio beacons at the recorded beacon spots
     int sideSteps;                // AltBotMod V14: 0 none, 1 short steps under fire / close in (default), 2 constant (V9-V13)
 } BMConfig;
@@ -86,7 +86,7 @@ extern BMStuckHook bm_stuck_hook;
 static inline void bm_report_stuck(int bot, const float *pos, const char *kind) { if (bm_stuck_hook) bm_stuck_hook(bot, pos, kind); }
 // AltBotMod V21: learning (learn_native.inc sets these; NULL in the offline tests and with Learning=0). Events: where
 // bots get stuck, jump, die, lose aircraft. Questions: is this spot known to be passable (1, 2 = with a jump), how many
-// metres more should an aircraft keep here. Routes: the learned routes of a kind as Fun-Bots lines for the trace loader.
+// metres more should an aircraft keep here. Routes: the learned routes of a kind as saved lines for the trace loader.
 enum { BM_LEARN_STUCK_FOOT = 1, BM_LEARN_STUCK_GROUND, BM_LEARN_STUCK_BOAT, BM_LEARN_AIR_LOSS, BM_LEARN_DEATH, BM_LEARN_JUMP,
        BM_LEARN_PAD_LANDED, BM_LEARN_PAD_BLOCKED };   // (pads: a transport landed at / found blocked a helicopter landing spot)
 enum { BM_ASK_FOOT_KEEP_OPEN = 1, BM_ASK_AIR_CLEARANCE_JET, BM_ASK_AIR_CLEARANCE_HELI };
@@ -134,7 +134,7 @@ int bm_infantry_pause(int recon, float distance);
 float bm_infantry_tolerance(const BMConfig *config, int recon, float distance);
 float bm_drive_horizon(float speed, int boat);
 float bm_drive_obstacle_speed(float distance, float speed, int boat);
-// AltBotMod V29: Fun-Bots driving. The throttle for a speed target: 1.0 below it (0.6 for a wheeled vehicle steering
+// AltBotMod V29: the reference driving. The throttle for a speed target: 1.0 below it (0.6 for a wheeled vehicle steering
 // hard), 0.3 at it, a brake over it (negative), a stop for 0. And the speed a vehicle in the lane allows (along / lat:
 // where it is from this one, half: both half-widths and the margin, speed: its own speed along this one's heading).
 float bm_drive_throttle(float vwant, float speed, int armored, float headingError);

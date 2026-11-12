@@ -36,6 +36,7 @@ static char *vspawn_pick(char *bot, int team)
         if (!vehicle_ok(v) || (!emp && strcmp(fleet_reason(v, team), "available"))) continue;   // (an emplacement has no driving class)
         int vt = 0; float *p = vehicle_pos(v, &vt);
         if (!p) continue;
+        if (emp == 1) continue;   // AltBotMod V35.2: no spawning into a TOW / Kornet (an AA emplacement still)
         if (emp) {
             if (human_near(p, g_enhanced.humanRadius) || vehicle_bad(v)) continue;   // AltBotMod V7: a free AA (Pantsir / C-RAM) or TOW / Kornet emplacement on our side with something to
                      // shoot - an enemy aircraft in the air / an enemy vehicle within 450 m - is taken at the spawn screen too

@@ -41,8 +41,8 @@ def main():
     assert 'int holding=(a->control.phase==BM_FLIGHT_ATTACK || setup)' in nat and 'a->control.ipValid=0;' in nat and 'o->velocity[1]>2 && s->phase!=BM_FLIGHT_ATTACK' in air
     assert 'int want=(o->armSecondary || as->secondaryAt) ? 2 : 1;' in nat and 'fire=H->frame>=start && H->frame<start+12;' in nat   # V22: missile held selected while it locks
     assert 'fires its secondary weapon' in nat and 'air_combat_log(i);' in nat and 'dogfight gun runs' in nat
-    assert '400*acosf' in nat                                  # Fun-Bots angle penalty on targets behind
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
+    assert '400*acosf' in nat                                  # The reference angle penalty on targets behind
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in (SRC / 'enhanced.h').read_text()
     print('PASS: V20 sources: traffic table, target hold, angle penalty, secondary weapon sequence, combat logs, version')
 
 if __name__ == '__main__':

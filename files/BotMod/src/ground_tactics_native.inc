@@ -293,7 +293,7 @@ static float traffic_speed(int i,const float *vp,const float *xf,const float *wa
     if(d->trafficWait){
         if(!d->trafficSince)d->trafficSince=H->frame;
         // V9: 6 s behind a stopped / blocking vehicle (V7/V8: 10 s, then the very same road again): route round it -
-        // the blocked stretch is avoided for 40 s, no Fun-Bots road for this trip - or, with no other way, another flag.
+        // the blocked stretch is avoided for 40 s, no saved road for this trip - or, with no other way, another flag.
         // V10: one coming through a narrow stretch towards it is waited for (15 s - it is about to come out; V9 gave up
         // after 6 s and drove round, a long detour for a bridge that cleared a moment later); a stopped one: 6 s.
         VehTrack *pt=d->trafficPeer?vehicle_sample(d->trafficPeer):NULL;

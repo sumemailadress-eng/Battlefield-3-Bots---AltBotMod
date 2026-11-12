@@ -2,7 +2,7 @@
 #pragma once
 #include <math.h>
 // AltBotMod V35: M-COMs whose arming spot and aim were never recorded (present 2: the Squad Rush layouts made from the
-// Fun-Bots V3.6.0-RC2 objective meshes, research/generate_sr_mesh_profiles.py). As Fun-Bots RC2 does without a recorded
+// objective meshes, research/generate_sr_mesh_profiles.py). As the reference does without a recorded
 // spot, the operator walks up to 1.3 m from the M-COM, crouches and looks at it (pitch -0.6). A hold the game does not
 // answer with an arm / defuse turns the next try a little further round (0, +-30, +-60, +-90 deg, behind), then lower;
 // the aim that worked is kept for the level.

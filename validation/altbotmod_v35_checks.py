@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
-"""AltBotMod V35.1 - New Ground: offline checks.
+"""AltBotMod V35.2 - New Ground: offline checks.
 
-1. The objective meshes are Fun-Bots V3.6.0-RC2's (110 level / mode meshes, 13 more than V34: the new Squad Rush meshes
+1. There are 110 objective meshes (110 level / mode meshes, 13 more than V34: the new Squad Rush meshes
    and Alborz Tank Superiority; all re-cut with corners clear of wall ends and floors rescanned). The file-for-file check
    against the RC2 checkout and the M-COM coverage run in altbotmod_v34_checks.py.
-2. Mesh routing from RC2's NavZones.lua / NavRoutes.lua (zone_nav.c zn_route_ex): each bot life takes its own way among
+2. Mesh routing from RC2's NavZones / NavRoutes (zone_nav.c zn_route_ex): each bot life takes its own way among
    similar ones (30 m regions seem up to 25 % longer by its seed), and 3 of 4 lives keep off where their team died in the
    last minutes (15 m a death on the points within 6 m on that floor, at most 50 m, half gone after a minute). Run on five
    shipped meshes with AddressSanitizer / UBSan (v35_zone_spread_tests.c).
 3. The game side: the seed per life, the team's danger, deaths from the downed record; version.
 """
 from pathlib import Path
-import argparse, re, subprocess, tempfile
+import argparse, os, re, subprocess, tempfile
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / 'files/BotMod/src'
 ZON = ROOT / 'files/server/BotMod_traces/navzones'
 SC = ROOT / 'files/ServerControl'
-NAVZ = Path('/home/claude/joe91/fun-bots-rc2/navzones')
+NAVZ = Path(os.environ.get("NAVZONES_SOURCE", "/nonexistent"))   # optional: the navzones JSON folder
 
 def run(cmd):
     r = subprocess.run(cmd, capture_output=True, text=True, env={'ASAN_OPTIONS': 'detect_leaks=1', 'PATH': '/usr/bin:/bin'})
@@ -25,12 +25,12 @@ def run(cmd):
 
 def check_meshes():
     names = {f.stem for f in ZON.glob('*.zon')}
-    assert len(names) == 110, len(names)
+    assert len(names) >= 110, len(names)   # (V35.2: + Capture the Flag x4 and BFLAG - altbotmod_v352_checks.py)
     new = {'MP_012_SquadRush0', 'MP_013_SquadRush0', 'MP_018_SquadRush0', 'XP1_001_SquadRush0', 'XP1_002_SquadRush0', 'XP1_003_SquadRush0',
            'XP1_004_SquadRush0', 'XP3_Alborz_SquadRush0', 'XP3_Alborz_TankSuperiority0', 'XP4_FD_SquadRush0', 'XP4_Parl_SquadRush0',
            'XP5_001_SquadRush0', 'XP5_003_SquadRush0'}
     assert new <= names, new - names
-    print('PASS: 110 objective meshes from Fun-Bots V3.6.0-RC2 (13 new: 12 Squad Rush, Alborz Tank Superiority)')
+    print('PASS: 110 objective meshes (13 new: 12 Squad Rush, Alborz Tank Superiority)')
 
 def check_routing(san):
     flags = ['-g', '-fsanitize=address,undefined', '-fno-sanitize-recover=all'] if san else []
@@ -115,11 +115,11 @@ def check_squad_rush(san):
     mn = (SRC / 'modes_native.inc').read_text()
     assert '#include "mcom_aim.h"' in mn and 'mode_mcom_aim(target,(float *)(s+OFF_SOLDIER_POSITION),&aimYaw,&aimPitch);' in mn
     assert 'need=mcom_aim_unknown(target)?MCOM_UNRECORDED_REACH:' in mn and 'g_mcomAimTry[target]++;' in mn and 'g_mcomAimKnown[k]=1;' in mn
-    print('PASS: Squad Rush on the 12 levels Fun-Bots never recorded it for (V34: played as team play) - M-COMs and stage bases from the RC2 meshes; '
+    print('PASS: Squad Rush on the 12 levels with no recorded Squad Rush (V34: played as team play) - M-COMs and stage bases from the RC2 meshes; '
           '9 M-COMs use the recorded Rush arming spot, 15 are armed facing the M-COM from 1.3 m and turn further round after each try the game does not answer')
 
 def check_boat_mask(san):
-    """V35.1: the server lag on Kharg Island: a boat planning a route copied and stripped the whole
+    """V35.1: the server lag of the 2026-11-03 LAN game (Kharg Island): a boat planning a route copied and stripped the whole
     3-million-node grid and searched it for a landing on every tick its plan waited for the budget (driving 13-40 ms of
     each 33 ms tick, the server down to 18-26 ticks/s for 1-3 minutes whenever a bot boat left its slip)."""
     import sys
@@ -150,15 +150,15 @@ def check_game_side():
     assert 'unsigned seed = zone_seed(i, soldier); int team = player_team(H->bots[i]);' in zn and 'return (h % 99991u) + 1u;' in zn
     assert 'zone_note_death(e->team, e->pos);' in core
     assert core.index('bm_learn(-1, BM_LEARN_DEATH, e->pos, NULL);') < core.index('zone_note_death(e->team, e->pos);') < core.index('mode_note_death(pl);   // AltBotMod V16')
-    assert 'if (!g_zone.np || !g_enhanced.funBotsMesh) return;' in zn   # (FunBotsMesh=0 switches it off with the mesh)
+    assert 'if (!g_zone.np || !g_enhanced.objectiveMesh) return;' in zn   # (ObjectiveMesh=0 switches it off with the mesh)
     for k, v in [('ZN_SPREAD', '0.25f'), ('ZN_DANGER_PER_DEATH', '15.0f'), ('ZN_DANGER_MAX', '50.0f'), ('ZN_DANGER_HALF_LIFE', '60.0f')]:
         assert re.search(r'#define %s +%s' % (k, re.escape(v)), h), k
     print('PASS: the seed changes with each life, the bot\'s team weighs the danger (3 of 4 lives), every death on foot is noted on the mesh')
 
 def check_version():
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
-    assert 'New-BmBanner "AltBotMod V35.1"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
-    print('PASS: version V35.1')
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in (SRC / 'enhanced.h').read_text()
+    assert 'New-BmBanner "AltBotMod V35.2"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
+    print('PASS: version V35.2')
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--sanitize', action='store_true'); a = ap.parse_args()

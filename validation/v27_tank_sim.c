@@ -1,5 +1,5 @@
 // AltBotMod V27: a tracked tank (turns at most 0.7 rad/s at any speed, pivots on the spot, 16 m/s, +3 / -6 m/s^2) on the
-// longest Fun-Bots land road of a map, driven as drive_tick does: pure pursuit (bm_route_progress / bm_route_aim), the
+// longest saved land road of a map, driven as drive_tick does: pure pursuit (bm_route_progress / bm_route_aim), the
 // heading caps (6 m/s from 60 deg off, 4 m/s from 92 deg), road-only bend limits, and the V27 pivot (no throttle, full
 // lock, until within 20 deg). Asserts it finishes the road, keeps a decent average and pivots only for the turn round at the start.
 #include <assert.h>

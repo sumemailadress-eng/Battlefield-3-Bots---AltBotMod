@@ -6,10 +6,10 @@
 2. Source checks for what the live logs of 2026-10-17 showed:
    - TDM respawns (Epicenter): no 3-minute spawn rests outside Rush, a refused team-play spawn rests 3 s;
    - Domination (Office): a team with an HQ but no deployment beside it tries the level's team-less entities;
-   - Fun-Bots routes first: trips from 15 m (V21.1: 40), a stalled route is taken again from another waypoint twice
+   - saved routes first: trips from 15 m (V21.1: 40), a stalled route is taken again from another waypoint twice
      before the grid gets a go;
    - lock-on launchers count a launch only when the magazine drops, and keep at it;
-   - vehicle gunners: Fun-Bots' weapon slot per seat and target, lead relative to their own platform, target turn rate,
+   - vehicle gunners: the weapon slot per seat and target, lead relative to their own platform, target turn rate,
      steadier fire; helicopters fire within ~6 m, pilots lead relative to their own speed;
    - stationary weapons: manned for a target in reach, left after 15 s without a shot;
    - boats take recorded river lanes; elite sharper; the version.
@@ -42,7 +42,7 @@ def main():
     # routes first
     assert '#define TRACE_MIN_TRIP        8.0f' in trace and 'if (g_traceRepeat[i] >= 2) { g_traceFallbacks++;' in trace and 'FORGET(g_traceRepeat)' in core
     assert 'static int boat_lane_to(int f, const float *from)' in trace and '!boat_lane_to(f,from)' in core
-    print('PASS: V22 Fun-Bots routes first - from 15 m, a stalled route is taken again from the next way onto the network twice before the grid; boats use recorded river lanes to far flags')
+    print('PASS: V22 saved routes first - from 15 m, a stalled route is taken again from the next way onto the network twice before the grid; boats use recorded river lanes to far flags')
     # weapons
     assert 'int byAmmo = loaded + spare < g_lockAmmo[i]' in core and 'no %s left the tube in 7 s' in core and 'FORGET(g_lockCheckAt)' in core   # (V23: three ways)
     assert 'int armSecondary;' in (SRC / 'air.h').read_text() and 'out->armSecondary=s->secondaryWait<=0 && s->lockTime>0;' in air
@@ -52,11 +52,11 @@ def main():
     assert 'driverWeapon && vprofile->kind == BM_TANK && !isVeh && td < 150.0f) slot = 2;' in core and 'airframe->kind == BM_AIR_ATTACK && seat == 1 && isVeh && !targetAir' in core
     assert '#define GUN_BURST_ON           54' in core and '#define GUN_BURST_OFF          6' in core and 'FORGET(g_gunOwnMotion)' in core
     print('PASS: V22 weapons - lock-on launches confirmed by the magazine; aircraft missiles selected through the lock; gunners lead relative to their own '
-          'platform and by the target\'s turn, use the coax / guided missile as Fun-Bots does, fire 1.8 s bursts; helicopters fire within ~6 m')
+          'platform and by the target\'s turn, use the coax / guided missile as the reference does, fire 1.8 s bursts; helicopters fire within ~6 m')
     # stationaries, difficulty, version
     assert '#define EMPLACEMENT_IDLE    (15 * 30)' in emp and 'dist2(p, at) < 850.0f * 850.0f' in emp and 'H->frame - g_botFiredAt[i] < 3' in emp
     assert '{0.05f, 26,  2, 0.050f, 0.45f, 0.015f, 6.0f, 380, 300, 350' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh and 'vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));' in core
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh and 'vt = bm_route_bend_limit(pb, w, pf, isBoat, bm_armored(profile));' in core
     print('PASS: V22 stationary weapons manned for a target in reach and left after 15 s without a shot; elite sharper; bends by radius; version V22')
 
 if __name__ == '__main__':

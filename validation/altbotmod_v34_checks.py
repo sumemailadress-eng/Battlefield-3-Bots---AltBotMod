@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""AltBotMod V35.1 - New Ground: offline checks.
+"""AltBotMod V35.2 - New Ground: offline checks.
 
-1. Fun-Bots' objective walking mesh (zone_nav.c, Fun-Bots 3.6.0-dev navzones): the shipped .zon files are exactly what the
-   converter makes from Fun-Bots' JSON; zone_nav.c loads all 97, routes inside every zone (ASan/UBSan), keeps one-way
+1. The objective walking mesh (zone_nav.c): the shipped .zon files are exactly what the
+   converter makes from the JSON; zone_nav.c loads all 97, routes inside every zone (ASan/UBSan), keeps one-way
    jumps one way, closes a connection after 3 stuck reports; every Rush M-COM of every Rush map lies in a mesh M-COM zone
    and 217 of 218 are reachable over the mesh from most of their zone.
 2. M-COMs behind a window: the operator knifes the pane between it and its M-COM (walks up to it first when it is further
    in and the bot gets no closer), shoots it when the knife did nothing; a wall is never taken for a pane - the real
    panel_dir / mcom_pane_tick / breach_tick against a small world. "Unbreakable" is learned only after a second failure.
 3. Standing still / circling (V33 Caspian Border log): mid-round walks to vehicles capped (VehicleWalkMeters 250, 40 m with
-   the objective close), a supply run that gave up is not sent to the same caller again for 45 s, a combat relocation
+   The objective close), a supply run that gave up is not sent to the same caller again for 45 s, a combat relocation
    that waited for the planner is checked again from where the bot is.
 4. Air: a stalled jet recovers (nose down, wings level, full power) - the real bm_air_step; flares / smoke on a lock on the
    vehicle (the game's locking controllers); jets keep their heat seekers for aircraft; an enemy attack helicopter is a
@@ -24,7 +24,7 @@ SRC = ROOT / 'files/BotMod/src'
 SC = ROOT / 'files/ServerControl'
 ZON = ROOT / 'files/server/BotMod_traces/navzones'
 VAL = ROOT / 'validation'
-FUNBOTS_NAVZONES = Path('/home/claude/joe91/fun-bots-rc2/navzones')   # V35: Fun-Bots V3.6.0-RC2 (b7f0de1)
+NAVZONES_SOURCE = Path(os.environ.get("NAVZONES_SOURCE", "/nonexistent"))   # optional: the navzones JSON folder the meshes were converted from
 
 def run(cmd, **kw):
     r = subprocess.run(cmd, capture_output=True, text=True, env={'ASAN_OPTIONS': 'detect_leaks=1', 'PATH': '/usr/bin:/bin'}, **kw)
@@ -35,13 +35,13 @@ def san(flag): return ['-g', '-fsanitize=address,undefined', '-fno-sanitize-reco
 
 def check_mesh(sanitize):
     files = sorted(ZON.glob('*.zon'))
-    assert len(files) == 110, len(files)   # V35: the 110 meshes of Fun-Bots V3.6.0-RC2
-    if FUNBOTS_NAVZONES.is_dir():   # (the Fun-Bots checkout is on the build machine only)
+    assert len(files) == 115, len(files)   # V35.2: (110 + Capture the Flag x4 + BFLAG)
+    if NAVZONES_SOURCE.is_dir():   # (the source folder is on the build machine only)
         with tempfile.TemporaryDirectory() as td:
-            run([sys.executable, str(VAL / 'tools/navzones_convert.py'), str(FUNBOTS_NAVZONES), td])
+            run([sys.executable, str(VAL / 'tools/navzones_convert.py'), str(NAVZONES_SOURCE), td])
             same = [f.name for f in files if filecmp.cmp(f, Path(td) / f.name, shallow=False)]
             assert len(same) == len(files), set(f.name for f in files) - set(same)
-        print('PASS: the 110 shipped mesh files are exactly what the converter makes from Fun-Bots V3.6.0-RC2 navzones')
+        print('PASS: the 115 shipped mesh files are exactly what the converter makes from the navzones source')
     with tempfile.TemporaryDirectory() as td:
         exe = Path(td) / 'zt'
         run(['gcc', '-std=gnu11', '-O1', '-Wall', '-Wextra', '-Werror', *san(sanitize), '-I', str(SRC), str(VAL / 'v34_zone_tests.c'), str(SRC / 'zone_nav.c'), '-lm', '-o', str(exe)])
@@ -60,7 +60,7 @@ def check_mesh(sanitize):
     assert 'int zr = zone_plan(i, soldier, tx, ty, tz);' in core and core.index('int zr = zone_plan(') < core.index('int traced = trace_plan(i, soldier, tx, ty, tz);')
     assert 'zone_stuck(i, pos);' in core and 'zone_level_load();   // AltBotMod V34' in core and 'zone_guard_point(goal,' in (SRC / 'modes_native.inc').read_text()
     assert 'BotMod_traces\\\\navzones\\\\%s.zon' in zn and 'if (w < 0) { g_lastPlanDeferred = 1; return 0; }' in zn
-    print('PASS: near an objective the bots plan over the mesh first (then Fun-Bots routes, then the grid); stuck reports cost the mesh connection; Rush guard posts from the M-COM zone')
+    print('PASS: near an objective the bots plan over the mesh first (then saved routes, then the grid); stuck reports cost the mesh connection; Rush guard posts from the M-COM zone')
 
 MCOMS = r'''
 #include <stdio.h>
@@ -200,7 +200,7 @@ def check_still():
     fl = (SRC / 'fleet_native.inc').read_text(); core = (SRC / 'core.c').read_text(); cm = (SRC / 'combat_motion.inc').read_text(); en = (SRC / 'enhanced.c').read_text()
     assert "if (distance>g_enhanced.vehicleWalkMeters) continue;" in fl and "dist2(origin,objective_pos(tf))<120*120) continue;" in fl
     assert "if (!rush && *(char **)(H->bots[i]+OFF_PLAYER_SOLDIER) && H->frame-g_lastSpawnedAt[i]>20*30) {" in fl
-    assert 'c->funBotsMesh = 1; c->vehicleWalkMeters = 250.0f;' in en and 'FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000)' in en
+    assert 'c->objectiveMesh = 1; c->vehicleWalkMeters = 250.0f;' in en and 'FLOAT_KEY("VehicleWalkMeters", vehicleWalkMeters, 25, 6000)' in en
     assert 'if (g_supplyFailTo[i] == sender && H->frame - g_supplyFailAt[i] < 45 * 30 && i != ti) continue;' in core
     assert cm.index('if(dist2(me,m->goal)<4*4 || dist2(enemy,m->goal)<12*12)goto failed;') < cm.index('if(plan_path(i,soldier,m->goal[0],m->goal[1],m->goal[2])){')
     print('PASS: fewer bots turning round - mid-round vehicle walks at most 250 m (40 m with the objective within 120 m; spawning and the opening rush unchanged), no repeat supply run to a caller it could not reach for 45 s, relocations re-checked')
@@ -266,11 +266,11 @@ def check_squads():
 
 def check_settings_version():
     sc = (SC / 'ServerControl-Core.ps1').read_text(); eh = (SRC / 'enhanced.h').read_text()
-    assert "New-BmSetting 'FunBotsMesh' 'Movement' 'bool' 0 1 1" in sc and "New-BmSetting 'VehicleWalkMeters' 'Vehicles' 'float' 25 6000 250" in sc
+    assert "New-BmSetting 'ObjectiveMesh' 'Movement' 'bool' 0 1 1" in sc and "New-BmSetting 'VehicleWalkMeters' 'Vehicles' 'float' 25 6000 250" in sc
     assert "'float' 0 3000 900 'Jet area margin (m)'" in sc
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
-    assert 'New-BmBanner "AltBotMod V35.1"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
-    print('PASS: FunBotsMesh / VehicleWalkMeters in Server Control; version V34')
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh
+    assert 'New-BmBanner "AltBotMod V35.2"' in (SC / 'AltBotMod-ServerControl.ps1').read_text()
+    print('PASS: ObjectiveMesh / VehicleWalkMeters in Server Control; version V34')
 
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--sanitize', action='store_true'); a = ap.parse_args()

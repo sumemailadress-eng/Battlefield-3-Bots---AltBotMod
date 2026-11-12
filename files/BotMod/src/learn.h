@@ -84,7 +84,7 @@ float bl_danger(const BLStore *s, float x, float z);
 // same as one already learned - then that one counts another use.
 int bl_add_route(BLStore *s, int kind, const float (*pts)[3], int n, long now);
 float bl_route_length(const BLRoute *r);
-// The learned routes of one kind as Fun-Bots .map lines (a header line first; paths numbered from 0), for the trace
+// The learned routes of one kind as saved route .map lines (a header line first; paths numbered from 0), for the trace
 // loader. Returns the bytes written (buf may be NULL to measure).
 size_t bl_routes_map_text(const BLStore *s, int kind, char *buf, size_t size);
 // Helicopter landing spots: a touchdown merges with a pad within 15 m. bl_pad_near: the nth best usable pad within

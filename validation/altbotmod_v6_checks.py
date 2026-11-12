@@ -1,4 +1,4 @@
-"""AltBotMod V6 checks: Fun-Bots vehicle route graphs (land / boat paths), the director's neutral-flag preference and
+"""AltBotMod V6 checks: saved vehicle route graphs (land / boat paths), the director's neutral-flag preference and
 armour target priority. Compiles the real trace_nav.c, director_policy.h and enhanced.c (with ASan/UBSan on --sanitize)."""
 from pathlib import Path
 import argparse, subprocess, tempfile
@@ -67,7 +67,7 @@ int main(int argc, char **argv)
         assert(tn_candidates(&water, 0, s, 60.0f, 12.0f, cand, 4) > 0);
     }
     tn_free(&inf); tn_free(&land); tn_free(&water);
-    puts("PASS: Fun-Bots vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged");
+    puts("PASS: saved vehicle paths load as their own graphs (Kharg: 16 land routes linking both bases to the flags; Noshahr: 3 boat lanes from the carrier); the infantry graph is unchanged");
 
     // Director: of two equally distant hostile flags, the neutral one is attacked first.
     {

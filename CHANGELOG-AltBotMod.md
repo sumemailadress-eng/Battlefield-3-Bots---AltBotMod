@@ -1,6 +1,6 @@
 # AltBotMod changelog
 
-Public releases: **Release 1.1** = internal V35.1, **Release V1** = internal V34. Older entries are the internal development history.
+Public releases: **Release 1.2** = internal V35.2, **Release 1.1** = internal V35.1, **Release V1** = internal V34. Older entries are the internal development history.
 
 This is a native bot mod for the Battlefield 3 dedicated server: no Venice Unleashed, and clients need nothing extra. It works with the ALP, bf4play and BF-Portable builds of `bf3_server_Final.exe`; the installer checks for that file.
 
@@ -12,9 +12,23 @@ This is a native bot mod for the Battlefield 3 dedicated server: no Venice Unlea
 
 The installer keeps your settings and adds the new ones (V31: `LockOnSeconds` and `DoorGunMeters`). `JetAreaMarginMeters` still at the old default of 350 is moved to 600; a value you changed yourself is kept. Anything it replaces is backed up to `BotMod_backup_<date>`.
 
-**Checking that it loaded:** the log `BotMod_<port>.log` shows `enhanced: AltBotMod V34 - Squad Up`.
+**Checking that it loaded:** the log `BotMod_<port>.log` shows `enhanced: AltBotMod V35.2 - New Ground`.
 
-**Going back:** the V33, V32 and V29 DLLs are in `rollback\AltBotMod-V33`, `rollback\AltBotMod-V32` and `rollback\AltBotMod-V29`. Copy one over `BotModCore.dll` in the server folder.
+**Going back:** download an earlier release from the GitHub Releases page and install it, or copy its `files\server\BotModCore.dll` over `BotModCore.dll` in the server folder.
+
+## Release 1.2 (internal V35.2)
+
+**Capture the Flag on the objective mesh.** The four End Game maps (Operation Riverside, Nebandan Flats, Kiasar Railroad, Sabalan Pipeline) now have an objective mesh around both flag stands, so raiders and home guards walk the mesh near the stands instead of the grid. The mesh's base zones sit within 2 m of AltBotMod's own flag-stand positions. 115 objective meshes ship in total (5 more).
+
+**No more bots in TOW / Kornet launchers.** Bots no longer man or spawn into the anti-tank launcher emplacements: their gunners shot at little and sat out the fight. Bots still use the AA emplacements (C-RAM / Pantsir).
+
+**Clearer setting names.** `SavedRoutes` (follow the saved routes) and `ObjectiveMesh` (walk the objective mesh) replace the two older route-setting names. The installer renames the old keys in `enhanced.ini` and any `enhanced_<port>.ini`, keeps their values and backs the files up first. Server Control and AltBotMod Command show the new names.
+
+**Cleaner log and source wording.** Log lines now say "saved route" / "saved road" / "objective mesh" throughout (for example `trace: %s takes a saved route to flag ...`, `zone: objective mesh off (ObjectiveMesh=0)`).
+
+**Package.** The old `rollback\` DLLs are no longer in the repository; every earlier build is on the GitHub Releases page.
+
+**Tests:** 73 offline check groups and 174 installer checks pass, including the settings-key rename. Not played live yet.
 
 ## Release 1.1 (internal V35.1)
 
@@ -39,7 +53,7 @@ Built and tested offline (72 check groups with AddressSanitizer / UndefinedBehav
 - **The other 15:** the bot walks up to 1.3 m from the M-COM, crouches and looks at it. If the game does not report an arm or defuse after the 8 s hold, the next try looks a little further round, then lower; the aim that works is kept for the level.
 - **Stage bases:** estimated from the meshes' spawn zones along the line from M-COM 1 to M-COM 2. A wrong one is caught by the existing spawn safety nets.
 
-**Updated objective meshes (Fun-Bots V3.6.0-RC2).** 110 map/mode combinations, 13 more than Release V1 (12 Squad Rush and Alborz Mountains Tank Superiority). All meshes were re-cut: floors only (stairs and multi-storey buildings covered) and corners that keep clear of wall and barrier ends.
+**Updated objective meshes.** 110 map/mode combinations, 13 more than Release V1 (12 Squad Rush and Alborz Mountains Tank Superiority). All meshes were re-cut: floors only (stairs and multi-storey buildings covered) and corners that keep clear of wall and barrier ends.
 
 **Bots spread out over the ways.** Each bot life takes its own way among similar ones on the mesh (an area can seem up to 25% longer to one bot than another), never more than a quarter longer than the shortest.
 
@@ -47,24 +61,18 @@ Built and tested offline (72 check groups with AddressSanitizer / UndefinedBehav
 
 **Diagnostics.** `perf: slow think` lines now split the time into brain / route planning / vehicle choice / talk and give the bot's position. The `zone:` summary counts `deaths weighed`.
 
-### Not taken from Fun-Bots V3.6.0-RC2
-
-- Its new route files for the Squad Rush levels and Alborz Tank Superiority (short paths between the meshes with no objective tags, which AltBotMod needs).
-- Its Nebandan Flats Conquest Large depot fix (it changes a path AltBotMod's own route file does not have).
-- Reworked aim error, moving bots that spawn far from a path straight onto it, and waiting at the combat-area edge in Rush.
-
 ### Rollback
 
-`rollback\AltBotMod-V34` holds the Release V1 DLL.
+The Release V1 build is on the GitHub Releases page.
 
-## V34: Rush M-COMs, fewer bots standing around, air combat, squad orders, Fun-Bots' objective mesh (2026-10-23)
+## V34: Rush M-COMs, fewer bots standing around, air combat, squad orders, the objective mesh (2026-10-23)
 
-All of this is built from your last games' logs (V33 on Caspian Border, V32 Rush on Seine and Caspian) and tested offline. None of it has been played live yet.
+All of this is built from server logs (V33 on Caspian Border, V32 Rush on Seine and Caspian) and tested offline. None of it has been played live yet.
 
-**Fun-Bots' new navigation at the objectives.** Fun-Bots' development version (3.6.0-dev7) has a walking mesh around every capture point, M-COM and base. It knows the walls, floors, stairs and doorways there, and where to jump and crouch. V34 ships those meshes for 97 map/mode combinations (`BotMod_traces\navzones`).
-- **Near an objective:** bots walk the mesh first, then Fun-Bots routes, then the grid as before.
-- **A spot bots get stuck on:** it costs more, and after 3 stuck bots it is closed for that round (as Fun-Bots does).
-- **Setting:** `FunBotsMesh=1` (0 turns it off).
+**New navigation at the objectives.** A walking mesh around every capture point, M-COM and base. It knows the walls, floors, stairs and doorways there, and where to jump and crouch. V34 ships those meshes for 97 map/mode combinations (`BotMod_traces\navzones`).
+- **Near an objective:** bots walk the mesh first, then saved routes, then the grid as before.
+- **A spot bots get stuck on:** it costs more, and after 3 stuck bots it is closed for that round.
+- **Setting:** `ObjectiveMesh=1` (0 turns it off).
 - **Coverage:** every one of the 218 Rush M-COMs (Rush and Squad Rush, all maps) sits in a mesh M-COM zone. 217 of them can be walked to over the mesh; the other one (Death Valley M-COM 4) uses the old routing.
 
 **Rush: M-COMs indoors and behind glass.**
@@ -73,13 +81,13 @@ All of this is built from your last games' logs (V33 on Caspian Border, V32 Rush
 - **Glass no longer written off:** a pane counted as "unbreakable" only after a second failed try. Before, one failure was enough (64 kinds of glass were never tried again).
 - **Guards:** they stand at mesh points around the M-COM.
 
-**Bots standing still or turning in circles.** Your Caspian Border log showed the biggest cause: in 17 minutes, bots dropped their objective 242 times to walk 300-700 m back to base for a vehicle. 84 of those vehicles were taken at the spawn screen and 92 destroyed before they got there, so the bots turned round again and again.
+**Bots standing still or turning in circles.** A Caspian Border log showed the biggest cause: in 17 minutes, bots dropped their objective 242 times to walk 300-700 m back to base for a vehicle. 84 of those vehicles were taken at the spawn screen and 92 destroyed before they got there, so the bots turned round again and again.
 - **Vehicle walks:** after the opening minutes, a bot on foot walks at most 250 m to a vehicle (`VehicleWalkMeters`). With its objective within 120 m, only to a vehicle right beside it (40 m). The round's opening rush to the vehicles, and spawning into vehicles, are unchanged.
 - **Supply runs:** a medic or support that could not reach a caller is not sent to the same caller again for 45 s. In the log, one walked back and forth 3 times.
 - **Combat moves:** a move that waited for the planner is checked again from where the bot now is. Before, bots "moved" 2 m and stood.
 
 **Air combat.**
-- **Stalled jets recover:** a jet that falls below flying speed puts its nose down, levels its wings and goes to full power until it flies again. Your log had F/A-18s at 9-26 m/s, 900 m up, nose high, still pulling - that is the "jets don't do anything".
+- **Stalled jets recover:** a jet that falls below flying speed puts its nose down, levels its wings and goes to full power until it flies again. One log had F/A-18s at 9-26 m/s, 900 m up, nose high, still pulling - that is the "jets don't do anything".
 - **More room:** the jets' area is wider (margin 600 → 900 m, at least 1.4 km each way). Jets spent about half the round turning back at the edge. `JetAreaMarginMeters` still at the old 600 is moved to 900.
 - **Flares and smoke at the right time:** a pilot pops flares when an enemy missile lock on it is 75% complete, before the missile is fired. Tanks pop smoke when fully locked. This is read from the game's own lock-on system. Before, both only came after a hit.
 - **Air-to-air vs air-to-ground:** jets keep their heat-seeking missiles (air-to-air) for aircraft and use guns on the ground. They also go for enemy attack helicopters first. Attack helicopters keep their rockets and cannon for the ground and missiles for aircraft.
@@ -99,9 +107,8 @@ All of this is built from your last games' logs (V33 on Caspian Border, V32 Rush
 - **Fix:** every vehicle position now comes from the vehicle's physics transform, which moves smoothly every frame. Body and seat are only the fallback.
 - **What stays:** small real dips can still happen when the server syncs, as for human drivers.
 
-**The disconnect on your third server (port 25302) was not caused by the bots.** That server's `Instance3\Admin\Startup.txt` set `vars.maxPlayers 32`, and BF-Portable's Blaze emulator never answers a player-limit change.
-- **What happened:** the game server retried every 90 s ("setPlayerCapacity ... SDK_ERR_RPC_TIMEOUT"). At 23:05:56 it gave up on Blaze ("ProtoFire disconnect detected ... ERR_TIMEOUT") and dropped every player.
-- **Your PC:** that line is now `vars.maxPlayers 64`, and `_StartServer3.bat` has `PLAYERS=64`, like your other three servers. **Restart server 3** for it to take effect. The AltBotMod tick ran normally the whole time (30 ticks/s).
+**A player limit below 64 could drop everyone on BF-Portable (not the bots).** A server whose `Startup.txt` set `vars.maxPlayers 32` kept asking BF-Portable's Blaze emulator for a player-limit change it never answers.
+- **What happened:** the game server retried every 90 s ("setPlayerCapacity ... SDK_ERR_RPC_TIMEOUT"), then gave up on Blaze ("ProtoFire disconnect detected ... ERR_TIMEOUT") and dropped every player. The AltBotMod tick ran normally the whole time (30 ticks/s).
 - **The installer:** it now puts any BF-Portable server that isn't at 64 (`Startup.txt` or `_StartServer*.bat`) back to 64, changing only that value and backing it up first. Server Control and Command already only allow 64.
 
 **AltBotMod Command (the web launcher) is installed with AltBotMod.** It does the same jobs as Server Control (servers, bots, rotation, rules, BF-Portable services, live map, learning, launch and join) in a modern window. A phone or tablet on your home network can use it too.
@@ -111,7 +118,7 @@ All of this is built from your last games' logs (V33 on Caspian Border, V32 Rush
 - **Safety:** each start makes a new private pairing key. Other hosts and other web pages are refused. Edits made elsewhere are detected and not overwritten. Launcher paths, IP changes and game launch/join only work on the PC itself. The server admin password is never sent to the page.
 - **If you used the stand-alone Command before:** exit its tray icon ("Exit launcher") once. The new one then opens normally; the old one would show "Restart the Command host".
 
-## V32: open doors, better use of the Fun-Bots routes (2026-10-23)
+## V32: open doors, better use of the saved routes (2026-10-23)
 
 **Doors that open with a bang (Epicenter and anywhere else).** A bot stuck at a shut door on its route holds still, then fires across the door and low on both sides of it for 3.5 s. That catches the red gas tanks that blow Epicenter's doors open, and also boards and thin doors. Then it checks again.
 - **When it triggers:** something solid at knee, chest and head height within 2.5 m, and the route continues behind it. So not a slope or rocks.
@@ -119,22 +126,15 @@ All of this is built from your last games' logs (V33 on Caspian Border, V32 Rush
 - **Log lines:** `breach: X's way is shut at … - shoots across it and low on both sides` and `breach: X shot its way open`.
 - **Limitation:** a door straight north of the bot (heading close to 0°) takes longer to sweep. The game only turns a bot past that heading the long way round.
 
-**Infantry onto the Fun-Bots routes.** Your last log, Gulf of Oman: 30,231 of 39,347 route attempts ended in "no way onto a route", and the bot walked the navigation grid instead.
+**Infantry onto the saved routes.** A Gulf of Oman log: 30,231 of 39,347 route attempts ended in "no way onto a route", and the bot walked the navigation grid instead.
 - **Cause:** many of those had only run out of the tick's planning time.
 - **Fix:** a bot now waits for the next tick and tries again. A join that really failed is not retried from the same spot for 10 s, which also saves server time.
-- **Vehicles:** they already take the Fun-Bots routes almost every time: 696 of about 730 drives in that session.
+- **Vehicles:** they already take the saved routes almost every time: 696 of about 730 drives in that log.
 - **Log:** the `trace:` minute line now also counts these.
 
-**Squad spawns:** as in Fun-Bots' latest development version, bots no longer spawn on a squad mate who is in a fight: one hit in the last 5 s, or a living enemy within 30 m.
+**Squad spawns:** as in the latest development version, bots no longer spawn on a squad mate who is in a fight: one hit in the last 5 s, or a living enemy within 30 m.
 
-**All modes.** Every one of the 215 level / mode combinations, Team Deathmatch, Close Quarters TDM, Squad DM, Gun Master, Domination, Rush, Squad Rush, CTF and Air Superiority included, has Fun-Bots routes of its own or borrowed from the same level (`ROUTE-COVERAGE.txt`). All 40 Rush route files lead to every M-COM.
-
-**The Fun-Bots repository (checked 2026-10-23).** The development branch is at 3.6.0-dev7, last commit 2026-10-21, and it is a big change:
-- **New navigation.** Bots walk a navigation mesh at the objectives and spawns, and the recorded routes now stop at the mesh.
-- **No objectives in its route files.** Its Conquest, Rush and Domination files carry no objective tags any more, so they can't replace ours: our bots find their objectives through those tags. Its Team / Squad Deathmatch files are the same as ours.
-- **Taken over:** "no spawn on a mate in a fight", above.
-- **Already in AltBotMod:** defenders hurry to an armed M-COM, and bots get out of the water.
-- **Not taken over (yet):** the navigation meshes.
+**All modes.** Every one of the 215 level / mode combinations, Team Deathmatch, Close Quarters TDM, Squad DM, Gun Master, Domination, Rush, Squad Rush, CTF and Air Superiority included, has saved routes of its own or borrowed from the same level (`ROUTE-COVERAGE.txt`). All 40 Rush route files lead to every M-COM.
 
 **Tests:** 68 check groups pass offline, including a simulated door with a gas tank beside it. Nothing here has been run live yet.
 
@@ -173,7 +173,7 @@ V30 and V30.1 crashed the server. V31 starts again from V29, the last version th
 
 **Faster locks.** `LockOnSeconds` (default 0.5 s) is how long a bot holds a lock-on weapon on its target before the lock is put in place. V29 used the weapon's own 1.5-2.5 s.
 
-**Rush routes, checked.** All 40 Rush and Squad Rush route files have 2 or more Fun-Bots routes to each of their 222 M-COMs, and an arm / disarm point. If bots ignore an M-COM, it happens in the game logic. I need a log from a Rush round to find it.
+**Rush routes, checked.** All 40 Rush and Squad Rush route files have 2 or more saved routes to each of their 222 M-COMs, and an arm / disarm point. If bots ignore an M-COM, it happens in the game logic. A log from a Rush round is needed to find it.
 
 **A safety check on getting out.**
 - The mod now calls the game's "exit vehicle" only for a bot that the vehicle still has in a seat, and at most once per frame.
@@ -195,19 +195,19 @@ This is to find the stop-go, which is not fixed.
 ## V29: full throttle - from the V28 match log (2026-10-19, Operation Firestorm)
 
 **What the log showed.**
-- **Stop-go.** The V27 "wait your turn" rule fired about 600 times in 16 minutes; one Growler waited about once a second for 70 seconds. Drivers averaged 3.4–5.5 m/s on open Fun-Bots roads. On a road the brakes still answered to the middle sensors within 4 m (479 "sees something ahead" at 0 m/s), and after every dip the speed target climbed back 8 m/s per second with a partial throttle (0.35 + 0.12 × the error). That gave "accelerates slowly, brakes, accelerates slowly".
+- **Stop-go.** The V27 "wait your turn" rule fired about 600 times in 16 minutes; one Growler waited about once a second for 70 seconds. Drivers averaged 3.4–5.5 m/s on open saved roads. On a road the brakes still answered to the middle sensors within 4 m (479 "sees something ahead" at 0 m/s), and after every dip the speed target climbed back 8 m/s per second with a partial throttle (0.35 + 0.12 × the error). That gave "accelerates slowly, brakes, accelerates slowly".
 - **Lock-ons.** 44 attempts. The game's lock controller was active in all of them, but its target search never picked the target ("a target picked 0.0 s" every time), so the lock never built up. The 3-second fallback shots never left the tube: the launchers only fire when locked.
 - **Door miniguns.** The gunners aimed but had to be within 0.35 m of the target to fire (0.2° at 100 m) - from a moving helicopter, never.
 - **Jets.** Strike runs were set up 1.7 km from the target, and after a pass a jet flew straight on for up to 7 s. Both took jets off the map.
 
-**Driving, redone the Fun-Bots way.**
+**Driving, redone.**
 - **Full throttle unless there is a real reason**: a bend in the recorded road tighter than the vehicle can take, the end of the route, hard steering, or a vehicle in its lane. No smoothing and no partial throttle on the way back up to speed (`bm_drive_throttle`).
 - **On a recorded road nothing static counts any more**: no sensor braking, no swerving. People drove that road. Off the road (grid legs, joins) the sensors work as before.
 - **Vehicles by where they are, not by what a ray hit.** A vehicle in the lane (straight ahead up to 15 m, then along the route itself) is followed at its own speed. The driver stops 6 m short of a stopped one and, after 1.5 s, passes it on the side it stands less on, then pulls back onto the road. Two vehicles head on both stop and both pass on their right.
 - **"Wait your turn" is gone.** The lane rule above replaces it.
 - **No on-foot buttons at the wheel.** Drivers and pilots never get the soldier's jump, crouch, prone or sprint presses (stairs, stance, learned "jump here"). In a vehicle seat those can act as the handbrake.
 - **Re-plans keep the throttle.** A change of objective or a re-plan keeps the last throttle for up to 3 s (was 1.5 s); a change of objective used to cut it to zero.
-- **Tested in a simulation:** a tank and a jeep on the longest Fun-Bots road of 8 maps. Full throttle 59–71% of the time for the tank (2–13% the V28 way). No stop-go. A vehicle stopped on the road is stopped for and passed with 4–5.6 m between them. Only a simulation - the round will tell.
+- **Tested in a simulation:** a tank and a jeep on the longest saved road of 8 maps. Full throttle 59–71% of the time for the tank (2–13% the V28 way). No stop-go. A vehicle stopped on the road is stopped for and passed with 4–5.6 m between them. Only a simulation - the round will tell.
 - **New log lines to check:** the 20 s report now reads `full throttle N%, braking N% (bends, vehicle in lane, hard steering, obstacle, stop), N speed drop(s) with the throttle down, N re-plan(s)`. A line `lost N m/s in 1/3 s with the throttle down` means something outside the driving code took the speed - a collision, the ground, or something else - and gives where and what the sensors and the lane showed.
 
 **Lock-ons lock.** Once a bot has held its aim on a vehicle for the weapon's own lock time, the lock is put in place the way the game's own target search does it when it finds one: a target holder for that vehicle (made with the game's allocator and weak reference), then the game's "set locked". The weapon then fires its guided missile. This applies to Stingers, Iglas and Javelins, to jets' and attack helicopters' heat seekers, to an attack helicopter gunner's guided missile, and to AA vehicles' missiles. Switch it off with `LockOnAssist=0`.
@@ -273,7 +273,7 @@ This is to find the stop-go, which is not fixed.
 - **Tanks pivot.** A tank now turns on its tracks with full lock and no throttle until it faces the road (within 20°), then drives. Wheeled vehicles still turn forwards on full lock.
 - **Aim point further ahead.** It is now 15 m ahead when slow and up to 30 m at speed (was 8–25 m). Steering is smoother, and the speed is not capped by large heading errors.
 - **One at a time.** When two team vehicles are nose to nose or one is just behind the other, both barely moving, the one lower on the roster goes first. The other waits up to 6 s and logs `waits its turn`. A moving vehicle is simply followed, and a vehicle driven by a person or standing empty is driven round.
-- **Tested in a simulation:** a tank that starts facing the wrong way on the longest Fun-Bots road of 5 maps turns round once (about 4 s) and then averages 12–15 m/s for the whole road.
+- **Tested in a simulation:** a tank that starts facing the wrong way on the longest saved road of 5 maps turns round once (about 4 s) and then averages 12–15 m/s for the whole road.
 
 ## V26: air superiority - from the V25 match log (2026-10-19, Operation Firestorm)
 
@@ -334,9 +334,9 @@ Elite also gets a 170° field of view.
 - **Why drivers re-planned:**
   - A route that started behind the vehicle made it reverse.
   - With the rear blocked, it dropped the route and planned the same route again.
-- **Why drivers left the Fun-Bots roads:**
+- **Why drivers left the saved roads:**
   - Every plan counted as a route "try", so drivers soon used them up.
-  - The convoy system ("blocked behind a stopped vehicle") and a stuck check both dropped Fun-Bots roads for the rest of the trip.
+  - The convoy system ("blocked behind a stopped vehicle") and a stuck check both dropped saved roads for the rest of the trip.
 - **Braking with nothing ahead.** Drivers braked for anything any of the 7 bumper sensors saw, including walls and parked vehicles beside the road. Speed was also capped at 12 m/s whenever the aim point was 31° or more off the nose.
 
 **Lock-on weapons: the game's own lock.**
@@ -357,9 +357,9 @@ Elite also gets a 170° field of view.
   - Speed is only capped when the driver must steer hard (60° or more off the aim).
 - **Re-plans no longer touch the throttle.** The last command is held for up to 1.5 s while the new route is planned.
 - **Turning round:** a route that starts behind the vehicle gets a turn on the spot (full lock forwards, or a three-point turn), not a reverse and a new plan.
-- **Fun-Bots and player routes stay in use:**
+- **Saved and player routes stay in use:**
   - Planning a route is no longer counted as a "try"; only getting stuck on a road counts.
-  - No check drops the Fun-Bots roads for the rest of the trip.
+  - No check drops the saved roads for the rest of the trip.
 - **Joining the road:** when the road is more than 15 m away and the straight way to it is blocked, a short path over the driving map leads onto it. That map has the learned stuck spots struck off.
 
 **Flags: nearest first.**
@@ -385,18 +385,18 @@ The log lines above show each one.
 ## V24: on the road - from the V23 match log (2026-10-18, MP_012)
 
 **What the log showed:**
-- **Stop-go on recorded roads.** Drivers had to reach every Fun-Bots waypoint, and to within 1.75 m at any "corner". On a hand-recorded road almost every point is one, so the driver aimed at a point a few metres off its nose and braked for its own heading error. Bends were judged over ±10 m, so a recording's wobble looked like a hairpin.
+- **Stop-go on recorded roads.** Drivers had to reach every saved waypoint, and to within 1.75 m at any "corner". On a hand-recorded road almost every point is one, so the driver aimed at a point a few metres off its nose and braked for its own heading error. Bends were judged over ±10 m, so a recording's wobble looked like a hairpin.
 - **Brakes for the roadside.** There were 147 "sees something ahead" brakes on the recorded road itself, nearly all of them walls, rocks and verges beside it.
 - **Convoys.** A follower stopped dead whenever it got within 65% of the gap to the vehicle in front (13–18 m at speed), then went again.
 - **Helicopters.** They only went after an enemy helicopter inside 600 m, so soldiers on the ground almost always came first. A duel was broken off after 8 s, and the pilot flew out to a 350 m ring before coming back.
 
-**Driving (Fun-Bots style).**
+**Driving.**
 - Steering aims at the road 8–25 m ahead (pure pursuit), not at the next waypoint. Progress is the nearest road point ahead.
 - Full speed along the road. Drivers only slow for a real bend (radius under 28 m, judged over ±25 m of the road itself) and for the end of the route.
-- On a Fun-Bots road (within 4 m of it) the bumper sensors ignore the verge. Only a vehicle in the way, or a wall dead ahead within 4 m, counts. Off the road, every sensor still counts.
+- On a saved road (within 4 m of it) the bumper sensors ignore the verge. Only a vehicle in the way, or a wall dead ahead within 4 m, counts. Off the road, every sensor still counts.
 - Convoys run at the leader's pace and stop only when about to touch it. A leader on a bend is still followed.
-- Drivers retry Fun-Bots routes up to 40 times on a trip (was 6) before taking the driving grid.
-- Tested on the longest Fun-Bots road of 8 maps in a simulation:
+- Drivers retry saved routes up to 40 times on a trip (was 6) before taking the driving grid.
+- Tested on the longest saved road of 8 maps in a simulation:
 
 | Road | Pointless slow-downs (V23 → V24) | Average speed (m/s) |
 |---|---|---|
@@ -422,7 +422,7 @@ The log lines above show each one.
 
 **Lock-on launchers (Stinger, Igla, Javelin).**
 - Bots try three ways of firing, and the one the game actually launches is kept:
-  - Fun-Bots style: no sight, fire tapped while the aim is on the target. This is tried first.
+  - No sight, fire tapped while the aim is on the target. This is tried first.
   - Sight held, fire tapped.
   - Sight held, fire held.
 - A launch counts when the launcher's magazine drops or a new missile appears beside the bot.
@@ -430,12 +430,12 @@ The log lines above show each one.
 
 **Missiles in flight.**
 - The server's missile objects are tracked twice a second, from a background thread, only while bots are in vehicles or at a launcher.
-- A bot whose vehicle or aircraft a missile is heading for, within 350 m, pops flares or smoke before the hit. This works the way Fun-Bots does it. Before, they only reacted after being hit.
+- A bot whose vehicle or aircraft a missile is heading for, within 350 m, pops flares or smoke before the hit. Before, they only reacted after being hit.
 - Look for `missile: ... - a missile N m away is coming at it: flares / smoke`.
 - The first missiles of a round calibrate where the game keeps a missile's position: `missile: missiles in flight are tracked (transform at +0x...)`.
 
 **The AC-130 gunship.**
-- **Using it:** a bot that has just spawned takes a free gun seat in its team's gunship, as Fun-Bots does. One seat stays free for you.
+- **Using it:** a bot that has just spawned takes a free gun seat in its team's gunship. One seat stays free for you.
 - **Its gunners:** their guns reach 1.6 km, the gunship's own speed is in their aim, and nothing pulls them out of it.
 - **Attacking it:** AA launchers (up to 850 m), AA vehicles, stationary AA and jets treat it as an aircraft and go for it.
 
@@ -452,14 +452,14 @@ The log lines above show each one.
 - The sensors look down the route, so bends no longer brake for walls and trees beside the road.
 - Armour no longer slows down to shoot.
 - After slowing, speed comes back twice as fast.
-- Drivers join Fun-Bots roads from 90 m (was 45 m) before using the driving map.
+- Drivers join saved roads from 90 m (was 45 m) before using the driving map.
 - In the first 2 minutes of a round every bot may run to a vehicle (before: 2 at a time).
 
 **On foot.**
-- Fun-Bots routes for every trip from 8 m.
+- Saved routes for every trip from 8 m.
 - Bursts stay short at long range for better accuracy.
 
-**Not possible:** Fun-Bots route files have no aircraft paths, so aircraft fly their own way (as in Fun-Bots).
+**Not possible:** saved route files have no aircraft paths, so aircraft fly their own way.
 
 **Not tested in a game yet:**
 - which way of firing the game launches;
@@ -474,15 +474,15 @@ The log lines above show each one.
 - **TDM (Epicenter).** Some bots stopped respawning. A V16 rule for Rush was resting a spawn point for 3 minutes when bots died there with nobody shooting them. Epicenter's TDM has only two spawn points, so one team had none left and its bots were retired in a loop. That rule now applies to Rush only, and a refused team-play spawn rests for 3 seconds.
 - **Domination (Office).** The red team never spawned. Its HQ was found, but no spawn point was matched to it. Outside Conquest, such a team now tries the level's team-less spawn points. Conquest keeps the old rule, so bots never spawn in the wrong base.
 
-**Fun-Bots routes first.**
-- Bots take a recorded Fun-Bots route for any trip from 15 m. It used to be 40 m, and shorter trips went to the grid, which walked into walls and past stairs.
+**Saved routes first.**
+- Bots take a recorded saved route for any trip from 15 m. It used to be 40 m, and shorter trips went to the grid, which walked into walls and past stairs.
 - When a route gets a bot nowhere, it takes the route again from another waypoint twice before the grid gets a single try. V21.1 gave up on the route at once, 638 times in 3 minutes on Office.
 
 **Lock-on weapons.**
 - **Stinger, Igla and Javelin.** The bot keeps the sight on the target and presses fire again every half second until the launcher's magazine shows a missile has left. A launch is only counted then. Look for `rocket: ... is away ... (the game locked after N s)` in the log. Until now, "fired (locked)" only meant the bot pressed the button.
 - **Jets and gunships.** The heat seeker is selected from the moment the target is on the nose and held while it locks (2.8 s), then fired. Before, it was selected 0.1 s before firing, too short for any lock.
 
-**Every crew member uses the right weapon.** Following Fun-Bots:
+**Every crew member uses the right weapon.**
 - a tank's coax gun on soldiers within 150 m;
 - an IFV's missile on armour (4 s in every 12);
 - an attack-helicopter gunner's guided missile on vehicles, with the sight held on the target.
@@ -501,7 +501,7 @@ The log lines above show each one.
 
 **Vehicles drive at speed.** A recorded road has a point every few metres and a hand's wobble. Drivers used to read every wobble as a bend: in a test on a straight road they braked to 8 m/s 16 times. Bends are now measured over 10 m either side, and the speed comes from the bend's radius. A straight is driven flat out (29 m/s in the same test), a real bend is taken at the speed it allows, and a junction turn at 5 m/s. Convoys follow at that pace.
 
-**Boats.** A boat is now used when a recorded Fun-Bots boat lane runs from near it to within 150 m of a flag at least 300 m away, as on Armored Shield's river. Before, boats were used only when the flag was across water.
+**Boats.** A boat is now used when a recorded saved boat lane runs from near it to within 150 m of a flag at least 300 m away, as on Armored Shield's river. Before, boats were used only when the flag was across water.
 
 **Stationary weapons.**
 - Bots man a C-RAM, Pantsir, TOW or Kornet only for a target in reach: aircraft within 850 m, armour within 400 m. It used to be any aircraft within 1.5 km.
@@ -515,7 +515,7 @@ The log lines above show each one.
 
 ## V21.1: vehicle routes go around stall spots, and LAN servers
 
-**Stall spots now change the routes, not only the driving map.** In V21, a place where drivers kept stalling was struck off the driving map. But drivers mostly follow the Fun-Bots vehicle routes, and the driving map is only the fallback when there is no route. So the routes still led into the spot.
+**Stall spots now change the routes, not only the driving map.** In V21, a place where drivers kept stalling was struck off the driving map. But drivers mostly follow the saved vehicle routes, and the driving map is only the fallback when there is no route. So the routes still led into the spot.
 
 Now every route link that passes within 10 m of a learned stall spot (one drivers never got out of) costs 60 times more. Drivers and boats take another road when there is one.
 - It happens when the map loads, and also as soon as a spot is learned during a match. The bots don't wait for the next map.
@@ -556,7 +556,7 @@ Every map and mode gets its own learning file in **`BotMod_learned`** next to th
 - **Landing spots.** Where a transport lands and unloads becomes a landing spot. Transports try the known spots first.
 
 **Learning from you** (and any human player)
-- **Your routes.** Where you walk, drive and sail over ground the Fun-Bots routes don't cover (at least 25% new ground; walks from 40 m, drives from 150 m) is recorded. It becomes part of the bots' route network from the next map load.
+- **Your routes.** Where you walk, drive and sail over ground the saved routes don't cover (at least 25% new ground; walks from 40 m, drives from 150 m) is recorded. It becomes part of the bots' route network from the next map load.
   - Stairs stay in one route. A ladder, a jump off a ledge or a vault ends it, because bots can't copy those.
   - A route that leads bots into a spot they then never get through is split there, so the network corrects itself.
 - **Your helicopter landings.** Where you set a helicopter down, away from where you got in, becomes a landing spot for the bot transports.
@@ -622,7 +622,7 @@ On Caspian Border, V20 jets dogfought and fired 9 missiles, but they never compl
   - Any approach with under 2 s to impact breaks off, as does an overshoot inside 160 m.
   - Every jet watches all aircraft nearby, friends included, and breaks away from any that would pass within 50 m (150 m head-on). The higher jet climbs and the lower one dives.
   - After a break the jet extends for 3-7 s at full throttle, then comes round again.
-- **Target choice.** Jets prefer aircraft. A target ahead of the nose beats one behind (Fun-Bots' angle penalty), and an attack keeps its target until the pass is over.
+- **Target choice.** Jets prefer aircraft. A target ahead of the nose beats one behind, and an attack keeps its target until the pass is over.
 
 **Strike runs (vehicles and groups of infantry).**
 - **Setup.** The jet flies to an initial point 1700 m out, 300-450 m above the target, then turns in.
@@ -647,20 +647,20 @@ On Caspian Border, V20 jets dogfought and fired 9 missiles, but they never compl
 - `fires its secondary weapon`
 - `air: combat so far - N dogfight gun runs, N strike dives, N secondary weapon shots, N collision breaks` (in the status block written at startup, by `ehstatus` and by `!botdiag`)
 
-**Not yet tested in game.** The tactics were tested only in a flight model: 300 dogfights from random starts, strike runs on static and moving targets, and five variants with slower or faster controls and gravity, with no rams and no crashes. Real Frostbite handling will differ. The secondary weapon uses Select Weapon 2 → fire → Select Weapon 1, the same input Fun-Bots uses for vehicle slot 2, and still needs a live check. If a jet's secondary is a heat-seeker and no lock exists, the shot may just fly straight.
+**Not yet tested in game.** The tactics were tested only in a flight model: 300 dogfights from random starts, strike runs on static and moving targets, and five variants with slower or faster controls and gravity, with no rams and no crashes. Real Frostbite handling will differ. The secondary weapon uses Select Weapon 2 → fire → Select Weapon 1, the same input the reference uses for vehicle slot 2, and still needs a live check. If a jet's secondary is a heat-seeker and no lock exists, the shot may just fly straight.
 
-## V19: Fun-Bots routes on every map and mode
+## V19: saved routes on every map and mode
 
-Every map and game mode Server Control offers (29 maps, 215 map/mode combinations) now loads Fun-Bots routes, and a check proves it for each one. `ROUTE-COVERAGE.txt` lists every combination.
+Every map and game mode Server Control offers (29 maps, 215 map/mode combinations) now loads saved routes, and a check proves it for each one. `ROUTE-COVERAGE.txt` lists every combination.
 
 **The right files.**
-- The Conquest and Rush routes are the last complete Fun-Bots recordings. This month Fun-Bots' own development branch cut its Conquest and Rush paths short at objectives and spawns, because it now relies on a navigation mesh there that AltBotMod doesn't have. Those cut files are deliberately not used.
+- The Conquest and Rush routes are the last complete recordings. Newer recordings cut their Conquest and Rush paths short at objectives and spawns, so they are deliberately not used.
 - Every Rush and Squad Rush file covers all of its M-COM stations.
 - 156 combinations have their own file. The other 59 use the closest file from the same map:
   - Squad Rush uses Rush.
   - TDM Close Quarters, Gun Master, Scavenger and CTF use Team Deathmatch.
   - Tank Superiority and Air Superiority use Conquest.
-- Fun-Bots' Air Superiority files hold a single point. AltBotMod recognises them as placeholders and uses the map's Conquest routes instead.
+- The Air Superiority files hold a single point. AltBotMod recognises them as placeholders and uses the map's Conquest routes instead.
 - Added the co-op and campaign Team Deathmatch files.
 
 **More routes per mode.** Each map and mode also gets a companion file in `BotMod_traces\companions`:
@@ -668,8 +668,8 @@ Every map and game mode Server Control offers (29 maps, 215 map/mode combination
 - Only new ground is added, and each added piece is linked into the existing network.
 - On Operation 925 Close Quarters, for example, the 6 recorded TDM paths gain the rooms and stairwells from the Squad Rush, Squad Deathmatch and Domination recordings.
 - In total, 642,000 waypoints were added across all modes.
-- The log shows `trace: + N waypoint(s) from the level's other Fun-Bots recordings`.
-- A companion is only used with the exact file it was built for. If you replace a Fun-Bots file, run `tools\build_route_companions.py` again.
+- The log shows `trace: + N waypoint(s) from the level's other saved recordings`.
+- A companion is only used with the exact file it was built for. If you replace a route file, run `tools\build_route_companions.py` again.
 
 **Floors.** A trip to another floor (2.5 m or more up or down) now takes the recorded route from 8 m away, not 40 m. The recording knows where the stairs are.
 
@@ -687,13 +687,13 @@ On Office, V18 left a crowd of bots in a room, facing a wall and ignoring the st
 - **Bots walked into the wall at stair landings.** On a switchback landing a bot kept walking 2 m along the flight, straight into the landing wall, then gave the stairs up. It now turns at the landing and carries on to the next flight.
 - **Stairwells and crowds were cut out of the map.** A bot stuck at stairs, or held up by another soldier, blocked those links for 3 minutes, so every bot in the building stayed on its floor. Neither case blocks links now. The running-in-circles check also no longer blocks links or changes objective in a crowd.
 
-**Fun-Bots routes:**
+**Saved routes:**
 - From inside a room, the walk to a recorded route now tries the three best route waypoints, not only the nearest, which was often behind a wall.
 - A route point is never skipped at a flight of stairs.
 
 ## V18: glass, doorways, stairs, interiors, rooftops, circles
 
-Your Office (XP2_Office) rounds had about 370 stuck-and-back-off events, 619 straight walks with no route, and 148 bots blocked on a flight of stairs. This update addresses each problem in turn.
+Office (XP2_Office) test rounds had about 370 stuck-and-back-off events, 619 straight walks with no route, and 148 bots blocked on a flight of stairs. This update addresses each problem in turn.
 
 **Glass and thin panels**
 - A bot stuck against something thin knifes it. "Thin" means under 30 cm, with floor and room on the other side: a window, a glass wall or a glass door. If the knife does nothing, the bot shoots it three times.
@@ -728,14 +728,14 @@ Log lines:
 
 ## V17: vehicles that keep moving
 
-**Stuck vehicles.** Your Alborz round (2026-10-14) had 118 stuck episodes, 21 of them over a minute. The worst was a Growler that nosed into the same parked vehicles at the US base 132 times in 202 s. Every back-off moved it a few metres, which reset the old stuck watches, and every re-plan took the same recorded road. Now each driver is watched for real progress: it must get 35 m on from where it stalled within 35 s, however much it backs and fills.
+**Stuck vehicles.** An Alborz round had 118 stuck episodes, 21 of them over a minute. The worst was a Growler that nosed into the same parked vehicles at the US base 132 times in 202 s. Every back-off moved it a few metres, which reset the old stuck watches, and every re-plan took the same recorded road. Now each driver is watched for real progress: it must get 35 m on from where it stalled within 35 s, however much it backs and fills.
 - **35 s:** it backs straight out, strikes a 7 m patch ahead off the driving map and takes a different recorded road.
 - **70 s:** it heads for another objective on the driving map.
 - **105 s:** it gives the vehicle up and goes on foot. No bot takes that vehicle for 2 minutes.
 
 None of this applies while the vehicle is at its objective, fighting from the hull, picking up riders, waiting for an engineer, or driven by a player.
 
-**Newer Fun-Bots vehicle routes.** I compared every vehicle route in the Fun-Bots `dev` and `zone-nav-meshs` branches (15 Oct) with ours. They are identical except for new routes on two Rush maps, which are now merged in:
+**Newer saved vehicle routes.** Every vehicle route in a newer route set was compared with ours. They are identical except for new routes on two Rush maps, which are now merged in:
 
 | Map | Land routes | Boat routes |
 |---|---|---|
@@ -760,9 +760,9 @@ Log lines:
 
 ## V16.2.3: onto the panel, arm it, hold it
 
-The 11:19 round on Metro showed why bots stood at the M-COM without arming.
+A Metro round showed why bots stood at the M-COM without arming.
 - **The walk stopped short.** The last straight walk to the panel ends 2 m before its point, so bots held the key from 2.3-2.6 m.
-- **The game wants the panel's own spot.** It arms or defuses from the recorded spot with the recorded aim; Fun-Bots puts its bots right on it.
+- **The game wants the panel's own spot.** It arms or defuses from the recorded spot with the recorded aim; the bot has to stand right on it.
 - From 2.5 m: 8 tries, 0 arms. From 0.3 m: armed in 2.7 s.
 
 Fixes (arming and defusing alike):
@@ -772,19 +772,18 @@ Fixes (arming and defusing alike):
 - **Guard and backup:** once a station is armed, up to five attackers close to it (within 120 m) stay and guard it 4-10 m around the panel until it blows. Before, they left for the other station.
 - **Holds survive other news:** a bot in the middle of a hold keeps its station when another station changes state.
 
-**The bots' suicides.** After A blew, the mod moved the bots on to the next sector while B still stood. The game's "objective success" message came with A's destruction, and V16.2.2 also counted it as B. The bots then spawned at the next sector's bases outside the play area and died there, about once every 3 s on MP_011 at 11:30 and XP1_002 at 11:37. Each death cost a ticket, so the rounds ended in about 7 minutes. Now only the game's own armed / disarmed / destroyed events move the state, so the next sector starts only when both M-COMs are really destroyed.
+**The bots' suicides.** After A blew, the mod moved the bots on to the next sector while B still stood. The game's "objective success" message came with A's destruction, and V16.2.2 also counted it as B. The bots then spawned at the next sector's bases outside the play area and died there, about once every 3 s on MP_011 and XP1_002. Each death cost a ticket, so the rounds ended in about 7 minutes. Now only the game's own armed / disarmed / destroyed events move the state, so the next sector starts only when both M-COMs are really destroyed.
 
 Log lines: `rush: X is next to M-COM n - goes to arm it` and `... held the key 8 s ... moves onto the spot and tries again`.
 
 ## V16.2.2: the kicks, and arming for real
 
-**You were kicked by the 32-player limit, not by the bots.** BF-Portable's Blaze emulator fails every time the server tells it a limit other than 64 (`setPlayerCapacity ... index out of range` in `BF3-EMU\logs\BlazeServer_.log`). About 2 minutes after each start, the server loses the backend and drops everyone. This happened at 11:03 with only 28 bots, and Server 3 at 32 players had the same emulator error on Oct 11.
-- Server 1 is back at 64 players. The old files are kept as `Startup.txt.before-64` and `_StartServer.bat.before-64`.
+**Kicks came from a 32-player limit, not from the bots.** BF-Portable's Blaze emulator fails every time the server tells it a limit other than 64 (`setPlayerCapacity ... index out of range` in `BF3-EMU\logs\BlazeServer_.log`). About 2 minutes after each start, the server loses the backend and drops everyone. It happened even with only 28 bots.
 - Server Control's Max players setting now only accepts 64 and says why. To have fewer players, use the bot count instead.
 
 **Arming:** the mod now reads the game's own M-COM events: `StatEvent_CrateArmed`, `CrateDisarmed` and `CrateDestroyed`, and who did it.
 - The bots' M-COM state is now the game's, not a guess.
-- In your 11:03 round a bot armed in 3 s from 2.5 m and the M-COM blew 25 s later, but two other holds from 2.6 m did nothing.
+- In one round a bot armed in 3 s from 2.5 m and the M-COM blew 25 s later, but two other holds from 2.6 m did nothing.
 - Now, if 8 s of holding brings no arm or defuse, the bot walks to within 1.2 m of the spot and holds again.
 - Log lines: `rush: the game says M-COM armed by ...` and `... held the key 8 s ... moves closer and tries again`.
 
@@ -808,11 +807,11 @@ You saw bots arm once, then never stay at a panel. Three things pulled them off 
 - **The job belonged to someone else.** Only one bot may work a panel. When that bot was fighting, stuck or dead elsewhere, the bots standing on the spot walked past to their guard posts.
   - **Fix:** a bot standing at the panel now takes the job from a teammate who holds it from far away.
 - **The reach was too short.** The bot had to be within 1.7 m of the recorded spot; the crate often stopped it further out.
-  - **Fix:** it starts within 2.6 m. Once it holds the key it keeps at it within 3.2 m, so a push does not end it. (Fun-Bots uses 4 m.)
+  - **Fix:** it starts within 2.6 m. Once it holds the key it keeps at it within 3.2 m, so a push does not end it.
 - **Anything could interrupt it.** A fight order, a task or a squad call pulled the bot away.
   - **Fix:** while it holds the key, nothing else runs for that bot: no cover, no fights, no tasks. It crouches and holds for the full 8 s, however badly it is being shot. Only death, a vehicle, or being moved more than 3.2 m off ends it. This applies to arming and defusing alike.
 
-**The game's messages, re-read from your rounds:**
+**The game's messages, re-read from test rounds:**
 
 | Message | Meaning |
 |---|---|
@@ -823,7 +822,7 @@ V16.1 read the first one as "armed". That kept the attackers away from M-COMs th
 
 New log lines: `rush: <bot> arms M-COM 2 (1.4 m from the spot)` and `rush: <bot> stops at M-COM 2 after 3.1 s`. The second one appears only when a hold ends early.
 
-## V16.2: Fun-Bots routes
+## V16.2: saved routes
 
 - **The new navmeshes** (the `zone-nav-meshs` branch) were not taken. Their Rush and Conquest route files are cut down to suit the navmesh, so they have fewer points than the ones AltBotMod already uses.
 - **From the `dev` branch, 80 route files were taken:**
@@ -840,7 +839,7 @@ New log lines: `rush: <bot> arms M-COM 2 (1.4 m from the spot)` and `rush: <bot>
   | Conquest Small (co-op map) | 1 |
 
   They have the same points as before, plus recorded links between paths (doorways, stairs, junctions). AltBotMod reads those links, so bots switch between routes where a person would.
-- **Fun-Bots routes still come first,** before AltBotMod's own grid.
+- **Saved routes still come first,** before AltBotMod's own grid.
 
 ## V16.2: Server Control
 
@@ -867,7 +866,7 @@ Both use the game's vehicle damage function. That function was found in the game
 
 ## V16.1: arming and defusing M-COMs in Rush
 
-Your Metro Rush test on V16 (2026-10-13 23:03) showed why the bots never armed or defused.
+A Metro Rush test on V16 showed why the bots never armed or defused.
 
 - **Defenders blocked the panels.** The game's arm / defuse / destroy events are not readable yet, so every M-COM stayed "unknown". The defenders were allowed to work an unknown M-COM, and only one bot at a time may work a panel. RU bots, closer to it, took that turn and stood holding the key at an unarmed crate, so no attacker could ever arm it.
   - **Fix:** defenders only go to the panel of an M-COM known to be armed. The rest of the time they guard around it.
@@ -877,7 +876,7 @@ Your Metro Rush test on V16 (2026-10-13 23:03) showed why the bots never armed o
   - It walks the last 5 m straight onto the spot; the crate had stopped routed bots 2-4 m short.
 - **The sector never advanced.** With no events, bots kept going to the first two M-COMs all round, and kept deploying at the first bases. The bot's M-COM state now moves on from what can be seen:
   - **Armed:** a bot finishes its 8 s hold, or a player stands at the panel for 5 s. The defenders then come to defuse it.
-  - **Destroyed:** the game sends a message `ServerMission.ObjectiveCompleted`. In your test it came about 30 s after you armed M-COM B. It is applied to the armed M-COM (or the one with an attacker nearest).
+  - **Destroyed:** the game sends a message `ServerMission.ObjectiveCompleted`. In a test it came about 30 s after M-COM B was armed. It is applied to the armed M-COM (or the one with an attacker nearest).
   - **Next sector:** both M-COMs destroyed → bots deploy at the next sector's bases, since the deployment zones move up with the objectives.
   - **Defused:** a bot or player defuses it, or nothing is reported for 75 s after arming. The attackers then try again.
   - `!rush stage <n>` and `!rush destroyed <n>` (admin chat) still set it by hand.
@@ -887,14 +886,14 @@ Log lines to look for: `rush: M-COM 1 armed (...)`, `rush: game message ... -> d
 
 ## Rush: the bots weren't moving
 
-Your MP_Subway Rush log on V15 showed two separate problems.
+An MP_Subway Rush log on V15 showed two separate problems.
 
 - **The defenders died in a loop.** V1-V15 read the wrong field of the spawn point's data as its team, so Rush spawn points looked team-less. V15 then tried all of them, and RU landed on the sector 3 spawn. The out-of-bounds timer killed them every few seconds: dozens of "went down" lines, none with a shooter.
   - **Fix:** the spawn team is read from the field the game itself uses, `CharacterSpawnReferenceObjectData.Team`. It was found in the level data and checked against Metro's eight Rush spawns. RU now gets its sector-1 spawn by the park.
   - **Safety net:** if two bots die with no shooter within 25 s of spawning at the same spawn point, that point rests for that team for 3 minutes.
 - **No navigation grid for Rush on that map.** V15 started building a fresh one, which takes several minutes. Meanwhile the bots walked straight lines and mostly stood.
   - **Fix:** a mode played on a map for the first time borrows that map's grid from another mode (Conquest first). The grid covers the same streets and stairs, and V16 only surveys the area it lacks, in the background.
-- **The server 3 crash** (V15, Rush) is fixed too. Flag lookups are now safe for any index; the crash came from an M-COM number used as a Conquest flag number.
+- **A server crash** (V15, Rush) is fixed too. Flag lookups are now safe for any index; the crash came from an M-COM number used as a Conquest flag number.
 
 ## Passengers
 
@@ -906,7 +905,7 @@ Your MP_Subway Rush log on V15 showed two separate problems.
   - A human pilot is over an objective: the cargo jumps.
 - **Gunners stay seated.** A bot driver on a job still drops its own cargo at the flag, as before.
 
-## Jeep taxis and boats (after Brian's beta)
+## Jeep taxis and boats
 
 - **Pickups:** a bot driver now offers a ride to bots within earshot (35 m; it was 25) every 15 s, and waits up to 7 s while they run over. Boats pick up too.
 - **Boats only when needed:** a bot takes a boat only when its objective is on another landmass. Bots no longer sail along the coast to a flag they could walk to. At the spawn screen, a boat is picked only when the next objective is across water.
@@ -933,7 +932,7 @@ Your MP_Subway Rush log on V15 showed two separate problems.
 
 ## Vehicles on large maps
 
-- **Longer routes:** recorded Fun-Bots vehicle routes now hold 256 points (128 before), so a long route is no longer cut into short stop-go legs. Drivers keep trying the Fun-Bots routes before the grid, and do not slow down at the end of a partial route.
+- **Longer routes:** recorded saved vehicle routes now hold 256 points (128 before), so a long route is no longer cut into short stop-go legs. Drivers keep trying the saved routes before the grid, and do not slow down at the end of a partial route.
 - **Flags no longer ignored:** a vehicle at a flag it doesn't own now works it from inside the capture zone, moving between spots 8-14 m from the centre. It stays for up to 75 s, until the flag turns. V9-V15 parked 28-48 m out and left after 8 s.
 
 ## Other modes

@@ -244,7 +244,7 @@ int main(void)
     float eye[3] = {0, 1.6f, 0}, vp[3] = {0, 60, 300};
     H->frame = 100; assert(lockon_tick(0, &b, soldier, "Mi28", vp, eye, LAUNCHER_AA) && b.step == 1 && presses[SLOT_ACTION(2)] == 1);
     look[0] = navs[0].targetYaw > 0 ? navs[0].targetYaw - 6.2831853f : navs[0].targetYaw; look[1] = g_aimPitch[0];
-    /* V23 way 0 (nothing launched yet, least tried): Fun-Bots - no sight, fire tapped from 0.2 s on target */
+    /* V23 way 0 (nothing launched yet, least tried): the reference - no sight, fire tapped from 0.2 s on target */
     H->frame += 40; lockon_tick(0, &b, soldier, "Mi28", vp, eye, LAUNCHER_AA); assert(g_lockStrat[0] == 0 && !presses[EIA_ZOOM] && g_lockSince[0] && !presses[EIA_FIRE]);
     for (int k = 0; k < 6; k++) { H->frame++; lockon_tick(0, &b, soldier, "Mi28", vp, eye, LAUNCHER_AA); }
     assert(presses[EIA_FIRE] >= 1 && g_lockFirstAt[0] && g_rocketShots[0] == 0 && !presses[EIA_ZOOM]);
@@ -285,7 +285,7 @@ int main(void)
     g_lockHooked = 0; fakeLock = 0;
     puts("PASS: lock-on launchers - Stinger / Igla / Javelin come out, the bot holds ADS on the target and fires only after a 2.2 s lock (it restarts when the aim drifts); "
          "a hidden aircraft, a landed one or one past 700 m ends it; a Javelin closes in before locking near its 450 m range; "
-         "V23: three ways of firing (Fun-Bots' no-sight taps first), a launch counted by the magazine or a missile beside the bot, the way that launches kept, 7 s and no launch = no lock; "
+         "V23: three ways of firing, a launch counted by the magazine or a missile beside the bot, the way that launches kept, 7 s and no launch = no lock; "
          "V25: with the game's lock, asked for on target, no fire while locking, fired the moment the game reports the lock");
     return 0;
 }
@@ -328,7 +328,7 @@ int main(void)
     float a[3] = {100, 0, 0}, b[3] = {300, 0, 0}, c[3] = {800, 0, 0}, sea[3] = {-50, 0, 0};
     assert(!boat_trip_needed(a, b) && boat_trip_needed(a, c) && boat_trip_needed(sea, b));
     g_landLabels = 0; assert(boat_trip_needed(a, b));   /* no landmass table yet: as before */
-    puts("PASS: boats - only when the objective is on another landmass than the bot (Brian's beta rule); unknown counts as needed");
+    puts("PASS: boats - only when the objective is on another landmass than the bot; unknown counts as needed");
     return 0;
 }
 '''
@@ -422,7 +422,7 @@ int main(void)
     assert 'if(!grid || grid->phase!=2 ||' in core   # extension for every mode (V15: vehicle modes only)
     assert ': bm_armored(bm_vehicle_profile(vehicle_name(v))) ? 2 : 1;' in core   # jeeps / boats take spawn passengers
     assert 'if (passenger_dropout_tick(i, veh))' in core and 'vehicle_countermeasure_tick(i);   // AltBotMod V16' in core
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in en and 'PilotEvery' not in ec
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in en and 'PilotEvery' not in ec
     chat = (SRC / 'chat.c').read_text()
     assert 'const char *mp[1] = {"vars.maxPlayers"};' in chat and 'if (v > 0 && (m <= 0 || v < m)) m = v;' in chat   # V16.2.1: bots obey vars.maxPlayers
     assert '(fromCmdLine > 0 && fromCmdLine < maxPlayers)) maxPlayers = fromCmdLine;' in core

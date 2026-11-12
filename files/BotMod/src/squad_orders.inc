@@ -12,7 +12,7 @@ static SquadOrder g_squadOrder[3][33];
 static int g_squadAnnounced[3][33]; static unsigned g_squadAnnouncedAt[3][33];
 static unsigned g_squadOrdersGiven;
 
-// The letter players see for flag k: the Fun-Bots mesh names its capture zones a, b, c ...; else A + k.
+// The letter players see for flag k: the mesh names its capture zones a, b, c ...; else A + k.
 static char flag_letter(int k)
 {
     if (k < 0) return '?';

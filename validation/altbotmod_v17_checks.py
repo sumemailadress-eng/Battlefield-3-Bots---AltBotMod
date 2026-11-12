@@ -8,7 +8,7 @@
 2. Gun priorities (enhanced.c): tank / IFV guns take soldiers within 300 m and enemy vehicles before a helicopter
    past 100 m; a far aircraft only with nothing else (and not past 300 m); a jeep / boat gun never shoots at aircraft
    while a soldier is in reach, nor at all past 150 m; AA guns still prefer aircraft.
-3. Fun-Bots dev-branch vehicle routes merged: MP_013 and MP_017 Rush have the new land / boat routes, infantry kept.
+3. saved vehicle routes merged: MP_013 and MP_017 Rush have the new land / boat routes, infantry kept.
 Source checks: detection looks at soldiers before vehicles; engineers carry more AA launchers while enemy aircraft fly.
 """
 from pathlib import Path
@@ -55,7 +55,7 @@ int main(void)
     for (int s = 0; s < 34; s++) { p[0] = (s % 4) * 3.0f; H->frame += 30; drive_goal_watch(0, &d, p); }
     assert(d.watchLevel == 0 && !blocks);
     tick(&d, p, 2); assert(d.watchLevel == 1 && blocks == 1 && d.phase == 2 && d.traceTries >= 2 && d.backOutUntil > H->frame);
-    d.phase = 3; tick(&d, p, 35); assert(d.watchLevel == 2 && recovers == 1 && d.traceTries >= 4 && d.traceTries < 40);   /* V25: another recorded road, not 99 (no Fun-Bots road for the trip) */
+    d.phase = 3; tick(&d, p, 35); assert(d.watchLevel == 2 && recovers == 1 && d.traceTries >= 4 && d.traceTries < 40);   /* V25: another recorded road, not 99 (no saved road for the trip) */
     d.phase = 3; tick(&d, p, 35); assert(stops == 1 && bad == 1);   /* 105 s: the vehicle is given up */
     /* real progress resets the escalation */
     memset(&d, 0, sizeof d); d.phase = 3; d.veh = veh; d.goal[0] = 600; p[0] = 0; tick(&d, p, 36); assert(d.watchLevel == 1);
@@ -125,12 +125,12 @@ def main():
     tr = ROOT / 'files/server/BotMod_traces'
     n13, l13, w13 = vehicle_routes(tr / 'MP_013_RushLarge0.map'); n17, l17, w17 = vehicle_routes(tr / 'MP_017_RushLarge0.map')
     assert l13 == 17 and n13 >= 165 and l17 == 23 and w17 == 6 and n17 >= 213, (n13, l13, n17, l17, w17)
-    print('PASS: V17 Fun-Bots dev-branch vehicle routes merged - MP_013 Rush 17 land routes (was 16), MP_017 Rush 23 land + 6 boat (was 22 + 2); every infantry path kept')
+    print('PASS: V17 saved vehicle routes merged - MP_013 Rush 17 land routes (was 16), MP_017 Rush 23 land + 6 boat (was 22 + 2); every infantry path kept')
     core = (SRC / 'core.c').read_text(); gv = (SRC / 'gadget_variety.inc').read_text()
     assert 'for (int pass = 0; pass < 2 && !best; pass++)' in core and 'if ((veh != NULL) != pass) continue;' in core
     assert 'if(drive_goal_watch(i,d,vp))return;   // AltBotMod V17' in core
     assert 'static int enemy_air_up(int team)' in gv and 'd->weight * 3' in gv
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in (SRC / 'enhanced.h').read_text()
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in (SRC / 'enhanced.h').read_text()
     mn = (SRC / 'modes_native.inc').read_text()
     assert 'H->frame-g_rushAdvanceAt<90*30 && ++g_rushBadDeaths>=6' in mn and 'g_rush=g_rushBefore;' in mn and 'g_mcomDestroyedBy[k]!=1' in mn
     print('PASS: V17 Rush safety net - six bots dying outside the play area within 90 s of a sector change undo it (the station the game '

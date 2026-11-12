@@ -1,6 +1,6 @@
 # AltBotMod V6 installer (based on the BF3 BotMod / Enhanced Test 15 installer).
 # Works on any PC: finds the BF3 server folder or asks for it (ALP / bf4play / BF-Portable layouts).
-# Settings live in a sibling BotMod folder; DLLs, navigation data and Fun-Bots routes live beside the server EXE.
+# Settings live in a sibling BotMod folder; DLLs, navigation data and saved routes live beside the server EXE.
 param(
     [ValidateSet('install', 'uninstall', 'settings', 'fleet')] [string]$Mode = 'install',
     [string]$ServerDir = '',
@@ -21,7 +21,7 @@ $RequiredPackageFiles = @(
     'BotMod\Collect-Diagnostics.bat', 'BotMod\Collect-Diagnostics.ps1',
     'server\BotMod_traces\MP_017_ConquestLarge0.map'
 )
-$Product = 'AltBotMod V35.1 - New Ground'
+$Product = 'AltBotMod V35.2 - New Ground'
 $KeepIfPresent = @('BotMod_loadouts.txt', 'BotMod_kitextra.txt', 'BotMod_hq_*.txt',
     'BotMod_nav_*.bin', 'BotMod_pave_*.bin', 'BotMod_trees_*.bin', 'admins.txt',
     'botcount.txt', 'botcount_*.txt', 'kitskip.txt', 'enhanced*.ini')
@@ -297,6 +297,26 @@ function Update-OldDefaults([string]$active) {
     }
     return $changed
 }
+# AltBotMod V35.2 (Release 1.2): two settings got neutral names - the old key names in the active settings
+# (enhanced.ini and the enhanced_<port>.ini overrides) are renamed in place, their values kept.
+function Rename-OldKeys([string]$botModDir) {
+    $renames = [ordered]@{ 'FunBotsRoutes' = 'SavedRoutes'; 'FunBotsMesh' = 'ObjectiveMesh' }
+    $changed = 0
+    foreach ($file in @(Get-ChildItem -LiteralPath $botModDir -Filter 'enhanced*.ini' -File -ErrorAction SilentlyContinue)) {
+        $text = [IO.File]::ReadAllText($file.FullName); $count = 0
+        foreach ($old in $renames.Keys) {
+            $pattern = '(?im)^([ \t]*)' + [regex]::Escape($old) + '([ \t]*=)'
+            $n = ([regex]::Matches($text, $pattern)).Count
+            if ($n) { $text = [regex]::Replace($text, $pattern, '${1}' + $renames[$old] + '${2}'); $count += $n }
+        }
+        if ($count) {
+            Backup $file.FullName ('BotMod\' + $file.Name)
+            [IO.File]::WriteAllText($file.FullName, $text, (New-Object Text.UTF8Encoding($false)))
+            $changed += $count
+        }
+    }
+    return $changed
+}
 function Add-MissingSettings([string]$defaults, [string]$active) {
     $seen = @{}
     foreach ($line in [IO.File]::ReadAllLines($active)) {
@@ -518,16 +538,16 @@ function Invoke-BotModSetup {
     } else { Say "Learning: bots start learning in $learnDir (Server Control's Learning page shows it)." Cyan }
     $n = Copy-Set (Join-Path $Pkg 'server') $srv 'Battlefield_3_Server' @('xinput9_1_0.dll', 'xinput9_1_0_stock.dll')
     Say "Core + navigation: $n file(s) updated." Green
-    # Fun-Bots recorded routes (one .map per map/mode) - always the packaged copies.
+    # saved recorded routes (one .map per map/mode) - always the packaged copies.
     $traceSrc = Join-Path $Pkg 'server\BotMod_traces'
     $n = Copy-Set $traceSrc (Join-Path $srv 'BotMod_traces') 'Battlefield_3_Server\BotMod_traces' @()
     # AltBotMod V19: one companion per map and mode - the level's other recordings within that mode's area
     $compSrc = Join-Path $traceSrc 'companions'
     if (Test-Path -LiteralPath $compSrc) { $n += Copy-Set $compSrc (Join-Path $srv 'BotMod_traces\companions') 'Battlefield_3_Server\BotMod_traces\companions' @() }
-    # AltBotMod V34: Fun-Bots' objective walking mesh (one file per level and mode)
+    # AltBotMod V34: the objective walking mesh (one file per level and mode)
     $meshSrc = Join-Path $traceSrc 'navzones'
     if (Test-Path -LiteralPath $meshSrc) { $n += Copy-Set $meshSrc (Join-Path $srv 'BotMod_traces\navzones') 'Battlefield_3_Server\BotMod_traces\navzones' @() }
-    Say "Fun-Bots routes: $n file(s) updated." Green
+    Say "saved routes: $n file(s) updated." Green
     $n = Copy-Set (Join-Path $Pkg 'BotMod') $botModDir 'BotMod' @('build.bat')
     # AltBotMod V9: Server Control (map / mode / rotation / bots for every server instance) in BotMod\ServerControl
     $scSrc = Join-Path $Pkg 'ServerControl'
@@ -550,6 +570,8 @@ function Invoke-BotModSetup {
         Install-Command (Join-Path $botModDir 'ServerControl') $srv
     }
     [void](Repair-MaxPlayers $srv)
+    $renamed = Rename-OldKeys $botModDir
+    if ($renamed) { Say "$renamed setting name(s) updated to the new names (SavedRoutes, ObjectiveMesh); values kept." Cyan }
     $added = Add-MissingSettings $defaults $active
     $moved = Update-OldDefaults $active
     if ($moved) { Say "$moved setting(s) moved from an old default to the new one (JetAreaMarginMeters 350 / 600 -> 900)." Cyan }
@@ -567,7 +589,7 @@ function Invoke-BotModSetup {
         "What the bots learned: $(Join-Path $srv 'BotMod_learned') (kept by every new version; Server Control's Learning page).",
         "Objective duties migration: $ObjectivePreset (aircraft/driving on; six pilots, at least sixteen ground drivers per team).",
         'Edit ACTIVE settings, then restart the server.',
-        'In game, type !botdiag in chat to see the loaded build (it should say AltBotMod V35.1).') -join "`r`n"
+        'In game, type !botdiag in chat to see the loaded build (it should say AltBotMod V35.2).') -join "`r`n"
     [IO.File]::WriteAllText((Join-Path $botModDir 'INSTALLATION.txt'), $note + "`r`n")
     Say ''
     Say 'Installed and verified.' Green
@@ -577,7 +599,7 @@ function Invoke-BotModSetup {
     Say "Add your player name to $(Join-Path $botModDir 'admins.txt') for admin chat commands." Gray
     if ($script:BackedUp) { Say "Backup: $($script:BackupDir)" Cyan }
     Say 'Start the BF3 server from your normal launcher. The BotMod log (BotMod_<port>.log next to the server exe)' Green
-    Say 'should show "enhanced: AltBotMod V35.1 - New Ground"; in game, !botdiag shows it too.' Green
+    Say 'should show "enhanced: AltBotMod V35.2 - New Ground"; in game, !botdiag shows it too.' Green
     if ($ObjectivePreset) { Say 'Objective duties enabled: aircraft/driving on; six pilots per team. Custom steering, speed and combat tuning preserved.' Yellow }
     elseif ($FleetPreset) { Say 'Full fleet enabled.' Yellow }
     else { Say 'Existing feature settings preserved. Enable-Full-Fleet.bat applies the fleet preset.' Yellow }

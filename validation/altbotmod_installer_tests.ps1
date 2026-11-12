@@ -149,15 +149,15 @@ try {
     }
     Assert ((Hash (Join-Path $cache 'AltBotMod-Setup.ps1')) -eq (Hash $setupPath)) 'Cached installer matches corrected source'
     $traces = @(Get-ChildItem -LiteralPath (Join-Path $srv 'BotMod_traces') -Filter '*.map' -File)
-    Assert ($traces.Count -eq @(Get-ChildItem -LiteralPath (Join-Path $script:Pkg 'server/BotMod_traces') -Filter '*.map' -File).Count) 'AltBotMod: every Fun-Bots route file is installed'
+    Assert ($traces.Count -eq @(Get-ChildItem -LiteralPath (Join-Path $script:Pkg 'server/BotMod_traces') -Filter '*.map' -File).Count) 'AltBotMod: every saved route file is installed'
     $meshes = @(Get-ChildItem -LiteralPath (Join-Path $srv 'BotMod_traces/navzones') -Filter '*.zon' -File -ErrorAction SilentlyContinue)
     $meshSrc = @(Get-ChildItem -LiteralPath (Join-Path $script:Pkg 'server/BotMod_traces/navzones') -Filter '*.zon' -File)
-    Assert ($meshSrc.Count -ge 90 -and $meshes.Count -eq $meshSrc.Count -and (Hash (Join-Path $srv 'BotMod_traces/navzones/MP_001_RushLarge0.zon')) -eq (Hash (Join-Path $script:Pkg 'server/BotMod_traces/navzones/MP_001_RushLarge0.zon'))) "AltBotMod V34: every Fun-Bots objective mesh is installed ($($meshes.Count))"
+    Assert ($meshSrc.Count -ge 90 -and $meshes.Count -eq $meshSrc.Count -and (Hash (Join-Path $srv 'BotMod_traces/navzones/MP_001_RushLarge0.zon')) -eq (Hash (Join-Path $script:Pkg 'server/BotMod_traces/navzones/MP_001_RushLarge0.zon'))) "AltBotMod V34: every objective mesh is installed ($($meshes.Count))"
     $activeText = [IO.File]::ReadAllText($active)
     Assert ($activeText -match '(?m)^JetAreaMarginMeters=900\s*$' -and $activeText -notmatch '(?m)^JetAreaMarginMeters=600') 'AltBotMod V34: JetAreaMarginMeters at the old default 600 moved to 900'
-    Assert ($activeText -match '(?m)^FunBotsMesh=1\s*$' -and $activeText -match '(?m)^VehicleWalkMeters=250\s*$') 'AltBotMod V34: FunBotsMesh / VehicleWalkMeters added to the active settings'
+    Assert ($activeText -match '(?m)^ObjectiveMesh=1\s*$' -and $activeText -match '(?m)^VehicleWalkMeters=250\s*$') 'AltBotMod V34: ObjectiveMesh / VehicleWalkMeters added to the active settings'
     Assert ([IO.File]::ReadAllText($active).Contains('BotDamage=')) 'AltBotMod: BotDamage setting present after install'
-    Assert ([IO.File]::ReadAllText((Join-Path $bot 'INSTALLATION.txt')).Contains('AltBotMod V35.1')) 'Installed note identifies AltBotMod V35.1'
+    Assert ([IO.File]::ReadAllText((Join-Path $bot 'INSTALLATION.txt')).Contains('AltBotMod V35.2')) 'Installed note identifies AltBotMod V35.2'
     Assert ((Hash $learnFile) -eq $learnHash) 'AltBotMod V21: what the bots learned carries over unchanged'
     Assert ((Test-Path -LiteralPath (Join-Path $learnDir 'breakable.txt')) -and -not (Test-Path -LiteralPath (Join-Path $srv 'BotMod_breakable.txt'))) 'AltBotMod V21: the old BotMod_breakable.txt moved into BotMod_learned'
     Assert (@(Get-ChildItem -LiteralPath $script:FixtureRoot -Recurse -File -Filter 'MP_001_ConquestLarge0.learn' | Where-Object { $_.FullName -match 'BotMod_backup_' }).Count -ge 1) 'AltBotMod V21: a copy of the learning goes into the backup'

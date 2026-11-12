@@ -20,7 +20,7 @@ const BMMap bm_maps[29]={
  {"XP5_003","kiasar","Kiasar Railroad",0,0},{"XP5_004","sabalan","Sabalan Pipeline",0,0}
 };
 enum BMMode bm_mode(const char *s) {
- // AltBotMod V15: every mode the server runs, sorted as Fun-Bots' SetGameMode sorts them. Squad Rush is Rush with one
+ // AltBotMod V15: every mode the server runs, sorted as the SetGameMode sorts them. Squad Rush is Rush with one
  // M-COM per sector; Gun Master is team play like TDM (the game hands out its weapons); Scavenger, Tank Superiority,
  // Air Superiority and Capture the Flag are played on the level's own flags / HQs like Conquest (a mode whose level
  // turns out to have no flags falls back to team play - see mode_no_flags_fallback in core.c).

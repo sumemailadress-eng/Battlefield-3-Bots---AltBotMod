@@ -10,7 +10,7 @@
    - launchers ask for the lock and fire on it; aircraft and gunners fire on it;
    - the convoy system is gone from drive_tick, and the brakes answer only to what is in the way;
    - a re-plan keeps the last throttle; the turn-around replaces the reverse-and-re-plan loop;
-   - a plan is no longer a route try; a grid leg joins the Fun-Bots road; heading caps only on hard steering;
+   - a plan is no longer a route try; a grid leg joins the saved road; heading caps only on hard steering;
    - director: nearest flags first; elite and veteran engage from further; the version.
 """
 from pathlib import Path
@@ -111,13 +111,13 @@ def main():
     assert 'else if ((d->midNear > 4.0f && d->brakeNear > 3.0f) || H->frame < d->rearBlockedUntil) { throttle = d->midNear > 2.0f ? 0.45f : 0.25f; steer = lock; }' in dt   # (V26: rear blocked too; V27: wheeled only - tanks pivot)
     assert 'd->reverseUntil=0;d->phase=2;nav_cancel_path(i+MAX_BOTS);' not in dt
     assert 'if (!part) d->traceTries++;' not in core and 'd->traceTries=99;d->backOutUntil' not in prog and 'd->traceTries+=2;d->traceAlt++;' in prog
-    assert 'joins the Fun-Bots road by %d grid point(s)' in core and 'int direct = nav_direct_route(jg, drive_nav_ray, vp, &d->pts[k0 * 3]);' in core
+    assert 'joins the saved road by %d grid point(s)' in core and 'int direct = nav_direct_route(jg, drive_nav_ray, vp, &d->pts[k0 * 3]);' in core
     assert 'if (ae > 1.05f) vwant = fminf(vwant, isBoat ? 10.0f : bm_armored(profile) ? 6.0f : 9.0f);' in dt and 'if (ae > 0.55f)' not in dt
     print('PASS: V25 driving source - no convoy system (no following gaps, yields or route-dropping), brakes only for what is in the way, '
           'the last throttle held through a re-plan, a turn on the spot instead of reverse-and-re-plan, plans are not tries, grid legs onto the road, speed caps only for hard steering')
     assert 'if(hostile)value+=rank[f]*300.0f;' in pol and 'int reach=units[i].mobile?3:2;' in pol
     assert '{0.05f, 26,  2, 0.050f, 0.45f, 0.015f, 6.0f, 380, 300, 350, 170.00f' in en and '{0.15f, 18,  4, 0.055f, 0.42f, 0.05f, 4.0f, 280, 230, 270' in en
-    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.1 - New Ground"' in eh
+    assert '#define BM_ENHANCED_VERSION "AltBotMod V35.2 - New Ground"' in eh
     print('PASS: V25 flags nearest-first (director ranks the front), elite engages from 240 m / sees 290 m (130 / 150), veteran 170 / 200 m; version V25')
 
 if __name__ == '__main__':

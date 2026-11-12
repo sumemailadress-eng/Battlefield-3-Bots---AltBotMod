@@ -1,6 +1,6 @@
-// Caspian V2: Fun-Bots waypoint ("trace") networks as a native route graph.
+// Caspian V2: the saved waypoint ("trace") networks as a native route graph.
 //
-// Fun-Bots ships one plain-text file per level and game mode (for example
+// The route data ships one plain-text file per level and game mode (for example
 // MP_007_ConquestLarge0.map): human-recorded waypoint paths with explicit links
 // between them. BotMod loads the file for the current level, joins the paths
 // into one graph and, per flag, precomputes the shortest route from every
@@ -14,14 +14,14 @@
 
 #define TN_MAX_FIELDS 48    // Caspian V3: 0..15 flags, 16..47 cached routes to other points (vehicles, cover, squad spots)
 #define TN_FLAG_FIELDS 16
-#define TN_FLAG_JUMP  1u   // Fun-Bots ExtraMode 1: a jump was recorded here
+#define TN_FLAG_JUMP  1u   // The reference ExtraMode 1: a jump was recorded here
 #define TN_FLAG_CROUCH 2u  // SpeedMode 1/2: prone or crouch section
 #define TN_FLAG_WAIT  4u   // SpeedMode 0: recorded wait
-// AltBotMod V15: the wait's length in seconds (Fun-Bots OptValue, capped at 15) in the top 4 bits of the flags
+// AltBotMod V15: the wait's length in seconds in the top 4 bits of the flags
 #define TN_WAIT_SHIFT 4
 #define TN_WAIT_SECONDS(f) ((unsigned)(f) >> TN_WAIT_SHIFT)
 
-// AltBotMod V15: Fun-Bots path labels. Single letters ("a".."p") are the capture points a path serves (bit 0 = a);
+// AltBotMod V15: the route files' path labels. Single letters ("a".."p") are the capture points a path serves (bit 0 = a);
 // "base us" / "base ru" the bases.
 #define TN_OBJ_BASE_US (1u << 16)
 #define TN_OBJ_BASE_RU (1u << 17)
@@ -53,24 +53,24 @@ typedef struct TraceNet {
     int learnedNodes;                   // AltBotMod V21: waypoints from routes human players showed (BotMod_learned)
 } TraceNet;
 
-// Parse a Fun-Bots .map file. Vehicle-only paths (first point lists
+// Parse a saved route .map file. Vehicle-only paths (first point lists
 // "Vehicles") are left out: infantry graph only. Returns 1 on success.
 int tn_load(TraceNet *t, const char *file);
-// AltBotMod V6: the Fun-Bots VEHICLE paths as their own graph - TN_KIND_LAND (jeeps, tanks) or TN_KIND_WATER (boats).
+// AltBotMod V6: the saved VEHICLE paths as their own graph - TN_KIND_LAND (jeeps, tanks) or TN_KIND_WATER (boats).
 #define TN_KIND_LAND  1
 #define TN_KIND_WATER 2
 int tn_load_kind(TraceNet *t, const char *file, int kind);
 // AltBotMod V18.2: the infantry graph of `file` plus, when `companion` exists and was built for this very file (its
-// header names the file and its size), the companion's paths: the same level's other Fun-Bots recordings within the
+// header names the file and its size), the companion's paths: the same level's other saved recordings within the
 // mode's area (tools/build_route_companions.py). primaryNodes / companionNodes say how many waypoints came from each.
 int tn_load_with_companion(TraceNet *t, const char *file, const char *companion);
 int tn_load_text_kind(TraceNet *t, const char *text, size_t length, int kind);
-// AltBotMod V21: as tn_load_with_companion (kind 0) / tn_load_kind (vehicle kinds), plus `learned`: Fun-Bots lines (a
+// AltBotMod V21: as tn_load_with_companion (kind 0) / tn_load_kind (vehicle kinds), plus `learned`: saved lines (a
 // header line first) of routes human players showed. Their paths are renumbered after the files' own, so they join
 // the network wherever they cross it, like any recording. companion is only used for kind 0. learned may be NULL.
 // AltBotMod V21.1: every link with an end (or its middle) within `radius` of p (horizontal; 6 m up / down) costs
 // `factor` times more, and the cached routes (fields) are dropped so the next route request sees it. Returns the links
-// changed. Used for learned spots drivers never get out of: the Fun-Bots route avoids them when another road exists.
+// changed. Used for learned spots drivers never get out of: the saved route avoids them when another road exists.
 int tn_penalize_near(TraceNet *t, const float p[3], float radius, float factor);
 int tn_load_layers(TraceNet *t, const char *file, const char *companion, const char *learned, size_t learnedLength, int kind);
 // Same, from text already in memory (offline tests).
@@ -91,7 +91,7 @@ int tn_candidates(const TraceNet *t, int id, const float pos[3], float maxH, flo
 // Returns the number of points written, or 0 when the node cannot reach the field.
 int tn_route(const TraceNet *t, int id, int start, float spacing, float *pts, unsigned char *flags, int maxPts, int *truncated, float *lengthOut);
 
-// AltBotMod V15: which flag each Fun-Bots objective letter is. Paths labelled with letters end at those flags: each
+// AltBotMod V15: which flag each route-file objective letter is. Paths labelled with letters end at those flags: each
 // path end votes for the flags within 80 m of it, the strongest letter/flag pairs win (one flag per letter).
 // letterOut[f] = 0..15 (a..p) or -1. Fields of matched flags then prefer their own labelled paths (cost x0.8).
 // Returns the number of flags matched.

@@ -1,13 +1,13 @@
-// AltBotMod V34: Fun-Bots' objective walking mesh in the game (zone_nav.h). Files: <server>\BotMod_traces\navzones\
-// <Level>_<Mode>.zon (made from Fun-Bots 3.6.0-dev navzones/*.json by the package). Near a capture point, an M-COM or a
+// AltBotMod V34: the objective walking mesh in the game (zone_nav.h). Files: <server>\BotMod_traces\navzones\
+// <Level>_<Mode>.zon (made from navzones/*.json by the package). Near a capture point, an M-COM or a
 // base a bot walks the mesh - points every ~5 m that know the level's walls, floors, stairs and doorways, with the
-// corners to walk round between them, recorded jumps and crouch spots - instead of the grid / recorded paths, as Fun-Bots
+// corners to walk round between them, recorded jumps and crouch spots - instead of the grid / recorded paths, as the reference
 // dev bots do. Fewer bots stuck at the flag, M-COMs inside buildings reached by the way the mesh knows.
 #define ZONE_NEAR_EXTRA    15.0f   // a target this far beyond a zone's radius still counts as "in the zone"
 #define ZONE_BOT_EXTRA     50.0f   // the bot this far beyond the radius: close enough to be on the zone's mesh
 #define ZONE_JOIN_H         9.0f   // the bot walks at most this far straight to the mesh
 #define ZONE_GOAL_H        10.0f
-#define ZONE_STUCK_PENALTY 50.0f   // (Fun-Bots: BLOCKED_PENALTY 50, closed after 3)
+#define ZONE_STUCK_PENALTY 50.0f   //
 static ZoneNet g_zone;
 static char g_zoneKey[64];
 static unsigned g_zoneRoutes, g_zoneNoWay, g_zoneStuck, g_zoneClosed, g_zoneLogged;
@@ -22,7 +22,7 @@ static int zone_try(const char *key)
     if (!zn_load(&g_zone, path)) return 0;
     int mcom = 0, cap = 0, base = 0;
     for (int k = 0; k < g_zone.nz; k++) { if (g_zone.zones[k].kind == ZN_KIND_MCOM) mcom++; else if (g_zone.zones[k].kind == ZN_KIND_CAPTURE) cap++; else base++; }
-    bot_log("zone: Fun-Bots objective mesh %s: %d points, %d connections, %d zones (%d capture points, %d M-COMs, %d bases) in %.0f ms",
+    bot_log("zone: objective mesh %s: %d points, %d connections, %d zones (%d capture points, %d M-COMs, %d bases) in %.0f ms",
             path, g_zone.np, g_zone.ne, g_zone.nz, cap, mcom, base, perf_now() - t);
     return 1;
 }
@@ -32,7 +32,7 @@ static void zone_level_load(void)
     if (!strcmp(key, g_zoneKey)) return;
     zn_free(&g_zone); memset(g_zonePathAt, 0, sizeof g_zonePathAt);
     snprintf(g_zoneKey, sizeof g_zoneKey, "%s", key);
-    if (!g_enhanced.funBotsMesh) { bot_log("zone: Fun-Bots objective mesh off (FunBotsMesh=0)"); return; }
+    if (!g_enhanced.objectiveMesh) { bot_log("zone: objective mesh off (ObjectiveMesh=0)"); return; }
     if (zone_try(key)) return;
     // the same kind of play on the level: Squad Rush the Rush mesh, the smaller Conquests the large one (the mesh is the
     // level's ground; its zones are matched to the objectives by position)
@@ -44,7 +44,7 @@ static void zone_level_load(void)
             char other[64]; snprintf(other, sizeof other, "%s_%s", g_level, alt[k]);
             if (strcmp(other, key) && zone_try(other)) { bot_log("zone: no mesh for %s; using %s (same level)", key, other); return; }
         }
-    bot_log("zone: no Fun-Bots objective mesh for %s - recorded routes and the grid as before", key);
+    bot_log("zone: no objective mesh for %s - recorded routes and the grid as before", key);
 }
 // AltBotMod V35: the bot's seed for this life (its soldier is new each life); never 0 (0: no spread).
 static unsigned zone_seed(int i, const char *soldier)
@@ -57,14 +57,14 @@ static unsigned zone_seed(int i, const char *soldier)
 static unsigned g_zoneDeaths;
 static void zone_note_death(int team, const float *pos)
 {
-    if (!g_zone.np || !g_enhanced.funBotsMesh) return;
+    if (!g_zone.np || !g_enhanced.objectiveMesh) return;
     if (zn_on_killed(&g_zone, team, pos, H->frame / 30.0f) > 0) g_zoneDeaths++;
 }
 // A route over the mesh when the target lies in an objective's zone and the bot is near it. Returns the route's point
 // count (0: not here - the caller plans as before).
 static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
 {
-    if (!g_zone.np || !g_enhanced.funBotsMesh || isnan(ty)) return 0;
+    if (!g_zone.np || !g_enhanced.objectiveMesh || isnan(ty)) return 0;
     float *pos = (float *)(soldier + OFF_SOLDIER_POSITION), to[3] = {tx, ty, tz};
     int zi = zn_zone_near(&g_zone, to, 0, 400.0f);
     if (zi < 0) return 0;
@@ -80,7 +80,7 @@ static int zone_plan(int i, char *soldier, float tx, float ty, float tz)
     g_plansThisFrame++;
     float pts[(PATH_MAX_POINTS - 2) * 3]; unsigned char fl[PATH_MAX_POINTS - 2]; int partial = 0; float length = 0;
     double t0 = perf_now();
-    // AltBotMod V35 (Fun-Bots V3.6.0-RC2): each life takes its own way among similar ones (seed), and 3 of 4 lives keep
+    // AltBotMod V35: each life takes its own way among similar ones (seed), and 3 of 4 lives keep
     // off where their team was killed in the last minutes (the other staircase, the other street).
     unsigned seed = zone_seed(i, soldier); int team = player_team(H->bots[i]);
     zn_decay(&g_zone, H->frame / 30.0f);
@@ -124,10 +124,10 @@ static void zone_stuck(int i, const float *pos)
     }
 }
 // A guard post round an M-COM from its zone's points (the mesh knows which spots near it are walkable and how far round
-// the walls they are: Fun-Bots trims an M-COM zone to points whose way to it is short). 0: no zone / no point.
+// the walls they are: the reference trims an M-COM zone to points whose way to it is short). 0: no zone / no point.
 static int zone_guard_point(const float *mcom, unsigned seed, float *out)
 {
-    int zi = g_zone.np && g_enhanced.funBotsMesh ? zn_zone_near(&g_zone, mcom, ZN_KIND_MCOM, 15.0f) : -1;
+    int zi = g_zone.np && g_enhanced.objectiveMesh ? zn_zone_near(&g_zone, mcom, ZN_KIND_MCOM, 15.0f) : -1;
     int pt = zi >= 0 ? zn_zone_point(&g_zone, zi, seed) : -1;
     if (pt < 0) return 0;
     memcpy(out, g_zone.pts[pt].p, 12);

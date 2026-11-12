@@ -1,4 +1,4 @@
-AltBotMod Release 1.1 (internal build V35.1 "New Ground")
+AltBotMod Release 1.2 (internal build V35.2 "New Ground")
 
 1. Stop the BF3 server.
 2. Extract the whole package.

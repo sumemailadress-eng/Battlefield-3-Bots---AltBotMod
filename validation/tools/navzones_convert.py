@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""AltBotMod V34: Fun-Bots' objective walking meshes (navzones/<Level>_<Mode>.json, Fun-Bots 3.6.0-dev) -> the plain
+"""AltBotMod V34: the objective walking meshes (navzones/<Level>_<Mode>.json) -> the plain
 text files BotModCore.dll reads (BotMod_traces/navzones/<Level>_<Mode>.zon). Format: see files/BotMod/src/zone_nav.h.
 
-usage: navzones_convert.py <fun-bots navzones folder> <output folder>
+usage: navzones_convert.py <navzones folder> <output folder>
 Only the infantry mesh is taken (the vehicle mesh is not used by AltBotMod). Every index is checked; a file that does not
 check out is skipped with a message (never a half file)."""
 import json, os, sys, math

@@ -1,11 +1,11 @@
-// Native spawn/input/navigation adapter. FunBots data supplies routing hints.
+// Native spawn/input/navigation adapter. saved data supplies routing hints.
 // Objective state is confirmed separately; input duration never fabricates it.
 static const BMModeProfile *mode_profile(const char *level,const char *mode)
 {
     if(!strcmp(mode,"TeamDeathMatchC0"))mode="TeamDeathMatch0";
     for(unsigned k=0;k<sizeof g_modeProfiles/sizeof g_modeProfiles[0];k++)
         if(!strcmp(level,g_modeProfiles[k].level)&&!strcmp(mode,g_modeProfiles[k].mode))return &g_modeProfiles[k];
-    // AltBotMod V15: Gun Master is played on the TDM play area (Fun-Bots recorded no Gun Master layout for the Close
+    // AltBotMod V15: Gun Master is played on the TDM play area (saved recorded no Gun Master layout for the Close
     // Quarters and Aftermath levels, the only ones the server runs it on).
     if(bm_mode_gun_master(mode))return mode_profile(level,"TeamDeathMatch0");
     return NULL;
@@ -121,7 +121,7 @@ static int mode_discover(const char *level,const char *mode,float *low,float *hi
     if(mode_kind(mode)!=BM_MODE_RUSH && none && valid!=(1<<teams)-1)valid=(1<<teams)-1;
     // AltBotMod V15: on 2026-10-11 V14 never started TDM on Tehran Highway (its 2 spawn entities - one a team - lie
     // outside the recorded play area by their recorded position) nor Rush on Grand Bazaar (9 of 11 without a team):
-    // "not ready yet" for 47 minutes. Fun-Bots spawns a bot on a spawn entity of its team without asking where it is,
+    // "not ready yet" for 47 minutes. The reference spawns a bot on a spawn entity of its team without asking where it is,
     // and the engine refuses a wrong one. So when the play area holds none for a team, the bots try the level's
     // spawn entities (team or no team) and keep the ones that work (mode_spawn: refusals rest, Rush checks the base).
     if(valid!=(1<<teams)-1 && anywhere){g_modeSpawnsLoose=1;valid=(1<<teams)-1;}
@@ -477,7 +477,7 @@ static int mode_spawn(char *bot)
             }
             if(score<best){best=score;ent=e;slot=k;}
         }
-        // AltBotMod V15: no spawn entity in the play area for this team - try the level's others, as Fun-Bots does
+        // AltBotMod V15: no spawn entity in the play area for this team - try the level's others, as the reference does
         // (one that worked for this team first, then in turn; a refused one rests, see below).
         // V16.1, Rush: the entity whose deployment zone (where it put a bot before, else its own position) is nearest
         // this sector's base for the team - the deployment moves up with the objectives. (V15/V16 tried them in turn.)
@@ -678,9 +678,9 @@ static void mode_brain_tick(int i,char *soldier)
             g_modeBot[i].goalRole=operator;g_modeBot[i].goalReady=0;g_modeBot[i].routePending=0;
             g_modeBot[i].plannedAt=0;nav_cancel_path(i);bot_nav(i)->mode=0;
         }
-        // V16.2: the engine arms / defuses from a few metres (Fun-Bots: 4 m from the MCOM); the bot starts within 2.6 m of
+        // V16.2: the engine arms / defuses from a few metres; the bot starts within 2.6 m of
         // the recorded spot and keeps at it within 3.2 m (a push or a crouch does not end it)
-        // V16.2.3: the game arms from the recorded spot with the recorded aim (as Fun-Bots, which puts the bot on it): the bot
+        // V16.2.3: the game arms from the recorded spot with the recorded aim (as the reference, which puts the bot on it): the bot
         // walks onto it (0.6 m; 0.4 m after a hold that did nothing) and only holds from further (up to 2.6 m) when it
         // could not get closer in 4 s. (V16.2.2 started at 2.6 m - the walk there stops 2 m short - and mostly did nothing.)
         // AltBotMod V34: a window between the operator and its M-COM - knifed (then shot) open
@@ -750,7 +750,7 @@ static void mode_brain_tick(int i,char *soldier)
             float angle=(i*2.399963f)+(g_modeBot[i].candidate++%8)*0.785398f;
             int held=team==1 && g_rush.objective[target].status==BM_RUSH_ARMED;   // V16.2.3: guarding an armed station - close, all round it
             float radius=held?4+(i%4)*2.0f:team==2?8+(i%4)*3:12+(i%4)*4;
-            {   // AltBotMod V34: two posts in three from the M-COM's zone of the Fun-Bots objective mesh
+            {   // AltBotMod V34: two posts in three from the M-COM's zone of the objective mesh
                 float zp[3];
                 if((i+g_modeBot[i].candidate)%3!=0 && zone_guard_point(goal,(unsigned)(i*7919u+g_modeBot[i].candidate*104729u),zp) &&
                    dist2(zp,goal)<(radius+8)*(radius+8) && dist2(zp,goal)>2.0f*2.0f && fabsf(zp[1]-goal[1])<=4 && mode_goal_clear(i,zp)){

@@ -1,4 +1,4 @@
-// Catalog paths and attachment combinations from the supplied FunBots WeaponList.lua.
+// Catalog paths and attachment combinations from the reference WeaponList.
 static const BMWeaponDefinition g_weaponDefinitions[] = {
     {"Assault", "M16A4_RX01", "Weapons/M16A4/U_M16A4", {"Weapons/M16A4/U_M16A4_RX01", "Weapons/M16A4/U_M16A4_HeavyBarrel", "Weapons/Common/NoSecondaryRail", "Weapons/Common/NoCamo"}},
     {"Assault", "AEK971_Kobra", "Weapons/AEK971/U_AEK971", {"Weapons/AEK971/U_AEK971_Kobra", "Weapons/Common/NoSecondaryRail", "Weapons/AEK971/U_AEK971_Flashsuppressor", "Weapons/Common/NoCamo"}},
