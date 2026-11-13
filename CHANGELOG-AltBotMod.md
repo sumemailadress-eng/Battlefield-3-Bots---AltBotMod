@@ -22,13 +22,19 @@ The installer keeps your settings and adds the new ones (V31: `LockOnSeconds` an
 
 **No more bots in TOW / Kornet launchers.** Bots no longer man or spawn into the anti-tank launcher emplacements: their gunners shot at little and sat out the fight. Bots still use the AA emplacements (C-RAM / Pantsir).
 
+**Built-in updater.** Server Control has a new **Updates** tab and AltBotMod Command an **Updates** button in its top bar (an orange dot when a newer release is out). They ask GitHub for this repository's latest release, show its notes and, on **Download and install**:
+- ask before stopping any running server from this folder,
+- download the release (its `.zip` asset if it has one, else the source ZIP; only from GitHub over HTTPS) into the temp folder and check that it is an AltBotMod package,
+- close the launcher, run that release's own installer for this server folder (as `Install-AltBotMod.bat` does: settings, routes, admins and learning kept, replaced files backed up), then open the launcher again.
+Server Control checks once when it opens (setting on the Updates tab); Command checks at most every 30 minutes while its page is open. The installed release is in `BotMod\ServerControl\AltBotMod-Release.txt`. Command is now `V35.2 / Command 1.6`: an older Command host still running is told to restart.
+
 **Clearer setting names.** `SavedRoutes` (follow the saved routes) and `ObjectiveMesh` (walk the objective mesh) replace the two older route-setting names. The installer renames the old keys in `enhanced.ini` and any `enhanced_<port>.ini`, keeps their values and backs the files up first. Server Control and AltBotMod Command show the new names.
 
 **Cleaner log and source wording.** Log lines now say "saved route" / "saved road" / "objective mesh" throughout (for example `trace: %s takes a saved route to flag ...`, `zone: objective mesh off (ObjectiveMesh=0)`).
 
 **Package.** The old `rollback\` DLLs are no longer in the repository; every earlier build is on the GitHub Releases page.
 
-**Tests:** 73 offline check groups and 174 installer checks pass, including the settings-key rename. Not played live yet.
+**Tests:** 74 offline check groups (with the new updater tests) and 174 installer checks pass, including the settings-key rename. Not played live yet, and the updater not yet run on a real Windows PC.
 
 ## Release 1.1 (internal V35.1)
 

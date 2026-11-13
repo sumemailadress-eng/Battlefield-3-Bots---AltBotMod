@@ -104,7 +104,7 @@ def check_command():
         assert (SC / f).is_file(), f
     assert not (SC / 'Command-last-folder.txt').exists(), 'a user-specific folder file must not ship'
     host = (SC / 'AltBotMod-Command.ps1').read_text()
-    assert "$script:CommandVersion='V33 / Command 1.5'" in host and "'V33 / Command 1.5'" in (SC / 'Command-Web/command.js').read_text()
+    assert "$script:CommandVersion='V35.2 / Command 1.6'" in host and "'V35.2 / Command 1.6'" in (SC / 'Command-Web/command.js').read_text()
     print('PASS: AltBotMod Command ships with Server Control')
 
 def check_version():

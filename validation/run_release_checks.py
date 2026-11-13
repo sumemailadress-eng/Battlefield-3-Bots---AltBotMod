@@ -28,6 +28,7 @@ if pwsh:
  # AltBotMod V21.1: LAN servers against two fake BF-Portable backends
  n,r=run(('servercontrol-lan-results',[pwsh,'-NoProfile','-File',str(val/'servercontrol/lan_tests.ps1'),'-Dir',str(sc),'-Python',sys.executable,'-Mock',str(val/'servercontrol/mock_backend.py')]));results[n]=r
  # AltBotMod V33: AltBotMod Command (the web launcher) started for real against a mock RCON server
+ n,r=run(('updater-results',[pwsh,'-NoProfile','-File',str(val/'servercontrol/updater_tests.ps1'),'-Dir',str(sc)]));results[n]=r
  n,r=run(('command-results',[pwsh,'-NoProfile','-File',str(val/'servercontrol/command_tests.ps1'),'-Dir',str(sc),'-Python',sys.executable,'-Pwsh',pwsh]));results[n]=r
  # AltBotMod V21: the Learning page's data side, against files the real learning store writes (learnfile_tool)
  with tempfile.TemporaryDirectory(prefix='bf3-v21-sc-') as tmp:

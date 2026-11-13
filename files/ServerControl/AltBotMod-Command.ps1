@@ -3,7 +3,7 @@
 param([string]$ServerDir, [ValidateRange(1024,65535)][int]$Port = 8787, [switch]$LocalOnly, [switch]$NoBrowser, [switch]$Desktop)
 $ErrorActionPreference = 'Stop'
 $base = $PSScriptRoot
-$script:CommandVersion='V33 / Command 1.5'
+$script:CommandVersion='V35.2 / Command 1.6'
 trap {
     $why=$_.Exception.Message
     try { [IO.File]::AppendAllText((Join-Path $PSScriptRoot 'Command-error.log'),(Get-Date -Format s)+'  '+$why+"`r`n") } catch { }
@@ -18,6 +18,7 @@ trap {
 . (Join-Path $base 'Learning-Core.ps1')
 . (Join-Path $base 'Command-Learning.ps1')
 . (Join-Path $base 'Command-Join.ps1')
+. (Join-Path $base 'Updater-Core.ps1')   # Release 1.2: updates from GitHub
 Set-StrictMode -Off
 $script:BpConfigPath = Join-Path $base 'Launcher.json'
 $script:BpAccountsPath = Join-Path $base 'Accounts.json'
@@ -97,6 +98,35 @@ function Get-Status {
     $script:StatusCache=@{ Servers=$rows; Services=$services; Launch=$plan; Log=@($script:Audit); Time=(Get-Date).ToString('o') }
     $script:StatusAt=Get-Date; return $script:StatusCache
 }
+# Release 1.2: updates. The GitHub check and the download run in the background; Step-CommandUpdate (main loop) collects
+# them and, once the download is ready, starts the installer and closes this host (Run-Update.cmd opens it again).
+$script:Upd=@{ Installed=(Get-BmInstalledRelease $base); Latest=$null; Check=$null; Download=$null; Error=''; CheckedAt=[datetime]::MinValue; Phase='idle'; Root=$null }
+function Start-CommandUpdateCheck { if ($script:Upd.Check -or $script:Upd.Download) { return }; $script:Upd.Error=''; $script:Upd.Check=Start-BmUpdateCheck $script:Upd.Installed.Repo; $script:Upd.CheckedAt=Get-Date }
+function Get-CommandUpdate {
+    $u=$script:Upd; $i=$u.Installed; $l=$u.Latest
+    if (-not $u.Check -and -not $u.Download -and $u.Phase -eq 'idle' -and ((Get-Date)-$u.CheckedAt).TotalMinutes -gt 30) { Start-CommandUpdateCheck }
+    $latest=$null; if ($l) { $latest=@{ Name=$(if ($l.Name) { $l.Name } else { $l.Tag }); Tag=$l.Tag; Version=[string]$l.Version; Notes=$l.Notes; Page=$l.Page; Published=$l.Published; Size=$l.Size } }
+    return @{ Installed=@{ Release=$i.Release; Build=$i.Build }; Latest=$latest; Newer=[bool](Test-BmUpdateNewer $i $l); Checking=[bool]$u.Check
+        Phase=$u.Phase; Progress=$(if ($u.Download) { Format-BmUpdateProgress $u.Download } else { '' }); Error=$u.Error; Running=@(Get-BmRunningServers $dir).Count }
+}
+function Step-CommandUpdate {
+    $u=$script:Upd
+    if ($u.Check -and (Test-BmUpdateJobDone $u.Check)) {
+        $job=$u.Check; $u.Check=$null
+        if ($job.Shared.State -eq 'done') { try { $u.Latest=Get-BmUpdateCheckResult $job } catch { $u.Error=$_.Exception.Message }; if ($u.Latest -and (Test-BmUpdateNewer $u.Installed $u.Latest)) { Note "Update available: $($u.Latest.Name)" } }
+        else { $u.Error=$job.Shared.Error }
+    }
+    if ($u.Download -and (Test-BmUpdateJobDone $u.Download)) {
+        $job=$u.Download; $u.Download=$null
+        if ($job.Shared.State -ne 'done') { $u.Error=$job.Shared.Error; $u.Phase='idle'; Note $u.Error; return }
+        $relaunch=Join-Path $base $(if ($Desktop) { 'Command-Desktop.bat' } else { 'Command.bat' })
+        $label=$(if ($u.Latest.Version) { 'Release '+$u.Latest.Version.ToString(2) } else { $u.Latest.Tag })
+        try { [void](Start-BmUpdateInstall $job.Shared.Result $dir $PID $relaunch $label) } catch { $u.Error='Could not start the installer: '+$_.Exception.Message; $u.Phase='idle'; Note $u.Error; return }
+        $u.Phase='installing'; Note "Installing $label - Command closes now and opens again when the installer is done."
+        $script:UpdateQuitAt=(Get-Date).AddSeconds(4)   # (a few more polls can still read the 'installing' state)
+    }
+}
+$script:UpdateQuitAt=$null
 function Valid-Map($map,$mode) { if (-not (Get-BmMap $map) -or (Get-BmMapModes $map) -notcontains $mode) { throw 'Invalid map / mode combination' } }
 function Get-Learn($key) { if ($key -notmatch '^[A-Za-z0-9_]+$') { throw 'Invalid learned-map key' }; $p=Join-Path (Get-BmLearnDir $dir) ($key+'.learn'); $f=Read-CommandLearnFile $p; if (-not $f) { throw 'No learned data for this map' }; return $f }
 function Api([string]$path, $b, $req, $query) {
@@ -105,6 +135,22 @@ function Api([string]$path, $b, $req, $query) {
             return @{ Maps=@($script:BmMaps | ForEach-Object { @{ Code=$_.Code; Name=$_.Name; Modes=(Get-BmMapModes $_.Code) } }); Modes=$script:BmModeNames; Levels=$script:BmLevels; Settings=$script:BmSettings; Vars=$script:BmServerVars; UnlockModes=$script:BmUnlockModes; Local=$req.Local; LocalOnly=[bool]$LocalOnly; Urls=$urls; Ips=$ips; Elevated=(Test-BpElevated); ServerDir=$dir; LaunchServers=@($script:Prefs.LaunchServers); StartDns=[bool]$script:Prefs.StartDns; Version=$script:CommandVersion }
         }
         '/api/status' { return Get-Status }
+        '/api/update' { return Get-CommandUpdate }
+        '/api/update/check' { Start-CommandUpdateCheck; return @{ Message='Checking GitHub for the latest release...' } }
+        '/api/update/install' {
+            $u=$script:Upd
+            if ($u.Phase -ne 'idle' -or $u.Download) { throw 'CONFLICT: An update is already being downloaded or installed.' }
+            if (-not $u.Latest -or -not (Test-BmUpdateNewer $u.Installed $u.Latest)) { throw 'CONFLICT: There is no newer release to install. Check for updates first.' }
+            $running=@(Get-BmRunningServers $dir)
+            if ($running.Count) {
+                if (-not $b.stopServers) { throw "CONFLICT: $($running.Count) BF3 server(s) are running from this folder. Stop them first (the update replaces the bot mod files they use)." }
+                foreach ($i in $Instances) { try { [void](Stop-BmServer $i) } catch { } }
+                Start-Sleep -Milliseconds 1500
+                if (@(Get-BmRunningServers $dir).Count) { throw 'CONFLICT: A BF3 server from this folder is still running (not started from a _StartServer*.bat?). Close it on the host PC, then try again.' }
+            }
+            $u.Error=''; $u.Download=Start-BmUpdateDownload $u.Latest; $u.Phase='downloading'
+            return @{ Message="Downloading $($u.Latest.Name)... Command restarts by itself when it is installed." }
+        }
         '/api/settings' {
             $i=$null; if ($query['id'] -ne 'all') { $i=Inst $query['id'] }
             return @{ Rows=@(Get-BmEffectiveSettings $dir $i); Revision=(Hash-Paths (Bot-Paths $i)) }
@@ -244,6 +290,7 @@ Note 'Command launcher ready.'
 try {
     while (-not $script:CommandQuit) {
         if ($Desktop) { [Windows.Forms.Application]::DoEvents() }
+        Step-CommandUpdate; if ($script:UpdateQuitAt -and (Get-Date) -gt $script:UpdateQuitAt) { $script:CommandQuit=$true; continue }
         if ($script:LaunchPlan -and -not $script:LaunchPlan.Done) { $m=Step-BpLaunch $script:LaunchPlan ([Environment]::TickCount/1000.0); if ($m) { Note $m; $script:StatusAt=[datetime]::MinValue } }
         $req=$http.Next(); if (-not $req) { Start-Sleep -Milliseconds 60; continue }
         try {
@@ -252,7 +299,7 @@ try {
             $uri=New-Object Uri('http://'+$req.Host+$req.Target); $path=$uri.AbsolutePath
             if ($path.StartsWith('/api/')) {
                 if ($req.Authorization -cne ('Bearer '+$token)) { $req.Reply(401,'application/json',[Text.Encoding]::UTF8.GetBytes('{"Error":"Pair this browser using the host link or QR code."}')); continue }
-                $post=@('/api/settings/save','/api/setup/save','/api/action','/api/rotation/save','/api/launch','/api/launch/cancel','/api/services','/api/launcher/config/save','/api/ip/save','/api/desktop','/api/client','/api/live/toggle','/api/learning/delete','/api/learning/export','/api/learning/import','/api/join/launch') -contains $path
+                $post=@('/api/settings/save','/api/setup/save','/api/action','/api/rotation/save','/api/launch','/api/launch/cancel','/api/services','/api/launcher/config/save','/api/ip/save','/api/desktop','/api/client','/api/live/toggle','/api/learning/delete','/api/learning/export','/api/learning/import','/api/join/launch','/api/update/check','/api/update/install') -contains $path
                 if (($post -and ($req.Method -ne 'POST' -or $req.ContentType -notlike 'application/json*')) -or (-not $post -and $req.Method -ne 'GET')) { throw 'Invalid method or content type' }
                 $b=$null; if ($post) { $b=[Text.Encoding]::UTF8.GetString($req.Body) | ConvertFrom-Json }
                 $query=@{}; foreach ($part in $uri.Query.TrimStart('?').Split('&')) { $kv=$part.Split('=',2); if ($kv.Length -eq 2) { $query[[Uri]::UnescapeDataString($kv[0])]=[Uri]::UnescapeDataString($kv[1]) } }

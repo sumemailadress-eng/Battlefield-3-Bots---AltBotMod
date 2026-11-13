@@ -9,6 +9,7 @@
 - **Capture the Flag on the objective mesh.** Operation Riverside, Nebandan Flats, Kiasar Railroad and Sabalan Pipeline now have an objective mesh around both flag stands, so raiders and guards walk proper paths near the stands. 115 objective meshes ship in total.
 - **No more bots stuck in TOW / Kornet launchers.** Their gunners shot at little and sat out the fight; bots now leave those to players. AA emplacements (C-RAM / Pantsir) are still used.
 - **Clearer setting names:** `SavedRoutes` and `ObjectiveMesh`. The installer renames the old keys in your settings files and keeps their values.
+- **Built-in updater.** Server Control has an **Updates** tab and AltBotMod Command an **⟳ Updates** button. They check GitHub for a newer release, show its notes, and download and install it in one click (see [Updating from the launcher](#updating-from-the-launcher)).
 - **Clearer log lines:** routes are called "saved routes" / "saved roads" and the mesh "objective mesh" everywhere.
 
 Earlier releases: Release 1.1 fixed server lag and idle boats on maps with boats, added Squad Rush on 12 more maps, bots spreading out and avoiding spots where their team just died. Details: [CHANGELOG-AltBotMod.md](CHANGELOG-AltBotMod.md#release-12-internal-v352).
@@ -78,6 +79,21 @@ Earlier releases: Release 1.1 fixed server lag and idle boats on maps with boats
 ## Upgrading and rollback
 
 **Upgrading:** run the new installer over the old install. Your settings, learning files and route files are kept.
+
+### Updating from the launcher
+
+From Release 1.2 on, the launchers can update AltBotMod themselves:
+
+- **Server Control:** open the **Updates** tab. It checks GitHub when Server Control opens (untick *Check when Server Control opens* to stop that) and shows the installed release, the latest one and its notes. **Download and install** does the rest.
+- **AltBotMod Command:** the **⟳ Updates** button in the top bar (an orange dot means a newer release is out). It works from a paired phone too.
+
+What happens on **Download and install**:
+1. If servers from this folder are running, it asks first and stops them (the update replaces the bot mod files they use).
+2. It downloads the release from this GitHub repository (the release's `.zip` file if it has one, otherwise its source ZIP) into your temp folder.
+3. The launcher closes and a console window runs that release's own installer for your server folder, exactly like `Install-AltBotMod.bat`: settings, saved routes, admins and what the bots learned are kept, anything replaced is backed up to `BotMod_backup_<date>`.
+4. The launcher opens again. Start your servers as usual. (Command gets a new pairing key: scan the new QR code on your phone.)
+
+Releases before 1.2 have no updater: install 1.2 once by hand.
 
 **Rolling back:** download an earlier release from the [Releases page](../../releases) and run its installer, or copy its `files\server\BotModCore.dll` over `BotModCore.dll` in the server folder.
 
@@ -241,6 +257,7 @@ The features are grouped by area. Each one lists what the bots do and any settin
 
 - **AltBotMod Command:** a web launcher for managing servers, bots, rotation, rules and learning files. See [AltBotMod Command](#altbotmod-command-web-launcher).
 - **Server Control:** the older Windows control panel, still installed alongside Command.
+- **Updater** in both: checks GitHub for a newer release and installs it (Release 1.2).
 - **Live map** in Server Control and Command.
 
 ---
@@ -350,10 +367,10 @@ Each server writes `BotMod_<port>.log`. Useful lines:
 
 The validation suite lives in `validation\`.
 
-- **Release checks:** 72 offline check groups with AddressSanitizer and UndefinedBehaviorSanitizer. They cover the driving simulation, the throttle and lane rules, the lock-on put in place, jets' area and stall recovery, the vehicle position, and the zone and navigation logic.
+- **Release checks:** 74 offline check groups with AddressSanitizer and UndefinedBehaviorSanitizer. They cover the driving simulation, the throttle and lane rules, the lock-on put in place, jets' area and stall recovery, the vehicle position, and the zone and navigation logic.
 - **LAN checks:** 31 checks against two fake BF-Portable backends: finding servers, registering, players per PC, and joining.
 - **Installer checks:** `altbotmod_installer_tests.ps1` runs real file operations against a fixture (174 integration checks).
-- **Server Control and Command tests:** cover IP targets, join command lines, the accounts file and the running Command host.
+- **Server Control and Command tests:** cover IP targets, join command lines, the accounts file, the running Command host and the updater (versions, download source, the update script).
 
 These checks are offline. They do not replace a live round.
 
@@ -382,6 +399,7 @@ Please report what you see for these:
 - Passenger exits (`passenger:` lines)
 - Jet stall recovery and the wider patrol area
 - Squad Rush on the 12 new levels (`rush:` lines)
+- The launcher updater on a real Windows PC (Server Control's Updates tab and Command's Updates button)
 - Bot boats on Kharg Island and other water maps (`drive: ... drives N waypoint(s)` after leaving the slip)
 
 If something looks wrong, run `Collect-Diagnostics.bat` and send the folder it makes with a description of what happened.

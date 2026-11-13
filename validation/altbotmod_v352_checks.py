@@ -7,7 +7,8 @@
 2. Bots no longer man or spawn into the TOW / Kornet launchers (their gunners shot at little and sat out the fight);
    the AA emplacements (C-RAM / Pantsir) stay.
 3. Release 1.2 setting names: SavedRoutes / ObjectiveMesh; the installer renames the old keys in the active settings.
-4. Version.
+4. Release 1.2 updater: the release file matches the build; Server Control and Command load the updater.
+5. Version.
 """
 from pathlib import Path
 import argparse, re
@@ -64,6 +65,19 @@ def check_setting_names():
     i = setup.index('$renamed = Rename-OldKeys $botModDir'); assert i < setup.index('$added = Add-MissingSettings $defaults $active')
     print('PASS: setting names SavedRoutes / ObjectiveMesh; the installer renames the old keys (values kept) before adding missing ones')
 
+def check_updater():
+    rel = {}
+    for line in (SC / 'AltBotMod-Release.txt').read_text().splitlines():
+        if '=' in line: k, v = line.split('=', 1); rel[k.strip()] = v.strip()
+    setup = (ROOT / 'files/AltBotMod-Setup.ps1').read_text()
+    assert rel.get('release') == '1.2' and "$Product = 'AltBotMod " + rel.get('build', '') + "'" in setup, rel
+    for f in ('Updater-Core.ps1', 'Update-Page.ps1'): assert (SC / f).is_file(), f
+    cmd = (SC / 'AltBotMod-Command.ps1').read_text(); js = (SC / 'Command-Web/command.js').read_text()
+    ver = re.search(r"CommandVersion='([^']+)'", cmd).group(1)
+    assert ver.startswith('V35.2') and ("state.meta.Version!=='%s'" % ver) in js
+    assert "'/api/update/install'" in cmd and "/api/update/install" in js and 'update-dialog' in (SC / 'Command-Web/index.html').read_text()
+    print('PASS: Release 1.2 updater: release file 1.2 = %s; Server Control Updates page; Command %s with /api/update' % (rel['build'], ver))
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser(); ap.add_argument('--sanitize', action='store_true'); ap.parse_args()
-    check_ctf(); check_launchers(); check_setting_names(); check_version()
+    check_ctf(); check_launchers(); check_setting_names(); check_updater(); check_version()

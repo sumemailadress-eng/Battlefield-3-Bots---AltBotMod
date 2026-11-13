@@ -1,0 +1,3 @@
+release=1.2
+build=V35.2 - New Ground
+repo=sumemailadress-eng/Battlefield-3-Bots---AltBotMod

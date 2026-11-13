@@ -16,8 +16,8 @@ foreach ($a in @('index.html', 'command.js', 'command.css', 'qr.js', 'favicon.sv
 }
 $host1 = [IO.File]::ReadAllText((Join-Path $Dir 'AltBotMod-Command.ps1')); $js = [IO.File]::ReadAllText((Join-Path $web 'command.js'))
 $ver = [regex]::Match($host1, "CommandVersion='([^']+)'").Groups[1].Value
-Assert ($ver -eq 'V33 / Command 1.5' -and $js.Contains("state.meta.Version!=='$ver'")) "host and page agree on the version ($ver)"
-Assert ([IO.File]::ReadAllText((Join-Path $web 'index.html')).Contains('ALTBOTMOD V33')) 'page shows V33'
+Assert ($ver -eq 'V35.2 / Command 1.6' -and $js.Contains("state.meta.Version!=='$ver'")) "host and page agree on the version ($ver)"
+Assert ([IO.File]::ReadAllText((Join-Path $web 'index.html')).Contains('ALTBOTMOD V35.2')) 'page shows V35.2'
 foreach ($bat in @('Command-Desktop.bat', 'Command-Browser.bat', 'Command.bat', 'Command-Admin.bat', 'Command-Allow-Phone.bat')) {
     $b = [IO.File]::ReadAllText((Join-Path $Dir $bat)); $m = [regex]::Matches($b, '%~dp0([A-Za-z0-9_.-]+)')
     Assert ($m.Count -gt 0 -and -not @($m | Where-Object { -not (Test-Path -LiteralPath (Join-Path $Dir $_.Groups[1].Value)) }).Count) "$bat points at files that exist"
@@ -70,12 +70,18 @@ try {
     Assert ((Call '/api/meta' @{ Authorization = "Bearer $key"; Host = "evil.example:$port" }).StatusCode -eq 403) 'an unknown Host is refused (DNS rebinding)'
     Assert ((Call '/api/action' @{ Authorization = "Bearer $key"; Origin = 'http://evil.example' } 'POST' @{ id = 1; action = 'next' }).StatusCode -eq 403) 'a foreign Origin is refused'
     $r = Call '/api/meta'; $meta = $r.Content | ConvertFrom-Json
-    Assert ($r.StatusCode -eq 200 -and $meta.Version -eq 'V33 / Command 1.5' -and $meta.Maps.Count -eq 29 -and $meta.LocalOnly) "meta: version, 29 maps, local only ($($r.StatusCode))"
+    Assert ($r.StatusCode -eq 200 -and $meta.Version -eq 'V35.2 / Command 1.6' -and $meta.Maps.Count -eq 29 -and $meta.LocalOnly) "meta: version, 29 maps, local only ($($r.StatusCode))"
     Assert (@($meta.Settings | Where-Object { $_.Key -eq 'DoorGunMeters' -or $_.Key -eq 'LockOnSeconds' }).Count -eq 2) 'meta lists the V31+ bot settings'
     $all = $r.Content
     $st = Call '/api/status'; $status = $st.Content | ConvertFrom-Json; $all += $st.Content
     Assert ($st.StatusCode -eq 200 -and $status.Servers.Count -eq 2) "status: two instances ($($st.StatusCode))"
     Assert (@($status.Servers | Where-Object { $_.Online }).Count -eq 1 -and ($status.Servers | Where-Object { $_.Online }).Info.Map -eq 'XP5_001') 'status: the running instance answers over RCON'
+    # Release 1.2: the updater endpoints (the GitHub check itself runs in the background and may fail offline)
+    $up = Call '/api/update'; $upd = $up.Content | ConvertFrom-Json
+    Assert ($up.StatusCode -eq 200 -and $upd.Installed.Release -eq '1.2' -and $upd.Installed.Build -like 'V35.2*' -and $upd.Phase -eq 'idle') "update: installed Release 1.2, idle ($($up.StatusCode))"
+    $ui = Call '/api/update/install' $auth 'POST' @{ stopServers = $false }
+    Assert ($ui.StatusCode -eq 409 -and $ui.Content -match 'newer release|running|already') "update: install refused without a newer release ($($ui.StatusCode))"
+    Assert ((Call '/api/update/install' $auth 'GET').StatusCode -eq 400) 'update: install only by POST'
     $i = Call '/api/instance?id=1'; $all += $i.Content; Assert ($i.StatusCode -eq 200 -and @(($i.Content | ConvertFrom-Json).Players).Count -ge 1) 'instance: players over RCON'
     $s = Call '/api/settings?id=1'; $all += $s.Content; $rows = ($s.Content | ConvertFrom-Json)
     Assert ($s.StatusCode -eq 200 -and $rows.Rows.Count -gt 50 -and $rows.Revision) "settings for server 1 ($($rows.Rows.Count) rows)"

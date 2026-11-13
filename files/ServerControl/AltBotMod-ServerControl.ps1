@@ -23,13 +23,14 @@ Add-Type -AssemblyName System.Drawing
 . (Join-Path $PSScriptRoot 'BFPortable-Core.ps1')
 . (Join-Path $PSScriptRoot 'LiveMap-Core.ps1')
 . (Join-Path $PSScriptRoot 'Learning-Core.ps1')   # AltBotMod V21: what the bots learned (BotMod_learned)
+. (Join-Path $PSScriptRoot 'Updater-Core.ps1')   # Release 1.2: updates from GitHub
 . (Join-Path $PSScriptRoot 'ServerControl-Theme.ps1')   # AltBotMod V16.2: the BF3 look
 Set-StrictMode -Off   # (WinForms event handlers)
 
 $SettingsPath = Join-Path $PSScriptRoot 'ServerControl.json'
 function Load-Settings { try { if (Test-Path -LiteralPath $SettingsPath) { return (Get-Content -Raw -LiteralPath $SettingsPath | ConvertFrom-Json) } } catch { }; return $null }
 # Window preferences (server folder, one-click choices, Battlelog address), kept next to this script.
-$script:Prefs = @{ ServerDir = ''; LaunchServers = @(1, 2, 3, 4); OpenBattlelog = $true; StartDns = $false; LaunchClient = $false; BattlelogUrl = '' }
+$script:Prefs = @{ ServerDir = ''; LaunchServers = @(1, 2, 3, 4); OpenBattlelog = $true; StartDns = $false; LaunchClient = $false; BattlelogUrl = ''; CheckUpdates = $true }
 $loaded = Load-Settings
 if ($loaded) { foreach ($k in @($script:Prefs.Keys)) { if ($loaded.PSObject.Properties[$k] -and $null -ne $loaded.$k) { $script:Prefs[$k] = $loaded.$k } } }
 function Save-Settings($dir) { if ($dir) { $script:Prefs.ServerDir = $dir }; try { $script:Prefs | ConvertTo-Json | Set-Content -LiteralPath $SettingsPath -Encoding UTF8 } catch { } }
@@ -1120,6 +1121,9 @@ foreach ($inst in $Instances) { $u = $Ui[$inst.Number]; $u.Setup.Tag = $u; $u.Se
 # ---- Learning page (AltBotMod V21): what the bots learned on each map; delete, export, import ----
 . (Join-Path $PSScriptRoot 'Learning-Page.ps1')
 
+# ---- Updates page (Release 1.2): the latest release on GitHub, download and install ----
+. (Join-Path $PSScriptRoot 'Update-Page.ps1')
+
 # ---- refresh: the open server every 3 s, all of them every 9 s ----
 $tick = 0
 $timer = New-Object Windows.Forms.Timer
@@ -1130,6 +1134,7 @@ $timer.Add_Tick({
     if ($selTab -eq $tabWeb) { return }   # (Battlelog open: no polling - keeps the page smooth)
     if ($selTab -eq $tabLm) { return }    # (Live map open: it reads its own files every second, no RCON needed)
     if ($selTab -eq $tabLearn) { return } # (Learning open: files only, read when shown / refreshed)
+    if ($selTab -eq $tabUpd) { return }   # (Updates: nothing to poll)
     if ($selTab -eq $tabBp) { Refresh-Services; return }
     foreach ($inst in $Instances) {
         if ($selNum -eq $inst.Number -or $script:tick % 3 -eq 0 -or $selTab -eq $tabAll) { Refresh-Instance $Ui[$inst.Number] $false }
@@ -1149,7 +1154,8 @@ $form.Add_Shown({
     foreach ($inst in $Instances) { Refresh-Instance $Ui[$inst.Number] $true }
     $timer.Start()
     if ($Launch) { Start-OneClick }
+    if ($script:Prefs.CheckUpdates) { Upd-StartCheck $true }   # (Release 1.2: in the background; a result shows on the Updates tab and the status bar)
 })
-$form.Add_FormClosed({ $timer.Stop(); $launchTimer.Stop(); $autoJoinTimer.Stop(); $lmTimer.Stop(); Save-Settings $null; foreach ($inst in $Instances) { Drop-Conn $inst } })
+$form.Add_FormClosed({ $timer.Stop(); $launchTimer.Stop(); $updTimer.Stop(); $autoJoinTimer.Stop(); $lmTimer.Stop(); Save-Settings $null; foreach ($inst in $Instances) { Drop-Conn $inst } })
 Set-BmTheme $form
 [void]$form.ShowDialog()
